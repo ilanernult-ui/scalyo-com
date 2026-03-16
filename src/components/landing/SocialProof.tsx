@@ -32,6 +32,13 @@ const SocialProof = () => {
   return (
     <section className="py-24 bg-card">
       <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">Résultats Prouvés</p>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-foreground mb-4">
+            Des Entreprises Qui Grandissent Avec Axon
+          </h2>
+        </div>
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto mb-20">
           {stats.map((stat) => (
             <div key={stat.label} className="text-center">
@@ -45,7 +52,7 @@ const SocialProof = () => {
           {testimonials.map((t, i) => (
             <div
               key={t.name}
-              className="rounded-2xl border border-border bg-background p-6 shadow-card animate-fade-in"
+              className="rounded-2xl border border-border bg-background p-6 shadow-card hover:shadow-card-hover transition-shadow duration-300 animate-fade-in"
               style={{ animationDelay: `${i * 0.15}s` }}
             >
               <div className="flex gap-1 mb-4">
@@ -53,9 +60,9 @@ const SocialProof = () => {
                   <Star key={j} className="h-4 w-4 fill-primary text-primary" />
                 ))}
               </div>
-              <p className="text-foreground mb-4 leading-relaxed">"{t.quote}"</p>
-              <div>
-                <p className="font-semibold text-foreground text-sm">{t.name}</p>
+              <p className="text-foreground mb-5 leading-relaxed">"{t.quote}"</p>
+              <div className="border-t border-border pt-4">
+                <p className="font-bold text-foreground text-sm">{t.name}</p>
                 <p className="text-xs text-muted-foreground">{t.role}</p>
               </div>
             </div>
