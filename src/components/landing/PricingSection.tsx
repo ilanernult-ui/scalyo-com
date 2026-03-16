@@ -4,23 +4,23 @@ import { Check } from "lucide-react";
 const plans = [
   {
     name: "Starter",
-    price: "€49",
-    description: "For small businesses getting started with AI insights.",
-    features: ["AI Business Audit", "Performance score", "Monthly optimization report", "Email support"],
+    price: "49€",
+    description: "Pour les petites entreprises qui débutent avec l'IA.",
+    features: ["Audit IA de votre Business", "Score de performance", "Rapport d'optimisation mensuel", "Support par email"],
     popular: false,
   },
   {
     name: "Growth",
-    price: "€99",
-    description: "For growing companies that want deeper AI analysis.",
-    features: ["Everything in Starter", "Sales optimization insights", "Detailed recommendations", "Weekly reports", "Priority email support"],
+    price: "99€",
+    description: "Pour les entreprises en croissance qui veulent aller plus loin.",
+    features: ["Tout ce qui est dans Starter", "Insights d'optimisation des ventes", "Recommandations détaillées", "Rapports hebdomadaires", "Support email prioritaire"],
     popular: true,
   },
   {
     name: "Scale",
-    price: "€199",
-    description: "For companies ready to fully optimize with AI.",
-    features: ["Everything in Growth", "Cost optimization", "Automation suggestions", "Advanced AI reports", "Priority processing", "Dedicated account manager"],
+    price: "199€",
+    description: "Pour les entreprises prêtes à optimiser à fond avec l'IA.",
+    features: ["Tout ce qui est dans Growth", "Optimisation des coûts", "Suggestions d'automatisation", "Rapports IA avancés", "Traitement prioritaire", "Account manager dédié"],
     popular: false,
   },
 ];
@@ -30,12 +30,12 @@ const PricingSection = () => {
     <section id="pricing" className="py-24">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">Pricing</p>
+          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">Tarifs</p>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Simple, Transparent Pricing
+            Des Tarifs Simples et Transparents
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Start free for 14 days. No credit card required. Cancel anytime.
+            Essai gratuit de 14 jours. Sans carte bancaire. Annulation à tout moment.
           </p>
         </div>
 
@@ -52,20 +52,20 @@ const PricingSection = () => {
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 gradient-primary text-primary-foreground text-xs font-semibold px-4 py-1 rounded-full">
-                  Most Popular
+                  Le Plus Populaire
                 </div>
               )}
               <h3 className="text-xl font-bold text-foreground mb-1">{plan.name}</h3>
               <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
               <div className="mb-6">
                 <span className="text-4xl font-extrabold text-foreground">{plan.price}</span>
-                <span className="text-muted-foreground text-sm">/month</span>
+                <span className="text-muted-foreground text-sm">/mois</span>
               </div>
               <Button
                 variant={plan.popular ? "hero" : "hero-outline"}
                 className="w-full mb-6"
               >
-                Start Free Trial
+                Commencer l'Essai Gratuit
               </Button>
               <ul className="space-y-3">
                 {plan.features.map((f) => (

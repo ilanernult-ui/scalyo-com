@@ -10,7 +10,7 @@ const Footer = () => {
           </div>
           <span className="font-bold text-foreground">Axon</span>
         </div>
-        <p className="text-sm text-muted-foreground">© 2026 Axon AI. All rights reserved.</p>
+        <p className="text-sm text-muted-foreground">© 2026 Axon AI. Tous droits réservés.</p>
       </div>
     </footer>
   );

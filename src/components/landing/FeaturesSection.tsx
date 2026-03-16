@@ -3,21 +3,21 @@ import { BarChart3, TrendingUp, Cog } from "lucide-react";
 const features = [
   {
     icon: BarChart3,
-    title: "AI Business Audit",
-    description: "Get a full diagnostic of your business performance — sales, marketing, traffic, and operations — with a clear score and actionable insights.",
-    highlights: ["Performance Score", "Problem Detection", "Growth Opportunities"],
+    title: "Audit IA de votre Business",
+    description: "Obtenez un diagnostic complet de la performance de votre entreprise — ventes, marketing, trafic et opérations — avec un score clair et des recommandations concrètes.",
+    highlights: ["Score de Performance", "Détection de Problèmes", "Opportunités de Croissance"],
   },
   {
     icon: TrendingUp,
-    title: "Sales Optimization",
-    description: "AI analyzes your sales pipeline, conversion rates, and lead quality to boost revenue with data-driven recommendations.",
-    highlights: ["Conversion Boost", "Lead Prioritization", "Funnel Optimization"],
+    title: "Optimisation des Ventes",
+    description: "L'IA analyse votre pipeline commercial, vos taux de conversion et la qualité de vos leads pour booster votre chiffre d'affaires.",
+    highlights: ["Boost de Conversion", "Priorisation des Leads", "Optimisation du Tunnel"],
   },
   {
     icon: Cog,
-    title: "Cost & Process Optimization",
-    description: "Identify inefficiencies, cut unnecessary costs, and discover automation opportunities to scale operations faster.",
-    highlights: ["Cost Reduction", "Automation", "Productivity Gains"],
+    title: "Optimisation des Coûts & Processus",
+    description: "Identifiez les inefficacités, réduisez les dépenses inutiles et découvrez les opportunités d'automatisation pour scaler plus vite.",
+    highlights: ["Réduction des Coûts", "Automatisation", "Gains de Productivité"],
   },
 ];
 
@@ -26,12 +26,12 @@ const FeaturesSection = () => {
     <section id="features" className="py-24 bg-card">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">Core Services</p>
+          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">Services Principaux</p>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Three Pillars of Business Growth
+            Trois Piliers de Croissance
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Our AI platform delivers actionable intelligence across the areas that matter most.
+            Notre plateforme IA délivre des insights actionnables sur les domaines les plus importants.
           </p>
         </div>
 
