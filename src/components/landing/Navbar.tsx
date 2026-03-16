@@ -14,13 +14,13 @@ const Navbar = () => {
           <span className="text-xl font-bold text-foreground">Axon</span>
         </div>
         <div className="hidden md:flex items-center gap-8">
-          <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
-          <a href="#report" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Report</a>
-          <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
+          <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Fonctionnalités</a>
+          <a href="#report" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Rapport</a>
+          <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Tarifs</a>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>Log in</Button>
-          <Button variant="hero" size="sm" onClick={() => navigate("/dashboard")}>Start Free Trial</Button>
+          <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>Connexion</Button>
+          <Button variant="hero" size="sm" onClick={() => navigate("/dashboard")}>Essai Gratuit</Button>
         </div>
       </div>
     </nav>

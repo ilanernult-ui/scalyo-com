@@ -3,36 +3,35 @@ import { Star } from "lucide-react";
 const testimonials = [
   {
     name: "Sarah Chen",
-    role: "CEO, GrowthLab",
-    quote: "Axon identified €30K in wasted ad spend we had no idea about. ROI was immediate.",
+    role: "PDG, GrowthLab",
+    quote: "Axon a identifié 30K€ de dépenses publicitaires gaspillées dont on n'avait aucune idée. Le retour sur investissement a été immédiat.",
     rating: 5,
   },
   {
     name: "Marcus Weber",
-    role: "COO, ScaleOps",
-    quote: "The automation recommendations alone saved our team 20 hours per week. Game changer.",
+    role: "Directeur des Opérations, ScaleOps",
+    quote: "Les recommandations d'automatisation ont permis à notre équipe d'économiser 20 heures par semaine. Un vrai game changer.",
     rating: 5,
   },
   {
     name: "Léa Martin",
-    role: "Founder, NovaTech",
-    quote: "We went from 2% to 5.4% conversion rate in 8 weeks using Axon's sales insights.",
+    role: "Fondatrice, NovaTech",
+    quote: "Nous sommes passés de 2% à 5,4% de taux de conversion en 8 semaines grâce aux insights ventes d'Axon.",
     rating: 5,
   },
 ];
 
 const stats = [
-  { value: "2,400+", label: "Businesses analyzed" },
-  { value: "€12M+", label: "Savings identified" },
-  { value: "3.2x", label: "Avg. ROI" },
-  { value: "94%", label: "Satisfaction rate" },
+  { value: "2 400+", label: "Entreprises analysées" },
+  { value: "12M€+", label: "Économies identifiées" },
+  { value: "3,2x", label: "ROI moyen" },
+  { value: "94%", label: "Taux de satisfaction" },
 ];
 
 const SocialProof = () => {
   return (
     <section className="py-24 bg-card">
       <div className="container mx-auto px-4">
-        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto mb-20">
           {stats.map((stat) => (
             <div key={stat.label} className="text-center">
@@ -42,7 +41,6 @@ const SocialProof = () => {
           ))}
         </div>
 
-        {/* Testimonials */}
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {testimonials.map((t, i) => (
             <div

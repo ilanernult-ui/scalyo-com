@@ -13,10 +13,10 @@ const FinalCTA = () => {
           
           <div className="relative z-10">
             <h2 className="text-3xl md:text-4xl font-extrabold text-primary-foreground mb-4">
-              Start Optimizing Your Business Today
+              Commencez à Optimiser Votre Business Dès Aujourd'hui
             </h2>
             <p className="text-primary-foreground/80 text-lg mb-8 max-w-lg mx-auto">
-              Let AI show you exactly what to improve. Get your first report in minutes.
+              Laissez l'IA vous montrer exactement ce qu'il faut améliorer. Obtenez votre premier rapport en quelques minutes.
             </p>
             <Button
               variant="outline"
@@ -24,7 +24,7 @@ const FinalCTA = () => {
               className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 border-0 font-semibold text-base px-8 py-6"
               onClick={() => navigate("/dashboard")}
             >
-              Start My Free Analysis
+              Lancer Mon Analyse Gratuite
               <ArrowRight className="ml-1 h-5 w-5" />
             </Button>
           </div>
