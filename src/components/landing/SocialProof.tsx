@@ -29,7 +29,7 @@ const logos = ["NovaTech", "CloudScale", "GrowthForge", "DataPulse", "Synapse AI
 
 const SocialProof = () => {
   return (
-    <section className="py-24">
+    <section style={{ padding: "120px 0" }}>
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -37,8 +37,8 @@ const SocialProof = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">Témoignages</p>
-          <h2 className="text-3xl md:text-4xl font-heading font-extrabold text-foreground mb-4">
+          <p className="apple-label mb-3">Témoignages</p>
+          <h2 style={{ fontSize: "clamp(28px, 4vw, 52px)" }} className="text-foreground mb-4">
             Ils nous font confiance
           </h2>
         </motion.div>
@@ -51,7 +51,7 @@ const SocialProof = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.15 }}
-              className="glass-card rounded-2xl p-8"
+              className="surface rounded-[18px] p-8"
             >
               <div className="flex gap-1 mb-4">
                 {Array.from({ length: t.rating }).map((_, j) => (
@@ -60,7 +60,7 @@ const SocialProof = () => {
               </div>
               <p className="text-foreground text-sm leading-relaxed mb-6 italic">"{t.quote}"</p>
               <div>
-                <p className="font-heading font-bold text-foreground text-sm">{t.name}</p>
+                <p className="font-semibold text-foreground text-sm">{t.name}</p>
                 <p className="text-xs text-muted-foreground">{t.role} — {t.company}</p>
               </div>
             </motion.div>
@@ -69,7 +69,7 @@ const SocialProof = () => {
 
         <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
           {logos.map((logo) => (
-            <span key={logo} className="text-sm font-heading font-semibold text-muted-foreground/40 uppercase tracking-widest">
+            <span key={logo} className="text-sm font-semibold text-muted-foreground/40 uppercase tracking-widest">
               {logo}
             </span>
           ))}

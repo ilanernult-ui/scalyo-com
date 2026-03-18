@@ -16,28 +16,28 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/30">
-      <div className="container mx-auto flex items-center justify-between h-16 px-4">
-        <Link to="/" className="flex items-center gap-2.5">
-          <div className="gradient-primary rounded-lg p-1.5">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/85 backdrop-blur-xl border-b border-foreground/[0.08]" style={{ height: 44 }}>
+      <div className="container mx-auto flex items-center justify-between h-full px-4">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="bg-primary rounded-lg p-1.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
             </svg>
           </div>
-          <span className="text-xl font-heading font-bold text-foreground tracking-tight">OptimAI</span>
+          <span className="text-base font-semibold text-foreground tracking-tight">OptimAI</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
-            <Link key={link.href} to={link.href} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <Link key={link.href} to={link.href} className="text-xs font-medium text-muted-foreground hover:text-foreground apple-easing">
               {link.label}
             </Link>
           ))}
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" size="sm" className="font-medium text-muted-foreground" onClick={() => navigate("/dashboard")}>Connexion</Button>
-          <Button size="sm" className="gradient-primary text-primary-foreground font-semibold shimmer" onClick={() => navigate("/dashboard")}>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/dashboard")}>Connexion</Button>
+          <Button size="sm" className="text-xs" onClick={() => navigate("/dashboard")}>
             Démarrer gratuitement
           </Button>
         </div>
@@ -48,7 +48,7 @@ const Navbar = () => {
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden glass border-b border-border/30 px-4 py-4 space-y-3">
+        <div className="md:hidden bg-background border-b border-border px-4 py-4 space-y-3">
           {navLinks.map((link) => (
             <Link key={link.href} to={link.href} className="block text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>
               {link.label}
@@ -56,7 +56,7 @@ const Navbar = () => {
           ))}
           <div className="flex gap-2 pt-2">
             <Button variant="ghost" size="sm" onClick={() => { navigate("/dashboard"); setMobileOpen(false); }}>Connexion</Button>
-            <Button size="sm" className="gradient-primary text-primary-foreground font-semibold" onClick={() => { navigate("/dashboard"); setMobileOpen(false); }}>Démarrer</Button>
+            <Button size="sm" onClick={() => { navigate("/dashboard"); setMobileOpen(false); }}>Démarrer</Button>
           </div>
         </div>
       )}

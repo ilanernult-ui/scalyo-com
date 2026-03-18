@@ -26,7 +26,7 @@ const trustItems = [
 
 const TrustSection = () => {
   return (
-    <section className="py-24 border-t border-border/30">
+    <section className="surface" style={{ padding: "120px 0" }}>
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -34,8 +34,8 @@ const TrustSection = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <p className="text-sm font-semibold text-accent uppercase tracking-wider mb-3">Sécurité</p>
-          <h2 className="text-3xl md:text-4xl font-heading font-extrabold text-foreground mb-4">
+          <p className="apple-label mb-3">Sécurité</p>
+          <h2 style={{ fontSize: "clamp(28px, 4vw, 52px)" }} className="text-foreground mb-4">
             Vos données sont protégées
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
@@ -51,12 +51,12 @@ const TrustSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="glass-card rounded-2xl p-6 text-center"
+              className="apple-card text-center"
             >
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-accent/10 mb-4">
-                <item.icon className="h-6 w-6 text-accent" />
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 mb-4">
+                <item.icon className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-sm font-heading font-bold text-foreground mb-2">{item.title}</h3>
+              <h3 className="text-sm font-semibold text-foreground mb-2">{item.title}</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">{item.description}</p>
             </motion.div>
           ))}

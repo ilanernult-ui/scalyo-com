@@ -84,10 +84,10 @@ const Services = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <section className="pt-32 pb-16">
+      <section style={{ paddingTop: "clamp(100px, 12vh, 140px)", paddingBottom: "60px" }}>
         <div className="container mx-auto px-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-heading font-extrabold text-foreground mb-4">Nos Services</h1>
+            <h1 style={{ fontSize: "clamp(40px, 6vw, 64px)" }} className="text-foreground mb-4">Nos Services</h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Trois solutions complémentaires pour diagnostiquer, optimiser et fidéliser.
             </p>
@@ -104,50 +104,47 @@ const Services = () => {
                 className="max-w-4xl mx-auto"
               >
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="gradient-primary rounded-xl p-3">
+                  <div className="bg-primary rounded-2xl p-3">
                     <service.icon className="h-7 w-7 text-primary-foreground" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-primary uppercase tracking-wider">{service.name}</p>
-                    <h2 className="text-2xl md:text-3xl font-heading font-extrabold text-foreground">{service.title}</h2>
+                    <p className="apple-label">{service.name}</p>
+                    <h2 className="text-2xl md:text-3xl font-semibold text-foreground tracking-tight">{service.title}</h2>
                   </div>
                 </div>
 
                 <p className="text-muted-foreground mb-8 max-w-2xl">{service.description}</p>
 
-                {/* Features */}
                 <div className="grid sm:grid-cols-2 gap-4 mb-10">
                   {service.features.map((f) => (
-                    <div key={f} className="flex items-center gap-3 glass-card rounded-lg p-4">
-                      <div className="w-2 h-2 rounded-full gradient-primary shrink-0" />
+                    <div key={f} className="flex items-center gap-3 apple-card !p-4">
+                      <div className="w-2 h-2 rounded-full bg-primary shrink-0" />
                       <span className="text-sm text-foreground">{f}</span>
                     </div>
                   ))}
                 </div>
 
-                {/* Case study */}
-                <div className="glass-card rounded-2xl p-8 mb-10">
-                  <p className="text-xs font-semibold text-accent uppercase tracking-wider mb-2">Cas concret</p>
+                <div className="surface rounded-[18px] p-8 mb-10">
+                  <p className="apple-label text-success mb-2">Cas concret</p>
                   <p className="text-foreground leading-relaxed">
                     <span className="font-semibold">{service.caseStudy.company}</span> {service.caseStudy.result}
                   </p>
                 </div>
 
-                {/* FAQ */}
                 <div className="space-y-4 mb-10">
-                  <h3 className="text-lg font-heading font-bold text-foreground">Questions fréquentes</h3>
+                  <h3 className="text-lg font-semibold text-foreground tracking-tight">Questions fréquentes</h3>
                   {service.faq.map((item) => (
-                    <details key={item.q} className="glass-card rounded-xl p-4 group">
-                      <summary className="text-sm font-semibold text-foreground cursor-pointer list-none flex items-center justify-between">
+                    <details key={item.q} className="apple-card !p-4 group">
+                      <summary className="text-sm font-medium text-foreground cursor-pointer list-none flex items-center justify-between">
                         {item.q}
-                        <span className="text-primary group-open:rotate-45 transition-transform text-lg">+</span>
+                        <span className="text-primary group-open:rotate-45 apple-easing text-lg">+</span>
                       </summary>
                       <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{item.a}</p>
                     </details>
                   ))}
                 </div>
 
-                <Button asChild className="gradient-primary text-primary-foreground font-semibold shimmer">
+                <Button asChild>
                   <Link to="/contact">
                     Commencer avec {service.name} <ArrowRight className="ml-1 h-4 w-4" />
                   </Link>
