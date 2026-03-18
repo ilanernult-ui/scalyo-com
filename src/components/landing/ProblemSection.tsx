@@ -21,7 +21,7 @@ const problems = [
 
 const ProblemSection = () => {
   return (
-    <section className="py-24 border-t border-border/30">
+    <section className="surface" style={{ padding: "120px 0" }}>
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -29,8 +29,8 @@ const ProblemSection = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">Le problème</p>
-          <h2 className="text-3xl md:text-4xl font-heading font-extrabold text-foreground mb-4">
+          <p className="apple-label mb-3">Le problème</p>
+          <h2 style={{ fontSize: "clamp(28px, 4vw, 52px)" }} className="text-foreground mb-4">
             Votre entreprise mérite mieux
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
@@ -46,12 +46,12 @@ const ProblemSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.15 }}
-              className="glass-card rounded-2xl p-8 text-center hover:border-primary/30 transition-colors"
+              className="apple-card text-center"
             >
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-primary/10 mb-6">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mb-6">
                 <problem.icon className="h-7 w-7 text-primary" />
               </div>
-              <h3 className="text-lg font-heading font-bold text-foreground mb-3">{problem.title}</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-3 tracking-tight">{problem.title}</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">{problem.description}</p>
             </motion.div>
           ))}
