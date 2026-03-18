@@ -5,6 +5,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
+import Services from "./pages/Services.tsx";
+import Pricing from "./pages/Pricing.tsx";
+import About from "./pages/About.tsx";
+import Blog from "./pages/Blog.tsx";
+import Contact from "./pages/Contact.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -18,6 +23,12 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/services/:slug" element={<Services />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

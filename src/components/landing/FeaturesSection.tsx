@@ -1,76 +1,83 @@
-import { BarChart3, TrendingUp, Cog, ArrowRight } from "lucide-react";
+import { ArrowRight, Activity, Rocket, Heart } from "lucide-react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
-const features = [
+const services = [
   {
-    icon: BarChart3,
-    title: "Audit IA de Votre Business",
-    description: "Diagnostic complet de la performance de votre entreprise — ventes, marketing, trafic et opérations — avec un score clair et des recommandations concrètes.",
-    highlights: ["Score de Santé Business", "Détection de Problèmes", "Opportunités de Croissance"],
+    icon: Activity,
+    name: "DataDiag",
+    title: "Diagnostic de performance",
+    description: "Analyse complète des données métier : finance, RH, opérations. Identifie les anomalies et les zones de sous-performance.",
     color: "primary" as const,
+    href: "/services/datadiag",
   },
   {
-    icon: TrendingUp,
-    title: "Optimisation des Ventes",
-    description: "L'IA analyse votre pipeline commercial, vos taux de conversion et la qualité de vos leads pour maximiser votre chiffre d'affaires.",
-    highlights: ["Analyse du Pipeline", "Priorisation des Leads", "Optimisation du Tunnel"],
-    color: "secondary" as const,
+    icon: Rocket,
+    name: "GrowthPilot",
+    title: "Optimisation & Recommandations IA",
+    description: "Génère un plan d'action personnalisé avec des recommandations priorisées selon leur impact potentiel sur votre activité.",
+    color: "info" as const,
+    href: "/services/growthpilot",
   },
   {
-    icon: Cog,
-    title: "Optimisation des Coûts & Processus",
-    description: "Identifiez les dépenses inutiles, les processus inefficaces et les tâches répétitives. Obtenez des recommandations d'automatisation concrètes.",
-    highlights: ["Réduction des Coûts", "Automatisation", "Gains de Productivité"],
+    icon: Heart,
+    name: "LoyaltyLoop",
+    title: "Fidélisation & Engagement client",
+    description: "Analyse le comportement client, détecte les risques de churn et propose des stratégies de rétention automatisées.",
     color: "accent" as const,
+    href: "/services/loyaltyloop",
   },
 ];
 
 const colorMap = {
-  primary: { bg: "bg-primary/10", text: "text-primary", icon: "gradient-primary" },
-  secondary: { bg: "bg-secondary/10", text: "text-secondary", icon: "bg-secondary" },
-  accent: { bg: "bg-accent/10", text: "text-accent", icon: "bg-accent" },
+  primary: "bg-primary/10 text-primary border-primary/20",
+  info: "bg-info/10 text-info border-info/20",
+  accent: "bg-accent/10 text-accent border-accent/20",
 };
 
 const FeaturesSection = () => {
   return (
-    <section id="features" className="py-24">
+    <section id="services" className="py-24">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">La Solution</p>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-foreground mb-4">
-            Trois Piliers pour Accélérer Votre Croissance
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">Nos services</p>
+          <h2 className="text-3xl md:text-4xl font-heading font-extrabold text-foreground mb-4">
+            Trois leviers pour accélérer votre croissance
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Notre plateforme IA délivre des insights actionnables sur les domaines les plus impactants de votre entreprise.
+            Notre IA délivre des insights actionnables sur les domaines les plus impactants de votre activité.
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {features.map((feature, i) => {
-            const colors = colorMap[feature.color];
-            return (
-              <div
-                key={feature.title}
-                className="group rounded-2xl border border-border bg-card p-8 shadow-card hover:shadow-elevated transition-all duration-500 animate-fade-in"
-                style={{ animationDelay: `${i * 0.15}s` }}
-              >
-                <div className={`${colors.icon} rounded-xl p-3 w-fit mb-6`}>
-                  <feature.icon className="h-6 w-6 text-primary-foreground" />
-                </div>
-                <h3 className="text-xl font-bold text-foreground mb-3">{feature.title}</h3>
-                <p className="text-muted-foreground mb-6 leading-relaxed">{feature.description}</p>
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {feature.highlights.map((h) => (
-                    <span key={h} className={`text-xs font-semibold ${colors.bg} ${colors.text} rounded-full px-3 py-1`}>
-                      {h}
-                    </span>
-                  ))}
-                </div>
-                <a href="#report" className={`inline-flex items-center gap-1 text-sm font-semibold ${colors.text} group-hover:gap-2 transition-all`}>
-                  En savoir plus <ArrowRight className="h-4 w-4" />
-                </a>
+          {services.map((service, i) => (
+            <motion.div
+              key={service.name}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.15 }}
+              className="group glass-card rounded-2xl p-8 hover:border-primary/30 transition-all duration-300"
+            >
+              <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${colorMap[service.color].split(' ').slice(0, 2).join(' ')} mb-4`}>
+                <service.icon className="h-6 w-6" />
               </div>
-            );
-          })}
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{service.name}</p>
+              <h3 className="text-xl font-heading font-bold text-foreground mb-3">{service.title}</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed mb-6">{service.description}</p>
+              <Link
+                to={service.href}
+                className="inline-flex items-center gap-1 text-sm font-semibold text-primary group-hover:gap-2 transition-all"
+              >
+                En savoir plus <ArrowRight className="h-4 w-4" />
+              </Link>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
