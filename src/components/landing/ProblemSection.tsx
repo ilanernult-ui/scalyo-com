@@ -1,60 +1,59 @@
-import { TrendingDown, Target, Clock } from "lucide-react";
+import { BarChart3, Clock, Target } from "lucide-react";
+import { motion } from "framer-motion";
 
 const problems = [
   {
-    icon: TrendingDown,
-    title: "Marketing Inefficace",
-    description: "Vous dépensez en publicité sans savoir ce qui fonctionne. Les budgets sont gaspillés sur des canaux peu performants.",
-    stat: "38%",
-    statLabel: "de budget publicitaire gaspillé en moyenne",
-  },
-  {
-    icon: Target,
-    title: "Opportunités de Vente Perdues",
-    description: "Votre pipeline commercial fuit. Des prospects qualifiés sont perdus par manque de suivi ou de priorisation.",
-    stat: "67%",
-    statLabel: "des leads qualifiés jamais recontactés",
+    icon: BarChart3,
+    title: "Vous avez des données mais pas d'insights",
+    description: "Vos données sont éparpillées, inexploitées. Vous prenez des décisions à l'aveugle.",
   },
   {
     icon: Clock,
-    title: "Temps Opérationnel Gaspillé",
-    description: "Les processus manuels et répétitifs consomment des heures précieuses qui pourraient être investies dans la croissance.",
-    stat: "20h",
-    statLabel: "perdues chaque semaine en tâches manuelles",
+    title: "Vos équipes perdent du temps",
+    description: "Des processus manuels, des tâches répétitives. La productivité est freinée.",
+  },
+  {
+    icon: Target,
+    title: "Vous ne savez pas où agir en priorité",
+    description: "Trop de chantiers, pas assez de clarté. Vous dispersez vos efforts.",
   },
 ];
 
 const ProblemSection = () => {
   return (
-    <section className="py-24 bg-card">
+    <section className="py-24 border-t border-border/30">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <p className="text-sm font-semibold text-destructive uppercase tracking-wider mb-3">Le Problème</p>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-foreground mb-4">
-            Votre Entreprise Perd de l'Argent Sans le Savoir
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">Le problème</p>
+          <h2 className="text-3xl md:text-4xl font-heading font-extrabold text-foreground mb-4">
+            Votre entreprise mérite mieux
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            La plupart des entreprises ignorent les fuites de performance qui limitent leur croissance. Voici les plus courantes.
+            La plupart des entreprises perdent du temps et de l'argent faute de visibilité sur leurs vrais problèmes.
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {problems.map((problem, i) => (
-            <div
+            <motion.div
               key={problem.title}
-              className="rounded-2xl border border-destructive/10 bg-background p-8 animate-fade-in hover:border-destructive/20 transition-colors"
-              style={{ animationDelay: `${i * 0.15}s` }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.15 }}
+              className="glass-card rounded-2xl p-8 text-center hover:border-primary/30 transition-colors"
             >
-              <div className="rounded-xl bg-destructive/10 p-3 w-fit mb-6">
-                <problem.icon className="h-6 w-6 text-destructive" />
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-primary/10 mb-6">
+                <problem.icon className="h-7 w-7 text-primary" />
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-3">{problem.title}</h3>
-              <p className="text-muted-foreground mb-6 leading-relaxed">{problem.description}</p>
-              <div className="border-t border-border pt-4">
-                <p className="text-3xl font-extrabold text-destructive">{problem.stat}</p>
-                <p className="text-xs text-muted-foreground mt-1">{problem.statLabel}</p>
-              </div>
-            </div>
+              <h3 className="text-lg font-heading font-bold text-foreground mb-3">{problem.title}</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">{problem.description}</p>
+            </motion.div>
           ))}
         </div>
       </div>

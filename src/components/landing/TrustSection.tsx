@@ -1,68 +1,64 @@
-import { Shield, Lock, Eye, Server, CheckCircle, FileCheck } from "lucide-react";
+import { Shield, Lock, Eye, Server } from "lucide-react";
+import { motion } from "framer-motion";
 
-const trustPoints = [
+const trustItems = [
   {
     icon: Lock,
-    title: "Chiffrement de Bout en Bout",
-    description: "Toutes vos données sont chiffrées en transit (TLS 1.3) et au repos (AES-256). Aucune donnée en clair.",
+    title: "Chiffrement AES-256",
+    description: "Toutes vos données sont chiffrées en transit et au repos avec les standards les plus élevés.",
   },
   {
     icon: Shield,
     title: "Conforme RGPD",
-    description: "Nous respectons le Règlement Général sur la Protection des Données. Vos données restent en Europe.",
+    description: "Nous respectons scrupuleusement le RGPD. Vos données restent en Europe.",
   },
   {
     icon: Eye,
-    title: "Transparence Totale",
-    description: "Vos données ne sont jamais vendues ni partagées. Vous gardez le contrôle total sur vos informations.",
+    title: "Transparence totale",
+    description: "Vos données ne sont jamais vendues. Vous gardez le contrôle total à tout moment.",
   },
   {
     icon: Server,
-    title: "Intégrations Sécurisées",
-    description: "Connexions OAuth 2.0, tokens d'accès limités et permissions granulaires pour chaque intégration.",
-  },
-  {
-    icon: CheckCircle,
-    title: "Audits de Sécurité",
-    description: "Tests de pénétration réguliers et audits de sécurité par des experts indépendants certifiés.",
-  },
-  {
-    icon: FileCheck,
-    title: "Vous Gardez le Contrôle",
-    description: "Exportez ou supprimez vos données à tout moment. Pas de verrouillage fournisseur, pas de piège.",
+    title: "Intégrations sécurisées",
+    description: "Connexions OAuth 2.0 avec vos outils. Aucun mot de passe stocké.",
   },
 ];
 
 const TrustSection = () => {
   return (
-    <section id="security" className="py-24">
+    <section className="py-24 border-t border-border/30">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/5 px-4 py-1.5 mb-6">
-            <Shield className="h-4 w-4 text-accent" />
-            <span className="text-sm font-semibold text-accent">Sécurité & Confiance</span>
-          </div>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-foreground mb-4">
-            Vos Données Sont Protégées
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <p className="text-sm font-semibold text-accent uppercase tracking-wider mb-3">Sécurité</p>
+          <h2 className="text-3xl md:text-4xl font-heading font-extrabold text-foreground mb-4">
+            Vos données sont protégées
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Nous savons que vous connectez des données sensibles. C'est pourquoi la sécurité est au cœur de notre plateforme.
+            La sécurité n'est pas une option. C'est le fondement de notre plateforme.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {trustPoints.map((point, i) => (
-            <div
-              key={point.title}
-              className="rounded-2xl border border-accent/10 gradient-trust p-6 animate-fade-in hover:border-accent/20 transition-colors"
-              style={{ animationDelay: `${i * 0.1}s` }}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+          {trustItems.map((item, i) => (
+            <motion.div
+              key={item.title}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="glass-card rounded-2xl p-6 text-center"
             >
-              <div className="rounded-xl bg-accent/10 p-3 w-fit mb-4">
-                <point.icon className="h-5 w-5 text-accent" />
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-accent/10 mb-4">
+                <item.icon className="h-6 w-6 text-accent" />
               </div>
-              <h3 className="text-base font-bold text-foreground mb-2">{point.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{point.description}</p>
-            </div>
+              <h3 className="text-sm font-heading font-bold text-foreground mb-2">{item.title}</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">{item.description}</p>
+            </motion.div>
           ))}
         </div>
       </div>
