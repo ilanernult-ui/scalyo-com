@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2, ArrowLeft, Zap } from "lucide-react";
-import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
 import { z } from "zod";
+import PlanPicker from "@/components/auth/PlanPicker";
+import type { PlanType } from "@/contexts/AuthContext";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Adresse email invalide").max(255),
@@ -27,6 +27,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [selectedPlan, setSelectedPlan] = useState<PlanType>("growthpilot");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -59,7 +60,11 @@ const Auth = () => {
           password: parsed.password,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { full_name: parsed.fullName, company_name: parsed.companyName },
+            data: {
+              full_name: parsed.fullName,
+              company_name: parsed.companyName,
+              plan: selectedPlan,
+            },
           },
         });
         if (error) throw error;
@@ -114,7 +119,7 @@ const Auth = () => {
 
       {/* Right panel */}
       <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-sm">
+        <div className={`w-full ${!isLogin ? "max-w-lg" : "max-w-sm"}`}>
           <Link
             to="/"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground apple-easing mb-8 lg:hidden"
@@ -130,35 +135,38 @@ const Auth = () => {
             <p className="mt-1 text-sm text-muted-foreground">
               {isLogin
                 ? "Accédez à votre tableau de bord."
-                : "Commencez votre essai gratuit."}
+                : "Commencez votre essai gratuit de 14 jours."}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <>
-                <div className="space-y-1.5">
-                  <Label htmlFor="fullName">Nom complet</Label>
-                  <Input
-                    id="fullName"
-                    placeholder="Marie Dupont"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className={errors.fullName ? "border-destructive" : ""}
-                  />
-                  {errors.fullName && (
-                    <p className="text-xs text-destructive">{errors.fullName}</p>
-                  )}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="fullName">Nom complet</Label>
+                    <Input
+                      id="fullName"
+                      placeholder="Marie Dupont"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className={errors.fullName ? "border-destructive" : ""}
+                    />
+                    {errors.fullName && (
+                      <p className="text-xs text-destructive">{errors.fullName}</p>
+                    )}
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="companyName">Entreprise (optionnel)</Label>
+                    <Input
+                      id="companyName"
+                      placeholder="Votre entreprise"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="companyName">Entreprise (optionnel)</Label>
-                  <Input
-                    id="companyName"
-                    placeholder="Votre entreprise"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                  />
-                </div>
+                <PlanPicker selected={selectedPlan} onSelect={setSelectedPlan} />
               </>
             )}
 
