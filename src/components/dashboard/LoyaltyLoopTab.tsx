@@ -161,16 +161,19 @@ const PreviewContent = () => (
   </div>
 );
 
-const LoyaltyLoopTab = ({ onConnect }: { onConnect?: () => void }) => (
-  <EmptyStateOverlay
-    icon={Heart}
-    serviceName="LoyaltyLoop"
-    description="Prédisez le churn, identifiez vos clients à risque et déployez des stratégies de rétention personnalisées grâce à l'IA pour maximiser la valeur vie client."
-    accentColor={ACCENT}
-    onConnect={onConnect}
-  >
-    <PreviewContent />
-  </EmptyStateOverlay>
-);
+const LoyaltyLoopTab = ({ onConnect, dataConnected }: { onConnect?: () => void; dataConnected?: boolean }) => {
+  if (dataConnected) return <PreviewContent />;
+  return (
+    <EmptyStateOverlay
+      icon={Heart}
+      serviceName="LoyaltyLoop"
+      description="Prédisez le churn, identifiez vos clients à risque et déployez des stratégies de rétention personnalisées grâce à l'IA pour maximiser la valeur vie client."
+      accentColor={ACCENT}
+      onConnect={onConnect}
+    >
+      <PreviewContent />
+    </EmptyStateOverlay>
+  );
+};
 
 export default LoyaltyLoopTab;
