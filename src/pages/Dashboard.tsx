@@ -26,6 +26,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<string>("datadiag");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [upgradeTarget, setUpgradeTarget] = useState<PlanType | null>(null);
+  const [connectModalOpen, setConnectModalOpen] = useState(false);
 
   const userPlan = plan ?? "datadiag";
   const initials = user?.user_metadata?.full_name
