@@ -134,7 +134,7 @@ const Tarifs = () => {
       )}
 
       {/* HERO */}
-      <section style={{ paddingTop: isLoggedIn ? "20px" : "clamp(100px, 12vh, 140px)", paddingBottom: "60px" }}>
+      <section style={{ paddingTop: isLoggedIn ? (hasActiveSubscription ? "20px" : (!hasActiveSubscription ? "30px" : "20px")) : "clamp(100px, 12vh, 140px)", paddingBottom: "60px" }}>
         <div className="container mx-auto px-6 max-w-[1200px]">
           <motion.div
             initial="hidden" animate="visible" variants={fadeUp}
