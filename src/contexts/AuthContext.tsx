@@ -63,6 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           planStatus: (data.plan_status as PlanStatus) || "active",
           subscriptionEnd: data.subscription_end || null,
           stripeSubscriptionId: data.stripe_subscription_id || null,
+          subscribed: data.subscribed ?? false,
         });
       }
     } catch (e) {
