@@ -10,6 +10,7 @@ interface SubscriptionInfo {
   planStatus: PlanStatus;
   subscriptionEnd: string | null;
   stripeSubscriptionId: string | null;
+  subscribed: boolean;
 }
 
 interface AuthContextType {
