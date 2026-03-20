@@ -30,7 +30,7 @@ const LockedTabOverlay = ({ requiredPlan, onUpgrade, children }: LockedTabOverla
           Passez au plan supérieur pour accéder à ces fonctionnalités avancées.
         </p>
         <Button className="w-full" size="lg" onClick={onUpgrade}>
-          Upgrader mon plan
+          Voir les plans disponibles
         </Button>
       </div>
     </div>
