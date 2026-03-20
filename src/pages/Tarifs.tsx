@@ -76,21 +76,36 @@ const Tarifs = () => {
     setLoadingPlan(targetPlan);
     try {
       const planConfig = STRIPE_PLANS[targetPlan];
+      console.log("[Tarifs] Creating checkout for:", targetPlan, "priceId:", planConfig.priceId);
+      
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: { priceId: planConfig.priceId },
       });
 
-      if (error) throw error;
+      console.log("[Tarifs] Checkout response:", { data, error });
+
+      if (error) {
+        console.error("[Tarifs] Function invoke error:", error);
+        throw new Error(error.message || "Erreur lors de l'appel à create-checkout");
+      }
+
+      if (data?.error) {
+        console.error("[Tarifs] Checkout error from function:", data.error);
+        throw new Error(data.error);
+      }
+
       if (data?.url) {
+        console.log("[Tarifs] Redirecting to Stripe:", data.url);
         window.location.href = data.url;
       } else {
-        throw new Error("No checkout URL returned");
+        console.error("[Tarifs] No URL in response:", data);
+        throw new Error("Aucune URL de paiement retournée par Stripe");
       }
-    } catch (e) {
-      console.error("Checkout error:", e);
+    } catch (e: any) {
+      console.error("[Tarifs] Checkout error:", e);
       toast({
-        title: "Erreur",
-        description: "Impossible de créer la session de paiement. Veuillez réessayer.",
+        title: "Erreur de paiement",
+        description: e?.message || "Impossible de créer la session de paiement. Veuillez réessayer.",
         variant: "destructive",
       });
     } finally {
