@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Activity, Rocket, Heart, Settings, LogOut, Menu,
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const navItems = [
   { icon: LayoutDashboard, label: "Vue d'ensemble", id: "overview" },
