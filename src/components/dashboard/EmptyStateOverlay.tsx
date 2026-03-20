@@ -7,17 +7,16 @@ interface EmptyStateOverlayProps {
   serviceName: string;
   description: string;
   accentColor: string;
+  onConnect?: () => void;
   children: React.ReactNode;
 }
 
-const EmptyStateOverlay = ({ icon: Icon, serviceName, description, accentColor, children }: EmptyStateOverlayProps) => (
+const EmptyStateOverlay = ({ icon: Icon, serviceName, description, accentColor, onConnect, children }: EmptyStateOverlayProps) => (
   <div className="relative">
-    {/* Blurred preview behind */}
     <div className="blur-[6px] opacity-40 pointer-events-none select-none" aria-hidden>
       {children}
     </div>
 
-    {/* Overlay CTA */}
     <motion.div
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -37,7 +36,7 @@ const EmptyStateOverlay = ({ icon: Icon, serviceName, description, accentColor, 
         <p className="text-sm text-muted-foreground mb-6 text-wrap-pretty leading-relaxed">
           {description}
         </p>
-        <Button className="w-full" size="lg">
+        <Button className="w-full" size="lg" onClick={onConnect}>
           Connecter mes données
         </Button>
         <p className="text-[11px] text-muted-foreground mt-3">
