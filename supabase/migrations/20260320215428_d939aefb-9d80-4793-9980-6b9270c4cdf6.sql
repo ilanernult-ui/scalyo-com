@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN plan text NOT NULL DEFAULT 'datadiag' CHECK (plan IN ('datadiag', 'growthpilot', 'loyaltyloop'));
