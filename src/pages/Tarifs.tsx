@@ -110,8 +110,19 @@ const Tarifs = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
+      {/* Subscription banner */}
+      {isLoggedIn && !hasActiveSubscription && (
+        <div className="bg-primary/10 border-b border-primary/20" style={{ paddingTop: "clamp(90px, 11vh, 120px)" }}>
+          <div className="container mx-auto px-6 max-w-[1200px] py-4">
+            <p className="text-sm text-primary font-medium text-center">
+              {subscriptionMessage || "Vous n'avez pas encore d'abonnement actif. Choisissez un plan ci-dessous pour accéder à votre dashboard."}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Back to dashboard */}
-      {isLoggedIn && (
+      {isLoggedIn && hasActiveSubscription && (
         <div className="container mx-auto px-6 max-w-[1200px]" style={{ paddingTop: "clamp(90px, 11vh, 120px)" }}>
           <button
             onClick={() => navigate("/dashboard")}
