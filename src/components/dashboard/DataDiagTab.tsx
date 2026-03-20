@@ -104,16 +104,19 @@ const PreviewContent = () => (
   </div>
 );
 
-const DataDiagTab = ({ onConnect }: { onConnect?: () => void }) => (
-  <EmptyStateOverlay
-    icon={Activity}
-    serviceName="DataDiag"
-    description="Analysez vos données financières pour obtenir un diagnostic complet : détection d'anomalies, KPIs clés, alertes automatiques et rapport mensuel généré par IA."
-    accentColor={ACCENT}
-    onConnect={onConnect}
-  >
-    <PreviewContent />
-  </EmptyStateOverlay>
-);
+const DataDiagTab = ({ onConnect, dataConnected }: { onConnect?: () => void; dataConnected?: boolean }) => {
+  if (dataConnected) return <PreviewContent />;
+  return (
+    <EmptyStateOverlay
+      icon={Activity}
+      serviceName="DataDiag"
+      description="Analysez vos données financières pour obtenir un diagnostic complet : détection d'anomalies, KPIs clés, alertes automatiques et rapport mensuel généré par IA."
+      accentColor={ACCENT}
+      onConnect={onConnect}
+    >
+      <PreviewContent />
+    </EmptyStateOverlay>
+  );
+};
 
 export default DataDiagTab;
