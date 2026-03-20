@@ -14,6 +14,186 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_results: {
+        Row: {
+          created_at: string
+          id: string
+          results: Json
+          service: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          results?: Json
+          service: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          results?: Json
+          service?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      company_data: {
+        Row: {
+          active_clients: number | null
+          active_clients_30d: number | null
+          annual_revenue: number | null
+          avg_basket: number | null
+          avg_client_payment_days: number | null
+          avg_relationship_months: number | null
+          avg_supplier_payment_days: number | null
+          cac: number | null
+          cash_available: number | null
+          churn_history: Json | null
+          client_ltv: number | null
+          company_name: string | null
+          company_size: string | null
+          competitors: string | null
+          complaints_current: number | null
+          complaints_previous: number | null
+          conversion_rates: Json | null
+          created_at: string
+          current_month_revenue: number | null
+          employees: number | null
+          fixed_costs: number | null
+          gross_margin: number | null
+          growth_target_12m: number | null
+          growth_target_6m: number | null
+          id: string
+          inactive_60d: number | null
+          inactive_90d: number | null
+          ltv: number | null
+          main_churn_reason: string | null
+          main_sales_channel: string | null
+          marketing_budget: number | null
+          monthly_transactions: number | null
+          net_income: number | null
+          net_margin: number | null
+          new_clients_history: Json | null
+          nps_score: number | null
+          renewal_rate: number | null
+          retention_rate: number | null
+          revenue_history: Json | null
+          sector: string | null
+          total_clients: number | null
+          unpaid_amount: number | null
+          unpaid_invoices: number | null
+          updated_at: string
+          upsell_rate: number | null
+          user_id: string
+          variable_costs: number | null
+          vip_clients: number | null
+          vip_revenue: number | null
+        }
+        Insert: {
+          active_clients?: number | null
+          active_clients_30d?: number | null
+          annual_revenue?: number | null
+          avg_basket?: number | null
+          avg_client_payment_days?: number | null
+          avg_relationship_months?: number | null
+          avg_supplier_payment_days?: number | null
+          cac?: number | null
+          cash_available?: number | null
+          churn_history?: Json | null
+          client_ltv?: number | null
+          company_name?: string | null
+          company_size?: string | null
+          competitors?: string | null
+          complaints_current?: number | null
+          complaints_previous?: number | null
+          conversion_rates?: Json | null
+          created_at?: string
+          current_month_revenue?: number | null
+          employees?: number | null
+          fixed_costs?: number | null
+          gross_margin?: number | null
+          growth_target_12m?: number | null
+          growth_target_6m?: number | null
+          id?: string
+          inactive_60d?: number | null
+          inactive_90d?: number | null
+          ltv?: number | null
+          main_churn_reason?: string | null
+          main_sales_channel?: string | null
+          marketing_budget?: number | null
+          monthly_transactions?: number | null
+          net_income?: number | null
+          net_margin?: number | null
+          new_clients_history?: Json | null
+          nps_score?: number | null
+          renewal_rate?: number | null
+          retention_rate?: number | null
+          revenue_history?: Json | null
+          sector?: string | null
+          total_clients?: number | null
+          unpaid_amount?: number | null
+          unpaid_invoices?: number | null
+          updated_at?: string
+          upsell_rate?: number | null
+          user_id: string
+          variable_costs?: number | null
+          vip_clients?: number | null
+          vip_revenue?: number | null
+        }
+        Update: {
+          active_clients?: number | null
+          active_clients_30d?: number | null
+          annual_revenue?: number | null
+          avg_basket?: number | null
+          avg_client_payment_days?: number | null
+          avg_relationship_months?: number | null
+          avg_supplier_payment_days?: number | null
+          cac?: number | null
+          cash_available?: number | null
+          churn_history?: Json | null
+          client_ltv?: number | null
+          company_name?: string | null
+          company_size?: string | null
+          competitors?: string | null
+          complaints_current?: number | null
+          complaints_previous?: number | null
+          conversion_rates?: Json | null
+          created_at?: string
+          current_month_revenue?: number | null
+          employees?: number | null
+          fixed_costs?: number | null
+          gross_margin?: number | null
+          growth_target_12m?: number | null
+          growth_target_6m?: number | null
+          id?: string
+          inactive_60d?: number | null
+          inactive_90d?: number | null
+          ltv?: number | null
+          main_churn_reason?: string | null
+          main_sales_channel?: string | null
+          marketing_budget?: number | null
+          monthly_transactions?: number | null
+          net_income?: number | null
+          net_margin?: number | null
+          new_clients_history?: Json | null
+          nps_score?: number | null
+          renewal_rate?: number | null
+          retention_rate?: number | null
+          revenue_history?: Json | null
+          sector?: string | null
+          total_clients?: number | null
+          unpaid_amount?: number | null
+          unpaid_invoices?: number | null
+          updated_at?: string
+          upsell_rate?: number | null
+          user_id?: string
+          variable_costs?: number | null
+          vip_clients?: number | null
+          vip_revenue?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
