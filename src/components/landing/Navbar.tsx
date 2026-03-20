@@ -55,8 +55,8 @@ const Navbar = () => {
             </Link>
           ))}
           <div className="flex gap-2 pt-2">
-            <Button variant="ghost" size="sm" onClick={() => { navigate("/dashboard"); setMobileOpen(false); }}>Connexion</Button>
-            <Button size="sm" onClick={() => { navigate("/dashboard"); setMobileOpen(false); }}>Démarrer</Button>
+            <Button variant="ghost" size="sm" onClick={() => { navigate("/auth"); setMobileOpen(false); }}>Connexion</Button>
+            <Button size="sm" onClick={() => { navigate("/auth"); setMobileOpen(false); }}>Démarrer</Button>
           </div>
         </div>
       )}
