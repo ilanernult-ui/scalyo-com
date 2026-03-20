@@ -1,20 +1,22 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Menu, LogOut, Activity, Rocket, Heart, Lock } from "lucide-react";
+import { Menu, LogOut, Activity, Rocket, Heart, Lock, Settings } from "lucide-react";
 import { useAuth, PlanType } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import DataDiagTab from "@/components/dashboard/DataDiagTab";
 import GrowthPilotTab from "@/components/dashboard/GrowthPilotTab";
 import LoyaltyLoopTab from "@/components/dashboard/LoyaltyLoopTab";
 import LockedTabOverlay from "@/components/dashboard/LockedTabOverlay";
-import UpgradeModal from "@/components/dashboard/UpgradeModal";
 import ConnectDataWizard from "@/components/dashboard/ConnectDataWizard";
+import SettingsTab from "@/components/dashboard/SettingsTab";
+import { useToast } from "@/hooks/use-toast";
 
 const tabs = [
   { id: "datadiag", label: "DataDiag", icon: Activity, accent: "hsl(211, 100%, 45%)", minPlan: "datadiag" as PlanType },
   { id: "growthpilot", label: "GrowthPilot", icon: Rocket, accent: "hsl(142, 69%, 49%)", minPlan: "growthpilot" as PlanType },
   { id: "loyaltyloop", label: "LoyaltyLoop", icon: Heart, accent: "hsl(262, 60%, 55%)", minPlan: "loyaltyloop" as PlanType },
+  { id: "settings", label: "Paramètres", icon: Settings, accent: "hsl(240, 4%, 44%)", minPlan: "datadiag" as PlanType },
 ] as const;
 
 const planHierarchy: Record<PlanType, number> = { datadiag: 0, growthpilot: 1, loyaltyloop: 2 };
@@ -23,19 +25,29 @@ const hasAccess = (userPlan: PlanType, requiredPlan: PlanType) =>
   planHierarchy[userPlan] >= planHierarchy[requiredPlan];
 
 const Dashboard = () => {
-  const { plan, user } = useAuth();
+  const { plan, user, refreshSubscription } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<string>("datadiag");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [upgradeTarget, setUpgradeTarget] = useState<PlanType | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [dataConnected, setDataConnected] = useState(false);
 
-  const userPlan = plan ?? "loyaltyloop"; // default loyaltyloop for testing
+  const userPlan = plan;
   const initials = user?.user_metadata?.full_name
     ? user.user_metadata.full_name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
     : "U";
 
-  // Check if user has already connected data
+  // Handle checkout success
+  useEffect(() => {
+    if (searchParams.get("checkout") === "success") {
+      toast({ title: "Votre plan a été activé avec succès ! 🎉" });
+      refreshSubscription();
+    }
+  }, [searchParams]);
+
+  // Check if user has connected data
   useEffect(() => {
     if (!user?.id) return;
     supabase
@@ -53,6 +65,10 @@ const Dashboard = () => {
   };
 
   const renderTab = () => {
+    if (activeTab === "settings") {
+      return <SettingsTab />;
+    }
+
     const tab = tabs.find((t) => t.id === activeTab);
     if (!tab) return null;
 
@@ -70,7 +86,7 @@ const Dashboard = () => {
       return (
         <LockedTabOverlay
           requiredPlan={tab.minPlan}
-          onUpgrade={() => setUpgradeTarget(tab.minPlan)}
+          onUpgrade={() => navigate("/tarifs")}
         >
           {tabContent}
         </LockedTabOverlay>
@@ -101,14 +117,21 @@ const Dashboard = () => {
 
         <nav className="flex-1 p-4 space-y-1">
           {tabs.map((tab) => {
-            const locked = !hasAccess(userPlan, tab.minPlan);
+            const locked = tab.id !== "settings" && !hasAccess(userPlan, tab.minPlan);
             return (
               <button
                 key={tab.id}
-                onClick={() => { setActiveTab(tab.id); setSidebarOpen(false); }}
+                onClick={() => {
+                  if (locked) {
+                    navigate("/tarifs");
+                    return;
+                  }
+                  setActiveTab(tab.id);
+                  setSidebarOpen(false);
+                }}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                   locked
-                    ? "text-muted-foreground/50"
+                    ? "text-muted-foreground/50 cursor-pointer"
                     : activeTab === tab.id
                     ? "text-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -173,12 +196,6 @@ const Dashboard = () => {
           {renderTab()}
         </motion.div>
       </main>
-
-      <UpgradeModal
-        open={!!upgradeTarget}
-        onOpenChange={(open) => !open && setUpgradeTarget(null)}
-        targetPlan={upgradeTarget ?? "growthpilot"}
-      />
 
       {user?.id && (
         <ConnectDataWizard
