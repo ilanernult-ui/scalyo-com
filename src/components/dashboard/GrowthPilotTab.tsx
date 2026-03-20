@@ -118,16 +118,19 @@ const PreviewContent = () => (
   </div>
 );
 
-const GrowthPilotTab = ({ onConnect }: { onConnect?: () => void }) => (
-  <EmptyStateOverlay
-    icon={Rocket}
-    serviceName="GrowthPilot"
-    description="Analysez vos ventes et votre profil entreprise pour recevoir un plan d'action IA personnalisé, identifier les opportunités de croissance et suivre vos performances."
-    accentColor={ACCENT}
-    onConnect={onConnect}
-  >
-    <PreviewContent />
-  </EmptyStateOverlay>
-);
+const GrowthPilotTab = ({ onConnect, dataConnected }: { onConnect?: () => void; dataConnected?: boolean }) => {
+  if (dataConnected) return <PreviewContent />;
+  return (
+    <EmptyStateOverlay
+      icon={Rocket}
+      serviceName="GrowthPilot"
+      description="Analysez vos ventes et votre profil entreprise pour recevoir un plan d'action IA personnalisé, identifier les opportunités de croissance et suivre vos performances."
+      accentColor={ACCENT}
+      onConnect={onConnect}
+    >
+      <PreviewContent />
+    </EmptyStateOverlay>
+  );
+};
 
 export default GrowthPilotTab;
