@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (session?.user) {
           setTimeout(() => checkSubscription(), 0);
         } else {
-          setSub({ plan: "datadiag", planStatus: "active", subscriptionEnd: null, stripeSubscriptionId: null });
+          setSub({ plan: "datadiag", planStatus: "active", subscriptionEnd: null, stripeSubscriptionId: null, subscribed: false });
         }
         setLoading(false);
       }
