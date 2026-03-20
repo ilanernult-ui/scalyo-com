@@ -37,11 +37,12 @@ const Dashboard = () => {
     const tab = tabs.find((t) => t.id === activeTab);
     if (!tab) return null;
 
+    const handleConnect = () => setConnectModalOpen(true);
     const tabContent = (() => {
       switch (activeTab) {
-        case "datadiag": return <DataDiagTab />;
-        case "growthpilot": return <GrowthPilotTab />;
-        case "loyaltyloop": return <LoyaltyLoopTab />;
+        case "datadiag": return <DataDiagTab onConnect={handleConnect} />;
+        case "growthpilot": return <GrowthPilotTab onConnect={handleConnect} />;
+        case "loyaltyloop": return <LoyaltyLoopTab onConnect={handleConnect} />;
         default: return null;
       }
     })();
