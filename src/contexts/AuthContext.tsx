@@ -102,7 +102,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    setSub({ plan: "datadiag", planStatus: "active", subscriptionEnd: null, stripeSubscriptionId: null });
+    setSub({ plan: "datadiag", planStatus: "active", subscriptionEnd: null, stripeSubscriptionId: null, subscribed: false });
   };
 
   return (
