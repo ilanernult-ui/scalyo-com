@@ -32,7 +32,6 @@ const chartData = [
 
 const PreviewContent = () => (
   <div className="space-y-6">
-    {/* KPIs */}
     <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {mockKpis.map((kpi) => (
         <div key={kpi.label} className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-sm)]">
@@ -46,7 +45,6 @@ const PreviewContent = () => (
       ))}
     </div>
 
-    {/* Chart */}
     <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
       <h3 className="text-sm font-semibold text-foreground mb-6">Évolution du CA sur 12 mois (k€)</h3>
       <div className="flex items-end gap-2 h-40">
@@ -61,7 +59,6 @@ const PreviewContent = () => (
     </div>
 
     <div className="grid lg:grid-cols-2 gap-6">
-      {/* Anomalies */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
         <h3 className="text-sm font-semibold text-foreground mb-4">Anomalies détectées</h3>
         <div className="space-y-3">
@@ -77,7 +74,6 @@ const PreviewContent = () => (
         </div>
       </div>
 
-      {/* Alertes */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
         <h3 className="text-sm font-semibold text-foreground mb-4">Alertes automatiques</h3>
         <div className="space-y-3">
@@ -94,7 +90,6 @@ const PreviewContent = () => (
       </div>
     </div>
 
-    {/* Rapport */}
     <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
       <div className="flex items-center gap-2 mb-3">
         <FileText className="h-4 w-4 text-primary" />
@@ -109,12 +104,13 @@ const PreviewContent = () => (
   </div>
 );
 
-const DataDiagTab = () => (
+const DataDiagTab = ({ onConnect }: { onConnect?: () => void }) => (
   <EmptyStateOverlay
     icon={Activity}
     serviceName="DataDiag"
     description="Analysez vos données financières pour obtenir un diagnostic complet : détection d'anomalies, KPIs clés, alertes automatiques et rapport mensuel généré par IA."
     accentColor={ACCENT}
+    onConnect={onConnect}
   >
     <PreviewContent />
   </EmptyStateOverlay>

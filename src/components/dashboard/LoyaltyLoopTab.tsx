@@ -62,7 +62,6 @@ const PreviewContent = () => (
       ))}
     </div>
 
-    {/* Churn chart */}
     <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
       <h3 className="text-sm font-semibold text-foreground mb-6">Évolution du churn sur 6 mois (%)</h3>
       <div className="flex items-end gap-3 h-40">
@@ -77,7 +76,6 @@ const PreviewContent = () => (
     </div>
 
     <div className="grid lg:grid-cols-2 gap-6">
-      {/* Prédiction churn */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
         <div className="flex items-center gap-2 mb-4">
           <Users className="h-4 w-4" style={{ color: "hsl(262, 60%, 55%)" }} />
@@ -102,7 +100,6 @@ const PreviewContent = () => (
         </div>
       </div>
 
-      {/* Stratégies */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
         <div className="flex items-center gap-2 mb-4">
           <UserCheck className="h-4 w-4" style={{ color: "hsl(262, 60%, 55%)" }} />
@@ -120,7 +117,6 @@ const PreviewContent = () => (
       </div>
     </div>
 
-    {/* CRM Recommendations */}
     <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
       <div className="flex items-center gap-2 mb-4">
         <FileText className="h-4 w-4" style={{ color: "hsl(262, 60%, 55%)" }} />
@@ -141,7 +137,6 @@ const PreviewContent = () => (
       </div>
     </div>
 
-    {/* Suivi 360 */}
     <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
       <h3 className="text-sm font-semibold text-foreground mb-3">Suivi 360° — Santé du portefeuille client</h3>
       <div className="grid sm:grid-cols-4 gap-4">
@@ -166,12 +161,13 @@ const PreviewContent = () => (
   </div>
 );
 
-const LoyaltyLoopTab = () => (
+const LoyaltyLoopTab = ({ onConnect }: { onConnect?: () => void }) => (
   <EmptyStateOverlay
     icon={Heart}
     serviceName="LoyaltyLoop"
     description="Prédisez le churn, identifiez vos clients à risque et déployez des stratégies de rétention personnalisées grâce à l'IA pour maximiser la valeur vie client."
     accentColor={ACCENT}
+    onConnect={onConnect}
   >
     <PreviewContent />
   </EmptyStateOverlay>

@@ -8,6 +8,7 @@ import GrowthPilotTab from "@/components/dashboard/GrowthPilotTab";
 import LoyaltyLoopTab from "@/components/dashboard/LoyaltyLoopTab";
 import LockedTabOverlay from "@/components/dashboard/LockedTabOverlay";
 import UpgradeModal from "@/components/dashboard/UpgradeModal";
+import ConnectDataModal from "@/components/dashboard/ConnectDataModal";
 
 const tabs = [
   { id: "datadiag", label: "DataDiag", icon: Activity, accent: "hsl(211, 100%, 45%)", minPlan: "datadiag" as PlanType },
@@ -25,6 +26,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<string>("datadiag");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [upgradeTarget, setUpgradeTarget] = useState<PlanType | null>(null);
+  const [connectModalOpen, setConnectModalOpen] = useState(false);
 
   const userPlan = plan ?? "datadiag";
   const initials = user?.user_metadata?.full_name
@@ -35,11 +37,12 @@ const Dashboard = () => {
     const tab = tabs.find((t) => t.id === activeTab);
     if (!tab) return null;
 
+    const handleConnect = () => setConnectModalOpen(true);
     const tabContent = (() => {
       switch (activeTab) {
-        case "datadiag": return <DataDiagTab />;
-        case "growthpilot": return <GrowthPilotTab />;
-        case "loyaltyloop": return <LoyaltyLoopTab />;
+        case "datadiag": return <DataDiagTab onConnect={handleConnect} />;
+        case "growthpilot": return <GrowthPilotTab onConnect={handleConnect} />;
+        case "loyaltyloop": return <LoyaltyLoopTab onConnect={handleConnect} />;
         default: return null;
       }
     })();
@@ -156,6 +159,12 @@ const Dashboard = () => {
         open={!!upgradeTarget}
         onOpenChange={(open) => !open && setUpgradeTarget(null)}
         targetPlan={upgradeTarget ?? "growthpilot"}
+      />
+
+      <ConnectDataModal
+        open={connectModalOpen}
+        onOpenChange={setConnectModalOpen}
+        serviceName={tabs.find((t) => t.id === activeTab)?.label ?? ""}
       />
     </div>
   );
