@@ -36,8 +36,8 @@ const Navbar = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/dashboard")}>Connexion</Button>
-          <Button size="sm" className="text-xs" onClick={() => navigate("/dashboard")}>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/auth")}>Connexion</Button>
+          <Button size="sm" className="text-xs" onClick={() => navigate("/auth")}>
             Démarrer gratuitement
           </Button>
         </div>
@@ -55,8 +55,8 @@ const Navbar = () => {
             </Link>
           ))}
           <div className="flex gap-2 pt-2">
-            <Button variant="ghost" size="sm" onClick={() => { navigate("/dashboard"); setMobileOpen(false); }}>Connexion</Button>
-            <Button size="sm" onClick={() => { navigate("/dashboard"); setMobileOpen(false); }}>Démarrer</Button>
+            <Button variant="ghost" size="sm" onClick={() => { navigate("/auth"); setMobileOpen(false); }}>Connexion</Button>
+            <Button size="sm" onClick={() => { navigate("/auth"); setMobileOpen(false); }}>Démarrer</Button>
           </div>
         </div>
       )}
