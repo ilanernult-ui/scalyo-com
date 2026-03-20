@@ -8,6 +8,7 @@ import GrowthPilotTab from "@/components/dashboard/GrowthPilotTab";
 import LoyaltyLoopTab from "@/components/dashboard/LoyaltyLoopTab";
 import LockedTabOverlay from "@/components/dashboard/LockedTabOverlay";
 import UpgradeModal from "@/components/dashboard/UpgradeModal";
+import ConnectDataModal from "@/components/dashboard/ConnectDataModal";
 
 const tabs = [
   { id: "datadiag", label: "DataDiag", icon: Activity, accent: "hsl(211, 100%, 45%)", minPlan: "datadiag" as PlanType },
