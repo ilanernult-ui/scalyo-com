@@ -51,7 +51,6 @@ const PreviewContent = () => (
       ))}
     </div>
 
-    {/* Chart */}
     <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
       <h3 className="text-sm font-semibold text-foreground mb-6">Ventes & conversions sur 6 mois</h3>
       <div className="flex items-end gap-3 h-40">
@@ -66,7 +65,6 @@ const PreviewContent = () => (
     </div>
 
     <div className="grid lg:grid-cols-2 gap-6">
-      {/* Plan d'action */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
         <div className="flex items-center gap-2 mb-4">
           <Target className="h-4 w-4 text-success" />
@@ -87,7 +85,6 @@ const PreviewContent = () => (
         </div>
       </div>
 
-      {/* Opportunités */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
         <div className="flex items-center gap-2 mb-4">
           <Lightbulb className="h-4 w-4 text-success" />
@@ -107,7 +104,6 @@ const PreviewContent = () => (
       </div>
     </div>
 
-    {/* Rapport */}
     <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
       <div className="flex items-center gap-2 mb-3">
         <FileText className="h-4 w-4 text-success" />
@@ -122,12 +118,13 @@ const PreviewContent = () => (
   </div>
 );
 
-const GrowthPilotTab = () => (
+const GrowthPilotTab = ({ onConnect }: { onConnect?: () => void }) => (
   <EmptyStateOverlay
     icon={Rocket}
     serviceName="GrowthPilot"
     description="Analysez vos ventes et votre profil entreprise pour recevoir un plan d'action IA personnalisé, identifier les opportunités de croissance et suivre vos performances."
     accentColor={ACCENT}
+    onConnect={onConnect}
   >
     <PreviewContent />
   </EmptyStateOverlay>
