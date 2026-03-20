@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check, Minus, Shield, CreditCard, Gift, Headphones, ChevronDown, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -55,9 +55,14 @@ const fadeUp = {
 
 const Tarifs = () => {
   const navigate = useNavigate();
-  const { user, plan: currentPlan, planStatus } = useAuth();
+  const location = useLocation();
+  const { user, plan: currentPlan, planStatus, stripeSubscriptionId, subscriptionEnd } = useAuth();
   const { toast } = useToast();
   const [loadingPlan, setLoadingPlan] = useState<PlanType | null>(null);
+
+  const subscriptionMessage = (location.state as any)?.subscriptionMessage as string | undefined;
+  const isExpired = planStatus === "cancelled" && subscriptionEnd && new Date(subscriptionEnd) < new Date();
+  const hasActiveSubscription = !!stripeSubscriptionId && !isExpired;
 
   const isLoggedIn = !!user;
   const currentLevel = planHierarchy[currentPlan];
@@ -71,21 +76,36 @@ const Tarifs = () => {
     setLoadingPlan(targetPlan);
     try {
       const planConfig = STRIPE_PLANS[targetPlan];
+      console.log("[Tarifs] Creating checkout for:", targetPlan, "priceId:", planConfig.priceId);
+      
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: { priceId: planConfig.priceId },
       });
 
-      if (error) throw error;
+      console.log("[Tarifs] Checkout response:", { data, error });
+
+      if (error) {
+        console.error("[Tarifs] Function invoke error:", error);
+        throw new Error(error.message || "Erreur lors de l'appel à create-checkout");
+      }
+
+      if (data?.error) {
+        console.error("[Tarifs] Checkout error from function:", data.error);
+        throw new Error(data.error);
+      }
+
       if (data?.url) {
+        console.log("[Tarifs] Redirecting to Stripe:", data.url);
         window.location.href = data.url;
       } else {
-        throw new Error("No checkout URL returned");
+        console.error("[Tarifs] No URL in response:", data);
+        throw new Error("Aucune URL de paiement retournée par Stripe");
       }
-    } catch (e) {
-      console.error("Checkout error:", e);
+    } catch (e: any) {
+      console.error("[Tarifs] Checkout error:", e);
       toast({
-        title: "Erreur",
-        description: "Impossible de créer la session de paiement. Veuillez réessayer.",
+        title: "Erreur de paiement",
+        description: e?.message || "Impossible de créer la session de paiement. Veuillez réessayer.",
         variant: "destructive",
       });
     } finally {
@@ -105,8 +125,19 @@ const Tarifs = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
+      {/* Subscription banner */}
+      {isLoggedIn && !hasActiveSubscription && (
+        <div className="bg-primary/10 border-b border-primary/20" style={{ paddingTop: "clamp(90px, 11vh, 120px)" }}>
+          <div className="container mx-auto px-6 max-w-[1200px] py-4">
+            <p className="text-sm text-primary font-medium text-center">
+              {subscriptionMessage || "Vous n'avez pas encore d'abonnement actif. Choisissez un plan ci-dessous pour accéder à votre dashboard."}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Back to dashboard */}
-      {isLoggedIn && (
+      {isLoggedIn && hasActiveSubscription && (
         <div className="container mx-auto px-6 max-w-[1200px]" style={{ paddingTop: "clamp(90px, 11vh, 120px)" }}>
           <button
             onClick={() => navigate("/dashboard")}
@@ -118,7 +149,7 @@ const Tarifs = () => {
       )}
 
       {/* HERO */}
-      <section style={{ paddingTop: isLoggedIn ? "20px" : "clamp(100px, 12vh, 140px)", paddingBottom: "60px" }}>
+      <section style={{ paddingTop: isLoggedIn ? (hasActiveSubscription ? "20px" : (!hasActiveSubscription ? "30px" : "20px")) : "clamp(100px, 12vh, 140px)", paddingBottom: "60px" }}>
         <div className="container mx-auto px-6 max-w-[1200px]">
           <motion.div
             initial="hidden" animate="visible" variants={fadeUp}

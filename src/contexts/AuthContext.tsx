@@ -10,6 +10,7 @@ interface SubscriptionInfo {
   planStatus: PlanStatus;
   subscriptionEnd: string | null;
   stripeSubscriptionId: string | null;
+  subscribed: boolean;
 }
 
 interface AuthContextType {
@@ -46,6 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     planStatus: "active",
     subscriptionEnd: null,
     stripeSubscriptionId: null,
+    subscribed: false,
   });
 
   const checkSubscription = useCallback(async () => {
@@ -61,6 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           planStatus: (data.plan_status as PlanStatus) || "active",
           subscriptionEnd: data.subscription_end || null,
           stripeSubscriptionId: data.stripe_subscription_id || null,
+          subscribed: data.subscribed ?? false,
         });
       }
     } catch (e) {
@@ -75,7 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (session?.user) {
           setTimeout(() => checkSubscription(), 0);
         } else {
-          setSub({ plan: "datadiag", planStatus: "active", subscriptionEnd: null, stripeSubscriptionId: null });
+          setSub({ plan: "datadiag", planStatus: "active", subscriptionEnd: null, stripeSubscriptionId: null, subscribed: false });
         }
         setLoading(false);
       }
@@ -99,7 +102,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    setSub({ plan: "datadiag", planStatus: "active", subscriptionEnd: null, stripeSubscriptionId: null });
+    setSub({ plan: "datadiag", planStatus: "active", subscriptionEnd: null, stripeSubscriptionId: null, subscribed: false });
   };
 
   return (
