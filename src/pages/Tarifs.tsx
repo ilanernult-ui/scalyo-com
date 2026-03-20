@@ -95,11 +95,29 @@ const Tarifs = () => {
         throw new Error(data.error);
       }
 
+      // Primary: use Stripe.js redirectToCheckout
+      if (data?.sessionId) {
+        console.log("[Tarifs] Using Stripe.js redirectToCheckout, sessionId:", data.sessionId);
+        try {
+          const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+          if (stripe) {
+            const { error: stripeError } = await stripe.redirectToCheckout({ sessionId: data.sessionId });
+            if (stripeError) {
+              console.warn("[Tarifs] Stripe.js redirect failed:", stripeError.message);
+            } else {
+              return; // redirect succeeded
+            }
+          }
+        } catch (stripeErr) {
+          console.warn("[Tarifs] Stripe.js error, falling back:", stripeErr);
+        }
+      }
+
+      // Fallback: window.open
       if (data?.url) {
-        console.log("[Tarifs] Redirecting to Stripe:", data.url);
-        window.location.href = data.url;
+        console.log("[Tarifs] Fallback redirect to:", data.url);
+        window.open(data.url, "_self");
       } else {
-        console.error("[Tarifs] No URL in response:", data);
         throw new Error("Aucune URL de paiement retournée par Stripe");
       }
     } catch (e: any) {

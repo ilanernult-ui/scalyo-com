@@ -1,7 +1,15 @@
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut, User, LayoutDashboard } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navLinks = [
   { label: "Services", href: "/services" },
@@ -15,6 +23,14 @@ const navLinks = [
 const Navbar = () => {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
+  };
+
+  const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Mon compte";
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/85 backdrop-blur-xl border-b border-foreground/[0.08]" style={{ height: 44 }}>
@@ -37,10 +53,34 @@ const Navbar = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/auth")}>Connexion</Button>
-          <Button size="sm" className="text-xs" onClick={() => navigate("/auth")}>
-            Démarrer gratuitement
-          </Button>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-xs gap-2">
+                  <User className="h-3.5 w-3.5" />
+                  <span className="max-w-[120px] truncate">{displayName}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => navigate("/dashboard")} className="gap-2 text-xs cursor-pointer">
+                  <LayoutDashboard className="h-3.5 w-3.5" />
+                  Tableau de bord
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut} className="gap-2 text-xs cursor-pointer text-destructive">
+                  <LogOut className="h-3.5 w-3.5" />
+                  Se déconnecter
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/auth")}>Connexion</Button>
+              <Button size="sm" className="text-xs" onClick={() => navigate("/auth")}>
+                Démarrer gratuitement
+              </Button>
+            </>
+          )}
         </div>
 
         <button className="md:hidden p-2 text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
@@ -56,8 +96,17 @@ const Navbar = () => {
             </Link>
           ))}
           <div className="flex gap-2 pt-2">
-            <Button variant="ghost" size="sm" onClick={() => { navigate("/auth"); setMobileOpen(false); }}>Connexion</Button>
-            <Button size="sm" onClick={() => { navigate("/auth"); setMobileOpen(false); }}>Démarrer</Button>
+            {user ? (
+              <Button variant="ghost" size="sm" className="gap-2 text-destructive" onClick={() => { handleSignOut(); setMobileOpen(false); }}>
+                <LogOut className="h-4 w-4" />
+                Se déconnecter
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" onClick={() => { navigate("/auth"); setMobileOpen(false); }}>Connexion</Button>
+                <Button size="sm" onClick={() => { navigate("/auth"); setMobileOpen(false); }}>Démarrer</Button>
+              </>
+            )}
           </div>
         </div>
       )}
