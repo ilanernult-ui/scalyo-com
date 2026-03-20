@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Menu, LogOut, Activity, Rocket, Heart, Lock } from "lucide-react";
 import { useAuth, PlanType } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import DataDiagTab from "@/components/dashboard/DataDiagTab";
 import GrowthPilotTab from "@/components/dashboard/GrowthPilotTab";
 import LoyaltyLoopTab from "@/components/dashboard/LoyaltyLoopTab";
 import LockedTabOverlay from "@/components/dashboard/LockedTabOverlay";
 import UpgradeModal from "@/components/dashboard/UpgradeModal";
-import ConnectDataModal from "@/components/dashboard/ConnectDataModal";
+import ConnectDataWizard from "@/components/dashboard/ConnectDataWizard";
 
 const tabs = [
   { id: "datadiag", label: "DataDiag", icon: Activity, accent: "hsl(211, 100%, 45%)", minPlan: "datadiag" as PlanType },
@@ -26,23 +27,41 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<string>("datadiag");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [upgradeTarget, setUpgradeTarget] = useState<PlanType | null>(null);
-  const [connectModalOpen, setConnectModalOpen] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [dataConnected, setDataConnected] = useState(false);
 
-  const userPlan = plan ?? "datadiag";
+  const userPlan = plan ?? "loyaltyloop"; // default loyaltyloop for testing
   const initials = user?.user_metadata?.full_name
     ? user.user_metadata.full_name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
     : "U";
+
+  // Check if user has already connected data
+  useEffect(() => {
+    if (!user?.id) return;
+    supabase
+      .from("company_data")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setDataConnected(true);
+      });
+  }, [user?.id]);
+
+  const handleWizardComplete = () => {
+    setDataConnected(true);
+  };
 
   const renderTab = () => {
     const tab = tabs.find((t) => t.id === activeTab);
     if (!tab) return null;
 
-    const handleConnect = () => setConnectModalOpen(true);
+    const handleConnect = () => setWizardOpen(true);
     const tabContent = (() => {
       switch (activeTab) {
-        case "datadiag": return <DataDiagTab onConnect={handleConnect} />;
-        case "growthpilot": return <GrowthPilotTab onConnect={handleConnect} />;
-        case "loyaltyloop": return <LoyaltyLoopTab onConnect={handleConnect} />;
+        case "datadiag": return <DataDiagTab onConnect={handleConnect} dataConnected={dataConnected} />;
+        case "growthpilot": return <GrowthPilotTab onConnect={handleConnect} dataConnected={dataConnected} />;
+        case "loyaltyloop": return <LoyaltyLoopTab onConnect={handleConnect} dataConnected={dataConnected} />;
         default: return null;
       }
     })();
@@ -161,11 +180,15 @@ const Dashboard = () => {
         targetPlan={upgradeTarget ?? "growthpilot"}
       />
 
-      <ConnectDataModal
-        open={connectModalOpen}
-        onOpenChange={setConnectModalOpen}
-        serviceName={tabs.find((t) => t.id === activeTab)?.label ?? ""}
-      />
+      {user?.id && (
+        <ConnectDataWizard
+          open={wizardOpen}
+          onOpenChange={setWizardOpen}
+          plan={userPlan}
+          userId={user.id}
+          onComplete={handleWizardComplete}
+        />
+      )}
     </div>
   );
 };
