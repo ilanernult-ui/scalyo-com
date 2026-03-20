@@ -160,6 +160,12 @@ const Dashboard = () => {
         onOpenChange={(open) => !open && setUpgradeTarget(null)}
         targetPlan={upgradeTarget ?? "growthpilot"}
       />
+
+      <ConnectDataModal
+        open={connectModalOpen}
+        onOpenChange={setConnectModalOpen}
+        serviceName={tabs.find((t) => t.id === activeTab)?.label ?? ""}
+      />
     </div>
   );
 };
