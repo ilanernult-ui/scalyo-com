@@ -47,6 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     planStatus: "active",
     subscriptionEnd: null,
     stripeSubscriptionId: null,
+    subscribed: false,
   });
 
   const checkSubscription = useCallback(async () => {
