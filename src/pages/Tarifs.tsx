@@ -55,9 +55,14 @@ const fadeUp = {
 
 const Tarifs = () => {
   const navigate = useNavigate();
-  const { user, plan: currentPlan, planStatus } = useAuth();
+  const location = useLocation();
+  const { user, plan: currentPlan, planStatus, stripeSubscriptionId, subscriptionEnd } = useAuth();
   const { toast } = useToast();
   const [loadingPlan, setLoadingPlan] = useState<PlanType | null>(null);
+
+  const subscriptionMessage = (location.state as any)?.subscriptionMessage as string | undefined;
+  const isExpired = planStatus === "cancelled" && subscriptionEnd && new Date(subscriptionEnd) < new Date();
+  const hasActiveSubscription = !!stripeSubscriptionId && !isExpired;
 
   const isLoggedIn = !!user;
   const currentLevel = planHierarchy[currentPlan];
