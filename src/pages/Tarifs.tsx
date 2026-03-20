@@ -101,7 +101,7 @@ const Tarifs = () => {
         try {
           const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
           if (stripe) {
-            const { error: stripeError } = await stripe.redirectToCheckout({ sessionId: data.sessionId });
+            const { error: stripeError } = await (stripe as any).redirectToCheckout({ sessionId: data.sessionId });
             if (stripeError) {
               console.warn("[Tarifs] Stripe.js redirect failed:", stripeError.message);
             } else {
