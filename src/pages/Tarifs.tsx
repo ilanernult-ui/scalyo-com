@@ -59,6 +59,7 @@ const Tarifs = () => {
   const { user, plan: currentPlan, planStatus, stripeSubscriptionId, subscriptionEnd } = useAuth();
   const { toast } = useToast();
   const [loadingPlan, setLoadingPlan] = useState<PlanType | null>(null);
+  const [stripeUrl, setStripeUrl] = useState<string | null>(null);
 
   const subscriptionMessage = (location.state as any)?.subscriptionMessage as string | undefined;
   const isExpired = planStatus === "cancelled" && subscriptionEnd && new Date(subscriptionEnd) < new Date();
