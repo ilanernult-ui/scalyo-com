@@ -64,6 +64,7 @@ const Tarifs = () => {
   const subscriptionMessage = (location.state as any)?.subscriptionMessage as string | undefined;
   const isExpired = planStatus === "cancelled" && subscriptionEnd && new Date(subscriptionEnd) < new Date();
   const hasActiveSubscription = !!stripeSubscriptionId && !isExpired;
+  const hasPaidSubscription = !!stripeSubscriptionId && !isExpired;
 
   const isLoggedIn = !!user;
   const currentLevel = planHierarchy[currentPlan];
@@ -102,6 +103,12 @@ const Tarifs = () => {
   const getButtonState = (targetPlan: PlanType) => {
     const targetLevel = planHierarchy[targetPlan];
     if (!isLoggedIn) return { label: "Commencer l'essai gratuit", disabled: false, variant: "default" as const };
+    
+    // No paid subscription = all plans available
+    if (!hasPaidSubscription) {
+      return { label: `Choisir ce plan — ${STRIPE_PLANS[targetPlan].monthly}€/mois`, disabled: false, variant: "default" as const };
+    }
+    
     if (targetPlan === currentPlan) return { label: "Votre plan actuel", disabled: true, variant: "secondary" as const };
     if (targetLevel < currentLevel) return { label: "Plan inférieur", disabled: true, variant: "secondary" as const };
     return { label: `Choisir ce plan — ${STRIPE_PLANS[targetPlan].monthly}€/mois`, disabled: false, variant: "default" as const };
@@ -162,9 +169,9 @@ const Tarifs = () => {
             {planOrder.map((planId, i) => {
               const plan = STRIPE_PLANS[planId];
               const isPopular = planId === "growthpilot";
-              const isCurrent = isLoggedIn && planId === currentPlan;
+              const isCurrent = isLoggedIn && hasPaidSubscription && planId === currentPlan;
               const btnState = getButtonState(planId);
-              const isLower = isLoggedIn && planHierarchy[planId] < currentLevel;
+              const isLower = isLoggedIn && hasPaidSubscription && planHierarchy[planId] < currentLevel;
 
               return (
                 <motion.div
