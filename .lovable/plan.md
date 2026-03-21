@@ -1,41 +1,74 @@
 
+Diagnostic rapide
 
-## Problem
+Le problème ne vient probablement pas de Stripe ni de la Edge Function.
 
-The user has a `plan: "datadiag"` in their Supabase profile but no `stripe_subscription_id`. The current `getButtonState` logic treats them as if they have a paid plan — marking "datadiag" as "Votre plan actuel" (disabled) and lower plans as disabled too. This blocks them from actually purchasing.
+Ce que j’ai vérifié :
+- `create-checkout` répond bien en `200`
+- la fonction crée bien une session Stripe
+- elle retourne une vraie URL Checkout `https://checkout.stripe.com/...`
+- le `origin` utilisé est déjà celui du preview Lovable, pas `localhost`
+- après le clic, le bouton charge puis redevient actif, mais la navigation ne se fait pas correctement
 
-## Plan
+Cause la plus probable
 
-### 1. Fix button logic in `src/pages/Tarifs.tsx`
+La page blanche arrive parce que le checkout Stripe est lancé depuis la preview intégrée Lovable. Aujourd’hui `Tarifs.tsx` fait :
 
-Update `getButtonState` to check if the user has a real paid subscription (`stripeSubscriptionId` exists). If no `stripeSubscriptionId`, treat the user as having no plan — all buttons should be active with "Choisir ce plan" label.
-
-```typescript
-const hasPaidSubscription = !!stripeSubscriptionId && !isExpired;
-
-const getButtonState = (targetPlan: PlanType) => {
-  const targetLevel = planHierarchy[targetPlan];
-  if (!isLoggedIn) return { label: "Commencer l'essai gratuit", disabled: false, variant: "default" as const };
-  
-  // No paid subscription = all plans available
-  if (!hasPaidSubscription) {
-    return { label: `Choisir ce plan — ${STRIPE_PLANS[targetPlan].monthly}€/mois`, disabled: false, variant: "default" as const };
-  }
-  
-  // Has paid subscription - existing logic
-  if (targetPlan === currentPlan) return { label: "Votre plan actuel", disabled: true, variant: "secondary" as const };
-  if (targetLevel < currentLevel) return { label: "Plan inférieur", disabled: true, variant: "secondary" as const };
-  return { label: `Choisir ce plan — ${STRIPE_PLANS[targetPlan].monthly}€/mois`, disabled: false, variant: "default" as const };
-};
+```ts
+window.location.assign(data.url)
 ```
 
-Also update `currentLevel` usage and card styling (opacity, "Votre plan actuel" badge) to only apply when `hasPaidSubscription` is true.
+Donc la preview essaie de naviguer elle-même vers `checkout.stripe.com`. Or Stripe Checkout n’est pas fait pour être affiché dans un contexte embarqué/iframe, ce qui produit typiquement une page blanche.
 
-### 2. Reset user profile in Supabase
+En bref :
+- backend OK
+- URL Stripe OK
+- redirection dans la preview KO
 
-Use the insert tool to set `plan = 'datadiag'`, `plan_status = 'active'`, `stripe_subscription_id = NULL`, `stripe_customer_id = NULL` for the current user so they start clean.
+Plan de correction
 
-### 3. Edge Function `create-checkout` — no changes needed
+1. Corriger la redirection frontend
+- remplacer la navigation actuelle par une redirection “hors preview”
+- essayer d’abord une navigation top-level :
+  ```ts
+  window.top?.location.assign(data.url)
+  ```
+- si bloqué par le contexte navigateur, fallback vers :
+  ```ts
+  window.open(data.url, "_blank", "noopener,noreferrer")
+  ```
 
-It already handles existing vs new Stripe customers correctly (lines check `customers.list` by email).
+2. Ajouter un fallback visible pour l’utilisateur
+- si aucune redirection ne part, afficher un message clair avec un vrai lien cliquable :
+  - “Le paiement va s’ouvrir dans un nouvel onglet”
+  - bouton “Ouvrir le paiement Stripe”
+- ça évite toute page blanche bloquante
 
+3. Renforcer les logs côté frontend
+- logger :
+  - URL reçue
+  - contexte de navigation (`window.self !== window.top`)
+  - méthode de redirection utilisée
+- utile pour confirmer qu’on est bien dans un contexte embarqué
+
+4. Garder la Edge Function presque telle quelle
+- elle fonctionne déjà
+- seulement compléter les logs avec :
+  - `origin`
+  - `session.url`
+- pas besoin de refactor Stripe tant que l’URL est bien générée, ce qui est déjà le cas
+
+5. Vérifier le flux complet
+- tester depuis `/tarifs`
+- confirmer que le clic ouvre bien Stripe hors preview
+- vérifier le retour :
+  - succès → `/dashboard?checkout=success`
+  - annulation → `/tarifs?checkout=cancelled`
+
+Fichiers concernés
+- `src/pages/Tarifs.tsx` : corriger la redirection et ajouter le fallback utilisateur
+- `supabase/functions/create-checkout/index.ts` : améliorer les logs uniquement
+
+Conclusion
+
+La page blanche n’est pas un “paiement cassé” : la session Stripe est bien créée. Le vrai bug est la façon dont la preview tente d’ouvrir Checkout dans son propre contexte. La bonne correction est d’ouvrir Stripe au niveau de la fenêtre principale ou dans un nouvel onglet, avec un lien de secours visible.
