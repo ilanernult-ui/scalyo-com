@@ -8,7 +8,7 @@ import { useAuth, PlanType } from "@/contexts/AuthContext";
 import { STRIPE_PLANS } from "@/lib/stripe-plans";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { loadStripe } from "@stripe/stripe-js";
+// loadStripe removed - using window.location.assign for redirect
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import {
