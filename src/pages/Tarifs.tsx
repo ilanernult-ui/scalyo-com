@@ -64,6 +64,7 @@ const Tarifs = () => {
   const subscriptionMessage = (location.state as any)?.subscriptionMessage as string | undefined;
   const isExpired = planStatus === "cancelled" && subscriptionEnd && new Date(subscriptionEnd) < new Date();
   const hasActiveSubscription = !!stripeSubscriptionId && !isExpired;
+  const hasPaidSubscription = !!stripeSubscriptionId && !isExpired;
 
   const isLoggedIn = !!user;
   const currentLevel = planHierarchy[currentPlan];
