@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Menu, LogOut, Activity, Rocket, Heart, Lock, Settings } from "lucide-react";
@@ -11,6 +11,7 @@ import LockedTabOverlay from "@/components/dashboard/LockedTabOverlay";
 import ConnectDataWizard from "@/components/dashboard/ConnectDataWizard";
 import SettingsTab from "@/components/dashboard/SettingsTab";
 import { useToast } from "@/hooks/use-toast";
+import type { Json } from "@/integrations/supabase/types";
 
 const tabs = [
   { id: "datadiag", label: "DataDiag", icon: Activity, accent: "hsl(211, 100%, 45%)", minPlan: "datadiag" as PlanType },
@@ -25,7 +26,7 @@ const hasAccess = (userPlan: PlanType, requiredPlan: PlanType) =>
   planHierarchy[userPlan] >= planHierarchy[requiredPlan];
 
 const Dashboard = () => {
-  const { plan, user, refreshSubscription } = useAuth();
+  const { plan, user, signOut, refreshSubscription } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
@@ -33,6 +34,7 @@ const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [dataConnected, setDataConnected] = useState(false);
+  const [aiResults, setAiResults] = useState<Record<string, Json>>({});
 
   const userPlan = plan;
   const initials = user?.user_metadata?.full_name
@@ -47,7 +49,20 @@ const Dashboard = () => {
     }
   }, [searchParams]);
 
-  // Check if user has connected data
+  const loadAiResults = useCallback(async () => {
+    if (!user?.id) return;
+    const { data } = await supabase
+      .from("ai_results")
+      .select("service, results")
+      .eq("user_id", user.id);
+    if (data) {
+      const map: Record<string, Json> = {};
+      data.forEach((r) => { map[r.service] = r.results; });
+      setAiResults(map);
+    }
+  }, [user?.id]);
+
+  // Check if user has connected data + load AI results
   useEffect(() => {
     if (!user?.id) return;
     supabase
@@ -58,10 +73,17 @@ const Dashboard = () => {
       .then(({ data }) => {
         if (data) setDataConnected(true);
       });
-  }, [user?.id]);
+    loadAiResults();
+  }, [user?.id, loadAiResults]);
 
   const handleWizardComplete = () => {
     setDataConnected(true);
+    loadAiResults();
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
   };
 
   const renderTab = () => {
@@ -75,9 +97,9 @@ const Dashboard = () => {
     const handleConnect = () => setWizardOpen(true);
     const tabContent = (() => {
       switch (activeTab) {
-        case "datadiag": return <DataDiagTab onConnect={handleConnect} dataConnected={dataConnected} />;
-        case "growthpilot": return <GrowthPilotTab onConnect={handleConnect} dataConnected={dataConnected} />;
-        case "loyaltyloop": return <LoyaltyLoopTab onConnect={handleConnect} dataConnected={dataConnected} />;
+        case "datadiag": return <DataDiagTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["datadiag"]} />;
+        case "growthpilot": return <GrowthPilotTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["growthpilot"]} />;
+        case "loyaltyloop": return <LoyaltyLoopTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["loyaltyloop"]} />;
         default: return null;
       }
     })();
@@ -147,13 +169,13 @@ const Dashboard = () => {
         </nav>
 
         <div className="p-4 border-t border-border">
-          <Link
-            to="/"
-            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-200"
+          <button
+            onClick={handleSignOut}
+            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-200 w-full"
           >
             <LogOut className="h-4 w-4" />
-            Retour au site
-          </Link>
+            Se déconnecter
+          </button>
         </div>
       </aside>
 

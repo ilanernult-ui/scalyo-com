@@ -35,7 +35,7 @@ const getSteps = (plan: PlanType) => {
 
 const sectors = ["Retail", "E-commerce", "SaaS", "Restauration", "BTP", "Santé", "Services", "Industrie", "Autre"];
 const sizes = ["TPE (1-10)", "PME (11-250)", "ETI (250+)"];
-const channels = ["En ligne", "Boutique physique", "Marketplace", "B2B direct", "Mixte", "Autre"];
+const channels = ["Site web", "Boutique physique", "Téléphone", "Marketplace", "Réseaux sociaux", "Autre"];
 const churnReasons = ["Prix", "Concurrent", "Qualité", "Service client", "Autre"];
 
 const Field = ({ label, optional, children }: { label: string; optional?: boolean; children: React.ReactNode }) => (
