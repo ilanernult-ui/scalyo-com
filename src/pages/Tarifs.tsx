@@ -103,6 +103,12 @@ const Tarifs = () => {
   const getButtonState = (targetPlan: PlanType) => {
     const targetLevel = planHierarchy[targetPlan];
     if (!isLoggedIn) return { label: "Commencer l'essai gratuit", disabled: false, variant: "default" as const };
+    
+    // No paid subscription = all plans available
+    if (!hasPaidSubscription) {
+      return { label: `Choisir ce plan — ${STRIPE_PLANS[targetPlan].monthly}€/mois`, disabled: false, variant: "default" as const };
+    }
+    
     if (targetPlan === currentPlan) return { label: "Votre plan actuel", disabled: true, variant: "secondary" as const };
     if (targetLevel < currentLevel) return { label: "Plan inférieur", disabled: true, variant: "secondary" as const };
     return { label: `Choisir ce plan — ${STRIPE_PLANS[targetPlan].monthly}€/mois`, disabled: false, variant: "default" as const };
