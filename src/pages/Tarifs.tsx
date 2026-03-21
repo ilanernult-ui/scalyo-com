@@ -87,9 +87,32 @@ const Tarifs = () => {
       if (data?.error) throw new Error(data.error);
       if (!data?.url) throw new Error("Aucune URL de paiement retournée");
 
-      // Redirection directe via window.location.assign
-      window.location.assign(data.url);
-    } catch (e: any) {
+      // Escape iframe context for Stripe Checkout
+      const isInIframe = window.self !== window.top;
+      console.log("[Tarifs] Stripe URL received:", data.url, "isInIframe:", isInIframe);
+
+      if (isInIframe) {
+        // Try top-level redirect first
+        try {
+          window.top!.location.assign(data.url);
+          return;
+        } catch {
+          // Cross-origin restriction — fallback to new tab
+          console.log("[Tarifs] top-level redirect blocked, opening new tab");
+        }
+        // Fallback: open in new tab
+        const opened = window.open(data.url, "_blank", "noopener,noreferrer");
+        if (!opened) {
+          // Popup blocked — show manual link
+          setStripeUrl(data.url);
+          toast({
+            title: "Ouverture bloquée",
+            description: "Cliquez sur le lien ci-dessous pour accéder au paiement.",
+          });
+        }
+      } else {
+        window.location.assign(data.url);
+      }
       toast({
         title: "Erreur de paiement",
         description: e?.message || "Impossible de créer la session. Veuillez réessayer.",
