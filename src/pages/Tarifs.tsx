@@ -1,14 +1,13 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Check, Minus, Shield, CreditCard, Gift, Headphones, ChevronDown, ArrowLeft, Loader2 } from "lucide-react";
+import { Check, Minus, Shield, CreditCard, Gift, Headphones, ArrowLeft, Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth, PlanType } from "@/contexts/AuthContext";
 import { STRIPE_PLANS } from "@/lib/stripe-plans";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-// loadStripe removed - using window.location.assign for redirect
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import {
@@ -60,6 +59,7 @@ const Tarifs = () => {
   const { user, plan: currentPlan, planStatus, stripeSubscriptionId, subscriptionEnd } = useAuth();
   const { toast } = useToast();
   const [loadingPlan, setLoadingPlan] = useState<PlanType | null>(null);
+  const [stripeUrl, setStripeUrl] = useState<string | null>(null);
 
   const subscriptionMessage = (location.state as any)?.subscriptionMessage as string | undefined;
   const isExpired = planStatus === "cancelled" && subscriptionEnd && new Date(subscriptionEnd) < new Date();
@@ -87,8 +87,32 @@ const Tarifs = () => {
       if (data?.error) throw new Error(data.error);
       if (!data?.url) throw new Error("Aucune URL de paiement retournée");
 
-      // Redirection directe via window.location.assign
-      window.location.assign(data.url);
+      // Escape iframe context for Stripe Checkout
+      const isInIframe = window.self !== window.top;
+      console.log("[Tarifs] Stripe URL received:", data.url, "isInIframe:", isInIframe);
+
+      if (isInIframe) {
+        // Try top-level redirect first
+        try {
+          window.top!.location.assign(data.url);
+          return;
+        } catch {
+          // Cross-origin restriction — fallback to new tab
+          console.log("[Tarifs] top-level redirect blocked, opening new tab");
+        }
+        // Fallback: open in new tab
+        const opened = window.open(data.url, "_blank", "noopener,noreferrer");
+        if (!opened) {
+          // Popup blocked — show manual link
+          setStripeUrl(data.url);
+          toast({
+            title: "Ouverture bloquée",
+            description: "Cliquez sur le lien ci-dessous pour accéder au paiement.",
+          });
+        }
+      } else {
+        window.location.assign(data.url);
+      }
     } catch (e: any) {
       toast({
         title: "Erreur de paiement",
@@ -118,7 +142,25 @@ const Tarifs = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Subscription banner */}
+      {/* Stripe fallback link */}
+      {stripeUrl && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-primary text-primary-foreground rounded-xl px-6 py-4 shadow-lg flex items-center gap-4 max-w-md">
+          <div className="text-sm">
+            <p className="font-medium">Le paiement est prêt</p>
+            <p className="opacity-80 text-xs">Cliquez pour ouvrir la page de paiement Stripe</p>
+          </div>
+          <a
+            href={stripeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 bg-primary-foreground text-primary rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-1.5 hover:opacity-90 transition-opacity"
+          >
+            Payer <ExternalLink className="h-3.5 w-3.5" />
+          </a>
+          <button onClick={() => setStripeUrl(null)} className="absolute -top-2 -right-2 bg-background text-foreground rounded-full w-6 h-6 text-xs border border-border flex items-center justify-center">✕</button>
+        </div>
+      )}
+
       {isLoggedIn && !hasActiveSubscription && (
         <div className="bg-primary/10 border-b border-primary/20" style={{ paddingTop: "clamp(90px, 11vh, 120px)" }}>
           <div className="container mx-auto px-6 max-w-[1200px] py-4">
