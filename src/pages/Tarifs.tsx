@@ -113,6 +113,7 @@ const Tarifs = () => {
       } else {
         window.location.assign(data.url);
       }
+    } catch (e: any) {
       toast({
         title: "Erreur de paiement",
         description: e?.message || "Impossible de créer la session. Veuillez réessayer.",
