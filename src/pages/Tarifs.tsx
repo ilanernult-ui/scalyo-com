@@ -77,54 +77,21 @@ const Tarifs = () => {
     setLoadingPlan(targetPlan);
     try {
       const planConfig = STRIPE_PLANS[targetPlan];
-      console.log("[Tarifs] Creating checkout for:", targetPlan, "priceId:", planConfig.priceId);
-      
+
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: { priceId: planConfig.priceId },
       });
 
-      console.log("[Tarifs] Checkout response:", { data, error });
+      if (error) throw new Error(error.message || "Erreur lors de l'appel à create-checkout");
+      if (data?.error) throw new Error(data.error);
+      if (!data?.url) throw new Error("Aucune URL de paiement retournée");
 
-      if (error) {
-        console.error("[Tarifs] Function invoke error:", error);
-        throw new Error(error.message || "Erreur lors de l'appel à create-checkout");
-      }
-
-      if (data?.error) {
-        console.error("[Tarifs] Checkout error from function:", data.error);
-        throw new Error(data.error);
-      }
-
-      // Primary: use Stripe.js redirectToCheckout
-      if (data?.sessionId) {
-        console.log("[Tarifs] Using Stripe.js redirectToCheckout, sessionId:", data.sessionId);
-        try {
-          const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
-          if (stripe) {
-            const { error: stripeError } = await (stripe as any).redirectToCheckout({ sessionId: data.sessionId });
-            if (stripeError) {
-              console.warn("[Tarifs] Stripe.js redirect failed:", stripeError.message);
-            } else {
-              return; // redirect succeeded
-            }
-          }
-        } catch (stripeErr) {
-          console.warn("[Tarifs] Stripe.js error, falling back:", stripeErr);
-        }
-      }
-
-      // Fallback: window.open
-      if (data?.url) {
-        console.log("[Tarifs] Fallback redirect to:", data.url);
-        window.open(data.url, "_self");
-      } else {
-        throw new Error("Aucune URL de paiement retournée par Stripe");
-      }
+      // Redirection directe via window.location.assign
+      window.location.assign(data.url);
     } catch (e: any) {
-      console.error("[Tarifs] Checkout error:", e);
       toast({
         title: "Erreur de paiement",
-        description: e?.message || "Impossible de créer la session de paiement. Veuillez réessayer.",
+        description: e?.message || "Impossible de créer la session. Veuillez réessayer.",
         variant: "destructive",
       });
     } finally {
