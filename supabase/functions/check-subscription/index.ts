@@ -78,21 +78,25 @@ serve(async (req) => {
 
     if (subscriptions.data.length > 0) {
       const sub = subscriptions.data[0];
-      const productId = sub.items.data[0].price.product as string;
+      const productId = sub.items.data[0]?.price?.product as string;
       plan = PLAN_MAP[productId] || "datadiag";
       planStatus = sub.cancel_at_period_end ? "cancelled" : "active";
-      subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
       stripeSubscriptionId = sub.id;
+      if (sub.current_period_end && typeof sub.current_period_end === "number") {
+        subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
+      }
       logStep("Active subscription", { plan, planStatus, subscriptionEnd });
     } else if (canceledSubs.data.length > 0) {
       const sub = canceledSubs.data[0];
-      const periodEnd = new Date(sub.current_period_end * 1000);
-      if (periodEnd > new Date()) {
-        const productId = sub.items.data[0].price.product as string;
-        plan = PLAN_MAP[productId] || "datadiag";
-        planStatus = "cancelled";
-        subscriptionEnd = periodEnd.toISOString();
-        stripeSubscriptionId = sub.id;
+      if (sub.current_period_end && typeof sub.current_period_end === "number") {
+        const periodEnd = new Date(sub.current_period_end * 1000);
+        if (periodEnd > new Date()) {
+          const productId = sub.items.data[0]?.price?.product as string;
+          plan = PLAN_MAP[productId] || "datadiag";
+          planStatus = "cancelled";
+          subscriptionEnd = periodEnd.toISOString();
+          stripeSubscriptionId = sub.id;
+        }
       }
     }
 
