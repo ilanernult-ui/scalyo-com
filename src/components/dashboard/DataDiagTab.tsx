@@ -1,5 +1,6 @@
 import { Activity, TrendingUp, DollarSign, PiggyBank, Wallet, AlertTriangle, Bell, FileText } from "lucide-react";
 import EmptyStateOverlay from "./EmptyStateOverlay";
+import type { Json } from "@/integrations/supabase/types";
 
 const ACCENT = "hsl(211, 100%, 45%)";
 
@@ -104,8 +105,37 @@ const PreviewContent = () => (
   </div>
 );
 
-const DataDiagTab = ({ onConnect, dataConnected }: { onConnect?: () => void; dataConnected?: boolean }) => {
+const AiResultsContent = ({ data }: { data: Record<string, unknown> }) => {
+  const rapport = typeof data.rapport === "string" ? data.rapport : typeof data.analysis === "string" ? data.analysis : JSON.stringify(data, null, 2);
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
+        <div className="flex items-center gap-2 mb-3">
+          <FileText className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-semibold text-foreground">Résultats de l'analyse DataDiag</h3>
+        </div>
+        <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+          {rapport}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+interface DataDiagTabProps {
+  onConnect?: () => void;
+  dataConnected?: boolean;
+  aiResults?: Json;
+}
+
+const DataDiagTab = ({ onConnect, dataConnected, aiResults }: DataDiagTabProps) => {
+  if (dataConnected && aiResults && typeof aiResults === "object" && !Array.isArray(aiResults)) {
+    return <AiResultsContent data={aiResults as Record<string, unknown>} />;
+  }
+
   if (dataConnected) return <PreviewContent />;
+
   return (
     <EmptyStateOverlay
       icon={Activity}
@@ -113,6 +143,7 @@ const DataDiagTab = ({ onConnect, dataConnected }: { onConnect?: () => void; dat
       description="Analysez vos données financières pour obtenir un diagnostic complet : détection d'anomalies, KPIs clés, alertes automatiques et rapport mensuel généré par IA."
       accentColor={ACCENT}
       onConnect={onConnect}
+      buttonLabel={dataConnected ? "Mettre à jour mes données" : "Connecter mes données"}
     >
       <PreviewContent />
     </EmptyStateOverlay>

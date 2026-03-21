@@ -8,10 +8,11 @@ interface EmptyStateOverlayProps {
   description: string;
   accentColor: string;
   onConnect?: () => void;
+  buttonLabel?: string;
   children: React.ReactNode;
 }
 
-const EmptyStateOverlay = ({ icon: Icon, serviceName, description, accentColor, onConnect, children }: EmptyStateOverlayProps) => (
+const EmptyStateOverlay = ({ icon: Icon, serviceName, description, accentColor, onConnect, buttonLabel, children }: EmptyStateOverlayProps) => (
   <div className="relative">
     <div className="blur-[6px] opacity-40 pointer-events-none select-none" aria-hidden>
       {children}
@@ -37,7 +38,7 @@ const EmptyStateOverlay = ({ icon: Icon, serviceName, description, accentColor, 
           {description}
         </p>
         <Button className="w-full" size="lg" onClick={onConnect}>
-          Connecter mes données
+          {buttonLabel || "Connecter mes données"}
         </Button>
         <p className="text-[11px] text-muted-foreground mt-3">
           Importez vos fichiers CSV, Excel ou connectez votre logiciel.

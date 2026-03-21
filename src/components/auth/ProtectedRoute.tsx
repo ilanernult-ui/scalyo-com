@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, loading, plan, planStatus, subscriptionEnd, stripeSubscriptionId } = useAuth();
+  const { user, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -19,21 +19,8 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  // Not logged in → redirect to auth
   if (!user) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
-  }
-
-  // Check if subscription is expired
-  const isExpired = planStatus === "cancelled" && subscriptionEnd && new Date(subscriptionEnd) < new Date();
-  const hasActiveSubscription = !!stripeSubscriptionId && !isExpired;
-
-  // No active subscription → redirect to tarifs
-  if (!hasActiveSubscription) {
-    const message = isExpired
-      ? "Votre abonnement a expiré. Choisissez un plan pour continuer."
-      : "Choisissez un plan pour accéder à votre dashboard.";
-    return <Navigate to="/tarifs" state={{ subscriptionMessage: message }} replace />;
   }
 
   return <>{children}</>;
