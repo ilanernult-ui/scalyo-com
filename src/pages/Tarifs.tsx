@@ -169,9 +169,9 @@ const Tarifs = () => {
             {planOrder.map((planId, i) => {
               const plan = STRIPE_PLANS[planId];
               const isPopular = planId === "growthpilot";
-              const isCurrent = isLoggedIn && planId === currentPlan;
+              const isCurrent = isLoggedIn && hasPaidSubscription && planId === currentPlan;
               const btnState = getButtonState(planId);
-              const isLower = isLoggedIn && planHierarchy[planId] < currentLevel;
+              const isLower = isLoggedIn && hasPaidSubscription && planHierarchy[planId] < currentLevel;
 
               return (
                 <motion.div
