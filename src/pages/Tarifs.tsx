@@ -142,7 +142,25 @@ const Tarifs = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Subscription banner */}
+      {/* Stripe fallback link */}
+      {stripeUrl && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-primary text-primary-foreground rounded-xl px-6 py-4 shadow-lg flex items-center gap-4 max-w-md">
+          <div className="text-sm">
+            <p className="font-medium">Le paiement est prêt</p>
+            <p className="opacity-80 text-xs">Cliquez pour ouvrir la page de paiement Stripe</p>
+          </div>
+          <a
+            href={stripeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 bg-primary-foreground text-primary rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-1.5 hover:opacity-90 transition-opacity"
+          >
+            Payer <ExternalLink className="h-3.5 w-3.5" />
+          </a>
+          <button onClick={() => setStripeUrl(null)} className="absolute -top-2 -right-2 bg-background text-foreground rounded-full w-6 h-6 text-xs border border-border flex items-center justify-center">✕</button>
+        </div>
+      )}
+
       {isLoggedIn && !hasActiveSubscription && (
         <div className="bg-primary/10 border-b border-primary/20" style={{ paddingTop: "clamp(90px, 11vh, 120px)" }}>
           <div className="container mx-auto px-6 max-w-[1200px] py-4">
