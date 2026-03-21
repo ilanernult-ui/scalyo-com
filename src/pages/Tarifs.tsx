@@ -1,14 +1,13 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Check, Minus, Shield, CreditCard, Gift, Headphones, ChevronDown, ArrowLeft, Loader2 } from "lucide-react";
+import { Check, Minus, Shield, CreditCard, Gift, Headphones, ArrowLeft, Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth, PlanType } from "@/contexts/AuthContext";
 import { STRIPE_PLANS } from "@/lib/stripe-plans";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-// loadStripe removed - using window.location.assign for redirect
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import {
