@@ -149,10 +149,8 @@ const Auth = () => {
       {/* Left panel */}
       <div className="hidden lg:flex lg:w-1/2 surface flex-col justify-between p-12">
         <Link to="/" className="flex items-center gap-2 text-foreground">
-          <div className="bg-primary rounded-lg p-1.5">
-            <Zap className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <span className="text-base font-semibold tracking-tight">OptimAI</span>
+          <img src={scalyoLogo} alt="Scalyo" className="h-8 w-8 object-contain" />
+          <span className="text-base font-semibold tracking-tight">Scalyo</span>
         </Link>
 
         <div className="max-w-md">
