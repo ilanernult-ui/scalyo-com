@@ -37,7 +37,7 @@ const HeroSection = () => {
           className="text-muted-foreground max-w-2xl mx-auto mb-10"
           style={{ fontSize: "clamp(17px, 2vw, 19px)" }}
         >
-          OptimAI analyse vos données d'entreprise, détecte vos freins
+          Scalyo analyse vos données d'entreprise, détecte vos freins
           et génère un plan d'action personnalisé. Immédiatement.
         </motion.p>
 
