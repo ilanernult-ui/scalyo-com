@@ -46,7 +46,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-border pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} OptimAI. Tous droits réservés.</p>
+          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Scalyo. Tous droits réservés.</p>
           <div className="flex gap-6">
             <a href="#" className="text-xs text-muted-foreground hover:text-foreground apple-easing">LinkedIn</a>
             <a href="#" className="text-xs text-muted-foreground hover:text-foreground apple-easing">Twitter</a>

@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Loader2, Zap } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import scalyoLogo from "@/assets/scalyo-logo.png";
 import { Link } from "react-router-dom";
 
 const ForgotPassword = () => {

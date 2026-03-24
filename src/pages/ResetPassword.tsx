@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Zap } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import scalyoLogo from "@/assets/scalyo-logo.png";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");

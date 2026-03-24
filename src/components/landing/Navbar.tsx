@@ -37,12 +37,8 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/85 backdrop-blur-xl border-b border-foreground/[0.08]" style={{ height: 44 }}>
       <div className="container mx-auto flex items-center justify-between h-full px-4">
         <Link to="/" className="flex items-center gap-2">
-          <div className="bg-primary rounded-lg p-1.5">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-            </svg>
-          </div>
-          <span className="text-base font-semibold text-foreground tracking-tight">OptimAI</span>
+          <img src={scalyoLogo} alt="Scalyo" className="h-8 w-8 object-contain" />
+          <span className="text-base font-semibold text-foreground tracking-tight">Scalyo</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
