@@ -37,7 +37,7 @@ const HeroSection = () => {
           className="text-muted-foreground max-w-2xl mx-auto mb-10"
           style={{ fontSize: "clamp(17px, 2vw, 19px)" }}
         >
-          OptimAI analyse vos données d'entreprise, détecte vos freins
+          Scalyo analyse vos données d'entreprise, détecte vos freins
           et génère un plan d'action personnalisé. Immédiatement.
         </motion.p>
 
@@ -77,7 +77,7 @@ const HeroSection = () => {
                 <div className="w-3 h-3 rounded-full bg-destructive/40" />
                 <div className="w-3 h-3 rounded-full bg-warning/40" />
                 <div className="w-3 h-3 rounded-full bg-success/40" />
-                <span className="text-xs text-muted-foreground ml-2">OptimAI Dashboard — Aperçu</span>
+                <span className="text-xs text-muted-foreground ml-2">Scalyo Dashboard — Aperçu</span>
               </div>
               <div className="grid grid-cols-3 gap-4 mb-6">
                 {[

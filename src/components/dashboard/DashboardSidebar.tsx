@@ -3,6 +3,7 @@ import {
   LayoutDashboard, Activity, Rocket, Heart, Settings, LogOut, Menu,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import scalyoLogo from "@/assets/scalyo-logo.png";
 
 export const navItems = [
   { icon: LayoutDashboard, label: "Vue d'ensemble", id: "overview" },
@@ -33,12 +34,8 @@ const DashboardSidebar = ({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen
       <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-background border-r border-border flex flex-col transition-transform lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="p-6 border-b border-border">
           <Link to="/" className="flex items-center gap-2">
-            <div className="bg-primary rounded-lg p-1.5">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-              </svg>
-            </div>
-            <span className="text-base font-semibold text-foreground tracking-tight">OptimAI</span>
+            <img src={scalyoLogo} alt="Scalyo" className="h-8 w-8 object-contain" />
+            <span className="text-base font-semibold text-foreground tracking-tight">Scalyo</span>
           </Link>
         </div>
 

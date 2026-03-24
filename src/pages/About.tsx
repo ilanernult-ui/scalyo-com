@@ -28,7 +28,7 @@ const About = () => {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl mx-auto text-center mb-20">
             <h1 style={{ fontSize: "clamp(40px, 6vw, 64px)" }} className="text-foreground mb-6">Notre mission</h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              OptimAI est né d'un constat simple : les entreprises croulent sous les données mais manquent de visibilité sur leurs vrais leviers de croissance. Notre mission est de rendre l'intelligence artificielle accessible à toutes les entreprises pour des décisions plus rapides et plus éclairées.
+              Scalyo est né d'un constat simple : les entreprises croulent sous les données mais manquent de visibilité sur leurs vrais leviers de croissance. Notre mission est de rendre l'intelligence artificielle accessible à toutes les entreprises pour des décisions plus rapides et plus éclairées.
             </p>
           </motion.div>
 
@@ -40,10 +40,10 @@ const About = () => {
           >
             <h2 className="text-2xl font-semibold text-foreground mb-4 tracking-tight">Notre histoire</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              Fondée en 2023 par Alexandre et Léa, OptimAI combine expertise conseil et technologie IA de pointe. Après avoir accompagné des dizaines d'entreprises dans leur transformation digitale, nous avons constaté que les outils d'analyse existants étaient soit trop complexes, soit trop superficiels.
+              Fondée en 2023 par Alexandre et Léa, Scalyo combine expertise conseil et technologie IA de pointe. Après avoir accompagné des dizaines d'entreprises dans leur transformation digitale, nous avons constaté que les outils d'analyse existants étaient soit trop complexes, soit trop superficiels.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              Nous avons créé OptimAI pour combler ce vide : une plateforme qui comprend votre entreprise et vous donne des recommandations concrètes, pas des dashboards de plus.
+              Nous avons créé Scalyo pour combler ce vide : une plateforme qui comprend votre entreprise et vous donne des recommandations concrètes, pas des dashboards de plus.
             </p>
           </motion.div>
 

@@ -6,7 +6,7 @@ const testimonials = [
     name: "Sophie Martin",
     role: "Directrice Générale",
     company: "NovaTech Solutions",
-    quote: "OptimAI nous a permis d'identifier des fuites de revenus que nous ignorions. En 3 mois, nos ventes ont augmenté de 27%.",
+    quote: "Scalyo nous a permis d'identifier des fuites de revenus que nous ignorions. En 3 mois, nos ventes ont augmenté de 27%.",
     rating: 5,
   },
   {

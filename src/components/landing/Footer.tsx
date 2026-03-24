@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import scalyoLogo from "@/assets/scalyo-logo.png";
 
 const Footer = () => {
   return (
@@ -7,12 +8,8 @@ const Footer = () => {
         <div className="grid md:grid-cols-4 gap-12 mb-12">
           <div>
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="bg-primary rounded-lg p-1.5">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-                </svg>
-              </div>
-              <span className="text-base font-semibold text-foreground tracking-tight">OptimAI</span>
+              <img src={scalyoLogo} alt="Scalyo" className="h-8 w-8 object-contain" />
+              <span className="text-base font-semibold text-foreground tracking-tight">Scalyo</span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
               L'IA qui optimise votre entreprise. Diagnostic, recommandations et suivi de performance.
@@ -49,7 +46,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-border pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} OptimAI. Tous droits réservés.</p>
+          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Scalyo. Tous droits réservés.</p>
           <div className="flex gap-6">
             <a href="#" className="text-xs text-muted-foreground hover:text-foreground apple-easing">LinkedIn</a>
             <a href="#" className="text-xs text-muted-foreground hover:text-foreground apple-easing">Twitter</a>

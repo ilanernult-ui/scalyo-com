@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Zap } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import scalyoLogo from "@/assets/scalyo-logo.png";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -50,10 +51,8 @@ const ResetPassword = () => {
     <div className="min-h-screen bg-background flex items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <div className="flex items-center gap-2 mb-8">
-          <div className="bg-primary rounded-lg p-1.5">
-            <Zap className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <span className="text-base font-semibold tracking-tight text-foreground">OptimAI</span>
+          <img src={scalyoLogo} alt="Scalyo" className="h-8 w-8 object-contain" />
+          <span className="text-base font-semibold tracking-tight text-foreground">Scalyo</span>
         </div>
         <h2 className="text-2xl font-semibold tracking-tight text-foreground">Nouveau mot de passe</h2>
         <p className="mt-1 text-sm text-muted-foreground">Choisissez un nouveau mot de passe pour votre compte.</p>

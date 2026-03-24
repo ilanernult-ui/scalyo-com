@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, EyeOff, Loader2, ArrowLeft, Zap, Mail, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, ArrowLeft, Mail, CheckCircle2 } from "lucide-react";
+import scalyoLogo from "@/assets/scalyo-logo.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { z } from "zod";
 
@@ -148,10 +149,8 @@ const Auth = () => {
       {/* Left panel */}
       <div className="hidden lg:flex lg:w-1/2 surface flex-col justify-between p-12">
         <Link to="/" className="flex items-center gap-2 text-foreground">
-          <div className="bg-primary rounded-lg p-1.5">
-            <Zap className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <span className="text-base font-semibold tracking-tight">OptimAI</span>
+          <img src={scalyoLogo} alt="Scalyo" className="h-8 w-8 object-contain" />
+          <span className="text-base font-semibold tracking-tight">Scalyo</span>
         </Link>
 
         <div className="max-w-md">
@@ -164,7 +163,7 @@ const Auth = () => {
         </div>
 
         <p className="text-xs text-muted-foreground">
-          © {new Date().getFullYear()} OptimAI. Données chiffrées et sécurisées.
+          © {new Date().getFullYear()} Scalyo. Données chiffrées et sécurisées.
         </p>
       </div>
 
@@ -181,10 +180,8 @@ const Auth = () => {
 
           {/* Logo mobile */}
           <div className="flex items-center gap-2 mb-8 lg:hidden">
-            <div className="bg-primary rounded-lg p-1.5">
-              <Zap className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="text-base font-semibold tracking-tight text-foreground">OptimAI</span>
+            <img src={scalyoLogo} alt="Scalyo" className="h-8 w-8 object-contain" />
+            <span className="text-base font-semibold tracking-tight text-foreground">Scalyo</span>
           </div>
 
           <div className="mb-8">
