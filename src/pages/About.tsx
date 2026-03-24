@@ -28,7 +28,7 @@ const About = () => {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl mx-auto text-center mb-20">
             <h1 style={{ fontSize: "clamp(40px, 6vw, 64px)" }} className="text-foreground mb-6">Notre mission</h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              OptimAI est né d'un constat simple : les entreprises croulent sous les données mais manquent de visibilité sur leurs vrais leviers de croissance. Notre mission est de rendre l'intelligence artificielle accessible à toutes les entreprises pour des décisions plus rapides et plus éclairées.
+              Scalyo est né d'un constat simple : les entreprises croulent sous les données mais manquent de visibilité sur leurs vrais leviers de croissance. Notre mission est de rendre l'intelligence artificielle accessible à toutes les entreprises pour des décisions plus rapides et plus éclairées.
             </p>
           </motion.div>
 
