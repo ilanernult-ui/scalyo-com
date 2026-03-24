@@ -180,10 +180,8 @@ const Auth = () => {
 
           {/* Logo mobile */}
           <div className="flex items-center gap-2 mb-8 lg:hidden">
-            <div className="bg-primary rounded-lg p-1.5">
-              <Zap className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="text-base font-semibold tracking-tight text-foreground">OptimAI</span>
+            <img src={scalyoLogo} alt="Scalyo" className="h-8 w-8 object-contain" />
+            <span className="text-base font-semibold tracking-tight text-foreground">Scalyo</span>
           </div>
 
           <div className="mb-8">
