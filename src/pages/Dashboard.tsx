@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Menu, LogOut, Activity, Rocket, Heart, Lock, Settings } from "lucide-react";
 import { useAuth, PlanType } from "@/contexts/AuthContext";
+import scalyoLogo from "@/assets/scalyo-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import DataDiagTab from "@/components/dashboard/DataDiagTab";
 import GrowthPilotTab from "@/components/dashboard/GrowthPilotTab";
