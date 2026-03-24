@@ -163,7 +163,7 @@ const Auth = () => {
         </div>
 
         <p className="text-xs text-muted-foreground">
-          © {new Date().getFullYear()} OptimAI. Données chiffrées et sécurisées.
+          © {new Date().getFullYear()} Scalyo. Données chiffrées et sécurisées.
         </p>
       </div>
 
