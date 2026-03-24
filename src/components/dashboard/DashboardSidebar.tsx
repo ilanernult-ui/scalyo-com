@@ -3,6 +3,8 @@ import {
   LayoutDashboard, Activity, Rocket, Heart, Settings, LogOut, Menu,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import scalyoLogo from "@/assets/scalyo-logo.png";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const navItems = [
   { icon: LayoutDashboard, label: "Vue d'ensemble", id: "overview" },
