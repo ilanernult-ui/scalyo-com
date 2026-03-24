@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Menu, X, LogOut, User, LayoutDashboard } from "lucide-react";
+import scalyoLogo from "@/assets/scalyo-logo.png";
 import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";

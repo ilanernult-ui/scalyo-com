@@ -19,7 +19,7 @@ const FinalCTA = () => {
             Prêt à optimiser votre entreprise ?
           </h2>
           <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
-            Rejoignez +200 entreprises qui utilisent OptimAI pour prendre de meilleures décisions, plus vite.
+            Rejoignez +200 entreprises qui utilisent Scalyo pour prendre de meilleures décisions, plus vite.
           </p>
           <Button size="lg" onClick={() => navigate("/dashboard")}>
             Démarrer gratuitement <ArrowRight className="ml-1 h-5 w-5" />

@@ -106,12 +106,12 @@ const Contact = () => {
               <div className="apple-card">
                 <Mail className="h-5 w-5 text-primary mb-3" />
                 <h3 className="font-semibold text-foreground text-sm mb-1">Email</h3>
-                <p className="text-sm text-muted-foreground">contact@optimai.fr</p>
+                <p className="text-sm text-muted-foreground">contact@scalyo.fr</p>
               </div>
               <div className="apple-card">
                 <Linkedin className="h-5 w-5 text-primary mb-3" />
                 <h3 className="font-semibold text-foreground text-sm mb-1">LinkedIn</h3>
-                <p className="text-sm text-muted-foreground">linkedin.com/company/optimai</p>
+                <p className="text-sm text-muted-foreground">linkedin.com/company/scalyo</p>
               </div>
             </motion.div>
           </div>

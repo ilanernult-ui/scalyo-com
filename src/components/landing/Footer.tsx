@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import scalyoLogo from "@/assets/scalyo-logo.png";
 
 const Footer = () => {
   return (

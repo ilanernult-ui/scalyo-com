@@ -40,10 +40,10 @@ const About = () => {
           >
             <h2 className="text-2xl font-semibold text-foreground mb-4 tracking-tight">Notre histoire</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              Fondée en 2023 par Alexandre et Léa, OptimAI combine expertise conseil et technologie IA de pointe. Après avoir accompagné des dizaines d'entreprises dans leur transformation digitale, nous avons constaté que les outils d'analyse existants étaient soit trop complexes, soit trop superficiels.
+              Fondée en 2023 par Alexandre et Léa, Scalyo combine expertise conseil et technologie IA de pointe. Après avoir accompagné des dizaines d'entreprises dans leur transformation digitale, nous avons constaté que les outils d'analyse existants étaient soit trop complexes, soit trop superficiels.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              Nous avons créé OptimAI pour combler ce vide : une plateforme qui comprend votre entreprise et vous donne des recommandations concrètes, pas des dashboards de plus.
+              Nous avons créé Scalyo pour combler ce vide : une plateforme qui comprend votre entreprise et vous donne des recommandations concrètes, pas des dashboards de plus.
             </p>
           </motion.div>
 

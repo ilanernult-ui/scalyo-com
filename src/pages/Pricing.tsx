@@ -430,7 +430,7 @@ const Pricing = () => {
               Prêt à transformer vos données en performance ?
             </h2>
             <p className="text-muted-foreground mb-10" style={{ fontSize: 19 }}>
-              Rejoignez +200 entreprises qui pilotent leur croissance avec OptimAI.
+              Rejoignez +200 entreprises qui pilotent leur croissance avec Scalyo.
               Commencez gratuitement, sans carte bancaire.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
