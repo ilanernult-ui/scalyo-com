@@ -23,8 +23,10 @@ serve(async (req) => {
       global: { headers: { authorization: authHeader } },
     });
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error("Unauthorized");
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) throw new Error("Unauthorized");
+    const userId = claimsData.claims.sub as string;
 
     const { messages, activeTab } = await req.json();
     if (!Array.isArray(messages)) throw new Error("messages must be an array");
@@ -33,14 +35,14 @@ serve(async (req) => {
     const { data: companyData } = await supabase
       .from("company_data")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .maybeSingle();
 
     // Fetch AI results for context
     const { data: aiResults } = await supabase
       .from("ai_results")
       .select("service, results")
-      .eq("user_id", user.id);
+      .eq("user_id", userId);
 
     // Build context from real data
     let dataContext = "";
