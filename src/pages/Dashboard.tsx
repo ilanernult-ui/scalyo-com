@@ -11,6 +11,7 @@ import LoyaltyLoopTab from "@/components/dashboard/LoyaltyLoopTab";
 import LockedTabOverlay from "@/components/dashboard/LockedTabOverlay";
 import ConnectDataWizard from "@/components/dashboard/ConnectDataWizard";
 import SettingsTab from "@/components/dashboard/SettingsTab";
+import AIChatPanel from "@/components/dashboard/AIChatPanel";
 import { useToast } from "@/hooks/use-toast";
 import type { Json } from "@/integrations/supabase/types";
 
