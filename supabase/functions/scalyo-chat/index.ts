@@ -35,7 +35,7 @@ serve(async (req) => {
     const { data: companyData } = await supabase
       .from("company_data")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .maybeSingle();
 
     // Fetch AI results for context
