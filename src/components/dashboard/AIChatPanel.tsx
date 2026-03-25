@@ -96,7 +96,7 @@ const AIChatPanel = ({ activeTab, userInitials }: AIChatPanelProps) => {
     new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <div className="w-[360px] bg-card border border-border rounded-2xl flex flex-col shrink-0 overflow-hidden h-fit max-h-[calc(100vh-100px)]">
+    <div className="w-full xl:w-[360px] bg-card border border-border rounded-2xl flex flex-col shrink-0 overflow-hidden h-fit max-h-[calc(100vh-100px)]">
       {/* Header */}
       <div className="px-5 py-4 border-b border-border flex items-center gap-3">
         <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground text-base">
