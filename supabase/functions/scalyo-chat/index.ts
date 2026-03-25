@@ -42,7 +42,7 @@ serve(async (req) => {
     const { data: aiResults } = await supabase
       .from("ai_results")
       .select("service, results")
-      .eq("user_id", user.id);
+      .eq("user_id", userId);
 
     // Build context from real data
     let dataContext = "";
