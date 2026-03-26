@@ -1,10 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Menu, LogOut, Activity, Rocket, Heart, Lock, Settings } from "lucide-react";
+import {
+  Menu, LogOut, LayoutDashboard, Activity, Rocket, Heart,
+  Lock, Settings, ChevronRight, Loader2
+} from "lucide-react";
 import { useAuth, PlanType } from "@/contexts/AuthContext";
 import scalyoLogo from "@/assets/scalyo-logo.png";
 import { supabase } from "@/integrations/supabase/client";
+import { STRIPE_PLANS } from "@/lib/stripe-plans";
+import DashboardOverview from "@/components/dashboard/DashboardOverview";
 import DataDiagTab from "@/components/dashboard/DataDiagTab";
 import GrowthPilotTab from "@/components/dashboard/GrowthPilotTab";
 import LoyaltyLoopTab from "@/components/dashboard/LoyaltyLoopTab";
@@ -15,35 +20,44 @@ import AIChatPanel from "@/components/dashboard/AIChatPanel";
 import { useToast } from "@/hooks/use-toast";
 import type { Json } from "@/integrations/supabase/types";
 
-const tabs = [
-  { id: "datadiag", label: "DataDiag", icon: Activity, accent: "hsl(211, 100%, 45%)", minPlan: "datadiag" as PlanType },
-  { id: "growthpilot", label: "GrowthPilot", icon: Rocket, accent: "hsl(142, 69%, 49%)", minPlan: "growthpilot" as PlanType },
-  { id: "loyaltyloop", label: "LoyaltyLoop", icon: Heart, accent: "hsl(262, 60%, 55%)", minPlan: "loyaltyloop" as PlanType },
-  { id: "settings", label: "Paramètres", icon: Settings, accent: "hsl(240, 4%, 44%)", minPlan: "datadiag" as PlanType },
+/* ── Nav items ── */
+const navItems = [
+  { id: "overview", label: "Dashboard", icon: LayoutDashboard, minPlan: "datadiag" as PlanType },
+  { id: "datadiag", label: "Diagnostic", icon: Activity, minPlan: "datadiag" as PlanType },
+  { id: "growthpilot", label: "Croissance", icon: Rocket, minPlan: "growthpilot" as PlanType },
+  { id: "loyaltyloop", label: "Fidélisation", icon: Heart, minPlan: "loyaltyloop" as PlanType },
+  { id: "settings", label: "Paramètres", icon: Settings, minPlan: "datadiag" as PlanType },
 ] as const;
 
 const planHierarchy: Record<PlanType, number> = { datadiag: 0, growthpilot: 1, loyaltyloop: 2 };
-
 const hasAccess = (userPlan: PlanType, requiredPlan: PlanType) =>
   planHierarchy[userPlan] >= planHierarchy[requiredPlan];
 
+const planLabels: Record<PlanType, string> = { datadiag: "DataDiag", growthpilot: "GrowthPilot", loyaltyloop: "LoyaltyLoop" };
+
 const Dashboard = () => {
-  const { plan, user, signOut, refreshSubscription } = useAuth();
+  const { plan, user, signOut, refreshSubscription, stripeSubscriptionId } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<string>("datadiag");
+
+  const [activeTab, setActiveTab] = useState<string>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [dataConnected, setDataConnected] = useState(false);
   const [aiResults, setAiResults] = useState<Record<string, Json>>({});
+  const [companyData, setCompanyData] = useState<Record<string, unknown> | null>(null);
+  const [generatingAnalysis, setGeneratingAnalysis] = useState(false);
 
   const userPlan = plan;
   const initials = user?.user_metadata?.full_name
     ? user.user_metadata.full_name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
     : "U";
 
-  // Handle checkout success
+  const planConfig = STRIPE_PLANS[userPlan];
+  const hasPaid = !!stripeSubscriptionId;
+
+  /* ── Checkout success ── */
   useEffect(() => {
     if (searchParams.get("checkout") === "success") {
       toast({ title: "Votre plan a été activé avec succès ! 🎉" });
@@ -51,6 +65,7 @@ const Dashboard = () => {
     }
   }, [searchParams]);
 
+  /* ── Load data ── */
   const loadAiResults = useCallback(async () => {
     if (!user?.id) return;
     const { data } = await supabase
@@ -64,23 +79,64 @@ const Dashboard = () => {
     }
   }, [user?.id]);
 
-  // Check if user has connected data + load AI results
   useEffect(() => {
     if (!user?.id) return;
     supabase
       .from("company_data")
-      .select("id")
+      .select("*")
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
-        if (data) setDataConnected(true);
+        if (data) {
+          setDataConnected(true);
+          setCompanyData(data as unknown as Record<string, unknown>);
+        }
       });
     loadAiResults();
   }, [user?.id, loadAiResults]);
 
   const handleWizardComplete = () => {
     setDataConnected(true);
+    // Reload company data
+    if (user?.id) {
+      supabase
+        .from("company_data")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) setCompanyData(data as unknown as Record<string, unknown>);
+        });
+    }
     loadAiResults();
+  };
+
+  const handleGenerate = async () => {
+    if (!user?.id) return;
+    setGeneratingAnalysis(true);
+    try {
+      const services: string[] = ["datadiag"];
+      if (hasAccess(userPlan, "growthpilot")) services.push("growthpilot");
+      if (hasAccess(userPlan, "loyaltyloop")) services.push("loyaltyloop");
+
+      for (const service of services) {
+        const { data, error } = await supabase.functions.invoke(service, {
+          body: companyData || {},
+        });
+        if (error) { console.error(`${service} error:`, error); continue; }
+        await supabase.from("ai_results").upsert(
+          { user_id: user.id, service, results: data },
+          { onConflict: "user_id,service" }
+        );
+      }
+      await loadAiResults();
+      toast({ title: "Analyse terminée ! 🎉", description: "Consultez vos résultats dans les onglets dédiés." });
+    } catch (e) {
+      console.error("Generate error:", e);
+      toast({ title: "Erreur", description: "Impossible de générer l'analyse.", variant: "destructive" });
+    } finally {
+      setGeneratingAnalysis(false);
+    }
   };
 
   const handleSignOut = async () => {
@@ -88,15 +144,28 @@ const Dashboard = () => {
     navigate("/auth");
   };
 
+  /* ── Render active tab content ── */
   const renderTab = () => {
-    if (activeTab === "settings") {
-      return <SettingsTab />;
+    const handleConnect = () => setWizardOpen(true);
+
+    if (activeTab === "overview") {
+      return (
+        <DashboardOverview
+          plan={userPlan}
+          dataConnected={dataConnected}
+          companyData={companyData}
+          onConnect={handleConnect}
+          onGenerate={handleGenerate}
+          generatingAnalysis={generatingAnalysis}
+        />
+      );
     }
 
-    const tab = tabs.find((t) => t.id === activeTab);
-    if (!tab) return null;
+    if (activeTab === "settings") return <SettingsTab />;
 
-    const handleConnect = () => setWizardOpen(true);
+    const nav = navItems.find((t) => t.id === activeTab);
+    if (!nav) return null;
+
     const tabContent = (() => {
       switch (activeTab) {
         case "datadiag": return <DataDiagTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["datadiag"]} />;
@@ -106,12 +175,9 @@ const Dashboard = () => {
       }
     })();
 
-    if (!hasAccess(userPlan, tab.minPlan)) {
+    if (!hasAccess(userPlan, nav.minPlan)) {
       return (
-        <LockedTabOverlay
-          requiredPlan={tab.minPlan}
-          onUpgrade={() => navigate("/tarifs")}
-        >
+        <LockedTabOverlay requiredPlan={nav.minPlan} onUpgrade={() => navigate("/tarifs")}>
           {tabContent}
         </LockedTabOverlay>
       );
@@ -122,54 +188,68 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
+      {/* ── Sidebar ── */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-background border-r border-border flex flex-col transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-card border-r border-border flex flex-col transition-transform duration-300 lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="p-6 border-b border-border">
-          <Link to="/" className="flex items-center gap-2">
+        {/* Logo */}
+        <div className="p-5 border-b border-border">
+          <Link to="/" className="flex items-center gap-2.5">
             <img src={scalyoLogo} alt="Scalyo" className="h-8 w-8 object-contain" />
             <span className="text-base font-semibold text-foreground tracking-tight">Scalyo</span>
           </Link>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
-          {tabs.map((tab) => {
-            const locked = tab.id !== "settings" && !hasAccess(userPlan, tab.minPlan);
+        {/* Nav */}
+        <nav className="flex-1 p-3 space-y-0.5">
+          {navItems.map((item) => {
+            const locked = item.id !== "overview" && item.id !== "settings" && !hasAccess(userPlan, item.minPlan);
+            const isActive = activeTab === item.id;
+
             return (
               <button
-                key={tab.id}
+                key={item.id}
                 onClick={() => {
-                  if (locked) {
-                    navigate("/tarifs");
-                    return;
-                  }
-                  setActiveTab(tab.id);
+                  if (locked) { navigate("/tarifs"); return; }
+                  setActiveTab(item.id);
                   setSidebarOpen(false);
                 }}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                   locked
-                    ? "text-muted-foreground/50 cursor-pointer"
-                    : activeTab === tab.id
-                    ? "text-foreground"
+                    ? "text-muted-foreground/40 cursor-pointer"
+                    : isActive
+                    ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 }`}
-                style={!locked && activeTab === tab.id ? { backgroundColor: `${tab.accent}12`, color: tab.accent } : undefined}
               >
-                <tab.icon className="h-4 w-4" />
-                {tab.label}
-                {locked && <Lock className="h-3 w-3 ml-auto text-muted-foreground/40" />}
+                <item.icon className="h-4 w-4" />
+                <span className="flex-1 text-left">{item.label}</span>
+                {locked && <Lock className="h-3 w-3 text-muted-foreground/30" />}
               </button>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-border">
+        {/* Plan badge */}
+        <div className="p-3 border-t border-border space-y-2">
+          <div className="rounded-xl bg-primary/5 border border-primary/15 p-3">
+            <p className="text-sm font-semibold text-foreground">{planLabels[userPlan]}</p>
+            <p className="text-[11px] text-muted-foreground">
+              {planConfig.monthly}€/mois{hasPaid ? "" : " · Essai"}
+            </p>
+            <button
+              onClick={() => navigate("/tarifs")}
+              className="text-[11px] font-medium text-primary hover:underline mt-1 flex items-center gap-0.5"
+            >
+              Changer de plan <ChevronRight className="h-3 w-3" />
+            </button>
+          </div>
+
           <button
             onClick={handleSignOut}
-            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-200 w-full"
+            className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all w-full"
           >
             <LogOut className="h-4 w-4" />
             Se déconnecter
@@ -185,20 +265,21 @@ const Dashboard = () => {
         />
       )}
 
-      {/* Main */}
+      {/* ── Main ── */}
       <main className="flex-1 lg:ml-64">
+        {/* Header */}
         <header className="sticky top-0 z-20 bg-background/85 backdrop-blur-xl border-b border-border px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button className="lg:hidden text-foreground" onClick={() => setSidebarOpen(true)}>
               <Menu className="h-5 w-5" />
             </button>
             <h1 className="text-lg font-semibold text-foreground tracking-tight">
-              {tabs.find((t) => t.id === activeTab)?.label ?? "Dashboard"}
+              {navItems.find((t) => t.id === activeTab)?.label ?? "Dashboard"}
             </h1>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground capitalize hidden sm:block">
-              Plan {userPlan === "datadiag" ? "DataDiag" : userPlan === "growthpilot" ? "GrowthPilot" : "LoyaltyLoop"}
+            <span className="text-xs text-muted-foreground hidden sm:block">
+              Plan {planLabels[userPlan]}
             </span>
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
               <span className="text-xs font-bold text-primary-foreground">{initials}</span>
@@ -206,12 +287,13 @@ const Dashboard = () => {
           </div>
         </header>
 
+        {/* Content */}
         <motion.div
           key={activeTab}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="p-6"
+          className="p-4 sm:p-6"
         >
           <div className="flex flex-col xl:flex-row gap-5">
             <div className="flex-1 min-w-0">
@@ -226,6 +308,7 @@ const Dashboard = () => {
         </motion.div>
       </main>
 
+      {/* Wizard */}
       {user?.id && (
         <ConnectDataWizard
           open={wizardOpen}
