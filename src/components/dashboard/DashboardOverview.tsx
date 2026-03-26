@@ -1,127 +1,228 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  TrendingUp, Users, DollarSign, Zap, AlertTriangle, Info,
-  CheckCircle, Circle, Clock, ChevronRight
+  DollarSign, TrendingUp, Users, ShoppingCart, Activity,
+  Zap, Database, ChevronRight, BarChart3, Wallet
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { PlanType } from "@/contexts/AuthContext";
+import type { Json } from "@/integrations/supabase/types";
 
-const kpis = [
-  { label: "Score de performance", value: "74/100", change: "+3 pts", icon: TrendingUp },
-  { label: "Taux de churn", value: "4.2%", change: "-0.8%", icon: Users },
-  { label: "Revenus estimés", value: "342K€", change: "+12%", icon: DollarSign },
-  { label: "Recommandations actives", value: "8", change: "+2", icon: Zap },
-];
+interface DashboardOverviewProps {
+  plan: PlanType;
+  dataConnected: boolean;
+  companyData: Record<string, unknown> | null;
+  onConnect: () => void;
+  onGenerate: () => void;
+  generatingAnalysis: boolean;
+}
 
-const alerts = [
-  { icon: AlertTriangle, color: "text-destructive", title: "Churn critique détecté", description: "3 clients majeurs à risque de départ dans les 30 jours." },
-  { icon: AlertTriangle, color: "text-warning", title: "Pipeline commercial en baisse", description: "Le nombre de leads qualifiés a chuté de 20% cette semaine." },
-  { icon: Info, color: "text-primary", title: "Nouvelle opportunité", description: "Le segment « PME Tech » montre un potentiel de croissance de +15%." },
-];
-
-const recommendations = [
-  { action: "Relancer les clients à risque avec une offre personnalisée", status: "À faire", impact: "Élevé" },
-  { action: "Optimiser les landing pages (taux de conversion 1.2%)", status: "En cours", impact: "Élevé" },
-  { action: "Automatiser la qualification des leads entrants", status: "En cours", impact: "Moyen" },
-  { action: "Revoir la répartition du budget marketing", status: "À faire", impact: "Moyen" },
-  { action: "Mettre en place un NPS trimestriel", status: "Terminé", impact: "Faible" },
-];
-
-const statusColors: Record<string, string> = {
-  "À faire": "text-muted-foreground",
-  "En cours": "text-primary",
-  "Terminé": "text-success",
+const planKpis: Record<PlanType, { label: string; key: string; icon: typeof DollarSign; format: (v: unknown) => string }[]> = {
+  datadiag: [
+    { label: "Chiffre d'affaires", key: "current_month_revenue", icon: DollarSign, format: (v) => v ? `${Number(v).toLocaleString("fr-FR")} €` : "—" },
+    { label: "Marge brute", key: "gross_margin", icon: TrendingUp, format: (v) => v ? `${v}%` : "—" },
+    { label: "Trésorerie", key: "cash_available", icon: Wallet, format: (v) => v ? `${Number(v).toLocaleString("fr-FR")} €` : "—" },
+    { label: "Factures impayées", key: "unpaid_invoices", icon: Activity, format: (v) => v ? String(v) : "0" },
+  ],
+  growthpilot: [
+    { label: "Chiffre d'affaires", key: "current_month_revenue", icon: DollarSign, format: (v) => v ? `${Number(v).toLocaleString("fr-FR")} €` : "—" },
+    { label: "Taux de conversion", key: "conversion_rates", icon: TrendingUp, format: (v) => { if (Array.isArray(v) && v.length) return `${v[0]}%`; return "—"; } },
+    { label: "Panier moyen", key: "avg_basket", icon: ShoppingCart, format: (v) => v ? `${Number(v).toLocaleString("fr-FR")} €` : "—" },
+    { label: "CAC", key: "cac", icon: BarChart3, format: (v) => v ? `${Number(v).toLocaleString("fr-FR")} €` : "—" },
+  ],
+  loyaltyloop: [
+    { label: "Chiffre d'affaires", key: "current_month_revenue", icon: DollarSign, format: (v) => v ? `${Number(v).toLocaleString("fr-FR")} €` : "—" },
+    { label: "Taux de rétention", key: "retention_rate", icon: Users, format: (v) => v ? `${v}%` : "—" },
+    { label: "NPS", key: "nps_score", icon: Activity, format: (v) => v ? String(v) : "—" },
+    { label: "Clients VIP", key: "vip_clients", icon: Zap, format: (v) => v ? String(v) : "0" },
+  ],
 };
 
-const statusIcons: Record<string, typeof Circle> = {
-  "À faire": Circle,
-  "En cours": Clock,
-  "Terminé": CheckCircle,
+const dataTabs: Record<PlanType, { id: string; label: string }[]> = {
+  datadiag: [{ id: "financier", label: "Financier" }],
+  growthpilot: [{ id: "financier", label: "Financier" }, { id: "commercial", label: "Commercial" }],
+  loyaltyloop: [{ id: "financier", label: "Financier" }, { id: "commercial", label: "Commercial" }, { id: "clients", label: "Clients" }],
 };
 
-const chartData = [
-  { month: "Sep", score: 58 },
-  { month: "Oct", score: 62 },
-  { month: "Nov", score: 65 },
-  { month: "Déc", score: 68 },
-  { month: "Jan", score: 70 },
-  { month: "Fév", score: 74 },
-];
+const dataFields: Record<string, { label: string; key: string; format: (v: unknown) => string }[]> = {
+  financier: [
+    { label: "Revenus MRR", key: "current_month_revenue", format: (v) => v ? `${Number(v).toLocaleString("fr-FR")} €` : "—" },
+    { label: "Charges fixes", key: "fixed_costs", format: (v) => v ? `${Number(v).toLocaleString("fr-FR")} €` : "—" },
+    { label: "Marge brute", key: "gross_margin", format: (v) => v ? `${v}%` : "—" },
+    { label: "Trésorerie", key: "cash_available", format: (v) => v ? `${Number(v).toLocaleString("fr-FR")} €` : "—" },
+    { label: "Impayés", key: "unpaid_amount", format: (v) => v ? `${Number(v).toLocaleString("fr-FR")} €` : "—" },
+  ],
+  commercial: [
+    { label: "Clients actifs", key: "active_clients", format: (v) => v ? String(v) : "—" },
+    { label: "Panier moyen", key: "avg_basket", format: (v) => v ? `${Number(v).toLocaleString("fr-FR")} €` : "—" },
+    { label: "Coût d'acquisition", key: "cac", format: (v) => v ? `${Number(v).toLocaleString("fr-FR")} €` : "—" },
+    { label: "LTV", key: "ltv", format: (v) => v ? `${Number(v).toLocaleString("fr-FR")} €` : "—" },
+    { label: "Budget marketing", key: "marketing_budget", format: (v) => v ? `${Number(v).toLocaleString("fr-FR")} €` : "—" },
+  ],
+  clients: [
+    { label: "Total clients", key: "total_clients", format: (v) => v ? String(v) : "—" },
+    { label: "Actifs 30j", key: "active_clients_30d", format: (v) => v ? String(v) : "—" },
+    { label: "Taux rétention", key: "retention_rate", format: (v) => v ? `${v}%` : "—" },
+    { label: "NPS", key: "nps_score", format: (v) => v ? String(v) : "—" },
+    { label: "Clients VIP", key: "vip_clients", format: (v) => v ? String(v) : "—" },
+  ],
+};
 
-const DashboardOverview = () => (
-  <div className="space-y-8">
-    {/* KPIs */}
-    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {kpis.map((kpi, i) => (
-        <motion.div
-          key={kpi.label}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.05 }}
-          className="apple-card !p-5"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs text-muted-foreground">{kpi.label}</p>
-            <kpi.icon className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <p className="text-2xl font-bold text-foreground tracking-tight">{kpi.value}</p>
-          <p className="text-xs font-medium mt-1 text-success">{kpi.change} ce mois</p>
-        </motion.div>
-      ))}
-    </div>
+const currentMonth = () => {
+  const d = new Date();
+  return d.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+};
 
-    {/* Chart */}
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="apple-card !p-6">
-      <h2 className="text-sm font-semibold text-foreground mb-6">Évolution du score de performance</h2>
-      <div className="flex items-end gap-4 h-48">
-        {chartData.map((d) => (
-          <div key={d.month} className="flex-1 flex flex-col items-center gap-2">
-            <span className="text-xs font-medium text-foreground">{d.score}</span>
-            <div className="w-full bg-primary rounded-t-lg transition-all duration-200" style={{ height: `${(d.score / 100) * 160}px` }} />
-            <span className="text-xs text-muted-foreground">{d.month}</span>
-          </div>
-        ))}
+const DashboardOverview = ({ plan, dataConnected, companyData, onConnect, onGenerate, generatingAnalysis }: DashboardOverviewProps) => {
+  const [activeDataTab, setActiveDataTab] = useState(dataTabs[plan][0].id);
+  const kpis = planKpis[plan];
+  const tabs = dataTabs[plan];
+
+  return (
+    <div className="space-y-6">
+      {/* Header with actions */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-semibold text-foreground tracking-tight">
+            Vue d'ensemble — {currentMonth().charAt(0).toUpperCase() + currentMonth().slice(1)}
+          </h2>
+          {companyData?.company_name && (
+            <p className="text-sm text-muted-foreground mt-0.5">{String(companyData.company_name)}</p>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={onConnect} className="gap-2">
+            <Database className="h-3.5 w-3.5" />
+            {dataConnected ? "Mettre à jour" : "Connecter mes données"}
+          </Button>
+          {dataConnected && (
+            <Button size="sm" onClick={onGenerate} disabled={generatingAnalysis} className="gap-2">
+              <Zap className="h-3.5 w-3.5" />
+              {generatingAnalysis ? "Analyse en cours…" : "Générer mon analyse"}
+            </Button>
+          )}
+        </div>
       </div>
-    </motion.div>
 
-    <div className="grid lg:grid-cols-2 gap-6">
-      {/* Alerts */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="apple-card !p-6">
-        <h2 className="text-sm font-semibold text-foreground mb-4">Alertes</h2>
-        <div className="space-y-3">
-          {alerts.map((alert, i) => (
-            <div key={i} className="flex items-start gap-3 surface rounded-xl p-3">
-              <alert.icon className={`h-4 w-4 mt-0.5 shrink-0 ${alert.color}`} />
-              <div>
-                <p className="text-sm font-medium text-foreground">{alert.title}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{alert.description}</p>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {kpis.map((kpi, i) => {
+          const val = companyData ? companyData[kpi.key] : undefined;
+          return (
+            <motion.div
+              key={kpi.label}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-[var(--shadow-sm)]"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[11px] sm:text-xs text-muted-foreground">{kpi.label}</p>
+                <kpi.icon className="h-4 w-4 text-muted-foreground" />
               </div>
+              <p className="text-lg sm:text-2xl font-bold text-foreground tracking-tight">
+                {dataConnected && companyData ? kpi.format(val) : "—"}
+              </p>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Data prompt */}
+      {dataConnected && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="rounded-2xl border border-primary/20 bg-primary/5 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+        >
+          <div>
+            <p className="text-sm font-medium text-foreground">
+              Vos données sont prêtes · Lancez votre analyse IA complète
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              L'assistant IA analysera vos données et générera des recommandations personnalisées.
+            </p>
+          </div>
+          <Button size="sm" onClick={onGenerate} disabled={generatingAnalysis} className="shrink-0 gap-2">
+            <Zap className="h-3.5 w-3.5" />
+            {generatingAnalysis ? "En cours…" : "Générer mon analyse"}
+          </Button>
+        </motion.div>
+      )}
+
+      {!dataConnected && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="rounded-2xl border border-border bg-secondary/50 p-8 text-center"
+        >
+          <Database className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+          <p className="text-sm font-medium text-foreground mb-1">Connectez vos données pour commencer</p>
+          <p className="text-xs text-muted-foreground mb-4">
+            Importez vos fichiers CSV, Excel ou saisissez vos données manuellement.
+          </p>
+          <Button onClick={onConnect} className="gap-2">
+            <Database className="h-4 w-4" />
+            Connecter mes données
+          </Button>
+        </motion.div>
+      )}
+
+      {/* Mes données section */}
+      {dataConnected && companyData && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="rounded-2xl border border-border bg-card shadow-[var(--shadow-sm)] overflow-hidden"
+        >
+          <div className="px-5 pt-5 pb-3 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-foreground">Mes données</h3>
+            <Button variant="outline" size="sm" onClick={onConnect} className="text-xs h-7">
+              + Ajouter des données
+            </Button>
+          </div>
+
+          {/* Tabs */}
+          <div className="px-5 flex gap-1 border-b border-border">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveDataTab(tab.id)}
+                className={`px-3 py-2 text-xs font-medium rounded-t-lg transition-colors ${
+                  activeDataTab === tab.id
+                    ? "bg-secondary text-foreground border border-border border-b-transparent -mb-px"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Data rows */}
+          <div className="p-5">
+            <div className="space-y-2">
+              {(dataFields[activeDataTab] || []).map((field) => {
+                const val = companyData[field.key];
+                return (
+                  <div key={field.key} className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-secondary/50 transition-colors">
+                    <span className="text-sm text-muted-foreground">{field.label}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-foreground">{field.format(val)}</span>
+                      <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Plan d'action */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="apple-card !p-6">
-        <h2 className="text-sm font-semibold text-foreground mb-4">Plan d'action</h2>
-        <div className="space-y-3">
-          {recommendations.map((rec, i) => {
-            const StatusIcon = statusIcons[rec.status];
-            return (
-              <div key={i} className="flex items-center justify-between surface rounded-xl p-3">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <StatusIcon className={`h-4 w-4 shrink-0 ${statusColors[rec.status]}`} />
-                  <span className="text-sm text-foreground truncate">{rec.action}</span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0 ml-3">
-                  <span className="text-xs font-medium text-primary">{rec.impact}</span>
-                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </motion.div>
+          </div>
+        </motion.div>
+      )}
     </div>
-  </div>
-);
+  );
+};
 
 export default DashboardOverview;
