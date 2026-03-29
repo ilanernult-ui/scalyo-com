@@ -25,17 +25,6 @@ const mockAutomations = [
   { titre: "Qualification leads entrants → scoring automatique", impact: "+12% conversion", status: "Recommandé" },
 ];
 
-const chartData = [
-  { month: "Oct", ventes: 18, conv: 2.4 }, { month: "Nov", ventes: 22, conv: 2.7 },
-  { month: "Déc", ventes: 19, conv: 2.5 }, { month: "Jan", ventes: 26, conv: 3.0 },
-  { month: "Fév", ventes: 30, conv: 3.1 }, { month: "Mar", ventes: 35, conv: 3.2 },
-];
-
-const potentielColors: Record<string, string> = {
-  "Élevé": "text-success",
-  "Moyen": "text-warning",
-  "Faible": "text-muted-foreground",
-};
 
 const PreviewContent = () => (
   <div className="space-y-6">
