@@ -13,6 +13,11 @@ const PLAN_MAP: Record<string, string> = {
   "prod_UBZTdDuYqxEXVq": "loyaltyloop",
 };
 
+// Admin override for testing — only affects this specific user
+const PLAN_OVERRIDES: Record<string, string> = {
+  "821e34ea-4a7a-4c9a-9790-e56147dba679": "loyaltyloop",
+};
+
 const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
 };
@@ -98,6 +103,12 @@ serve(async (req) => {
           stripeSubscriptionId = sub.id;
         }
       }
+    }
+
+    // Apply admin override for testing
+    if (PLAN_OVERRIDES[user.id]) {
+      plan = PLAN_OVERRIDES[user.id];
+      logStep("Plan override applied", { userId: user.id, plan });
     }
 
     // Sync to profiles
