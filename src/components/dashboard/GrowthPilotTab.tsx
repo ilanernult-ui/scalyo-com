@@ -5,24 +5,24 @@ import type { Json } from "@/integrations/supabase/types";
 const ACCENT = "hsl(142, 69%, 49%)";
 
 const mockKpis = [
-  { label: "Taux de conversion", value: "3.2%", change: "+0.4 pts", icon: TrendingUp },
-  { label: "Panier moyen", value: "2 400 €", change: "+180 €", icon: ShoppingCart },
-  { label: "Nouveaux clients", value: "47", change: "+12%", icon: UserPlus },
-  { label: "Taux de croissance", value: "14.8%", change: "+2.1 pts", icon: BarChart3 },
+  { label: "Croissance estimée", value: "+15%", change: "sur 90 jours", icon: TrendingUp },
+  { label: "Temps gagné", value: "10h", change: "/semaine", icon: BarChart3 },
+  { label: "Revenus additionnels", value: "+4 650 €", change: "/mois estimés", icon: ShoppingCart },
+  { label: "Actions en cours", value: "5", change: "cette semaine", icon: UserPlus },
 ];
 
 const mockActions = [
-  { action: "Optimiser les pages de conversion (CTA, formulaire)", delai: "2 semaines", impact: "Élevé", priorite: 1 },
-  { action: "Lancer campagne de nurturing email sur les leads tièdes", delai: "1 semaine", impact: "Élevé", priorite: 2 },
-  { action: "Tester un pricing tier intermédiaire", delai: "1 mois", impact: "Moyen", priorite: 3 },
-  { action: "Développer un programme de parrainage", delai: "3 semaines", impact: "Moyen", priorite: 4 },
-  { action: "Automatiser la qualification des leads entrants", delai: "2 semaines", impact: "Élevé", priorite: 5 },
+  { action: "Relancer les paniers abandonnés avec séquence email", gain: "+2 400€/mois", delai: "Cette semaine", priorite: 1 },
+  { action: "Automatiser le suivi post-vente", gain: "3h/semaine gagnées", delai: "2 semaines", priorite: 2 },
+  { action: "Optimiser page de paiement (3 frictions détectées)", gain: "+8% conversion", delai: "1 semaine", priorite: 3 },
+  { action: "Lancer offre bundle sur 2 produits phares", gain: "+1 800€/mois", delai: "2 semaines", priorite: 4 },
+  { action: "Supprimer 2 canaux d'acquisition non rentables", gain: "450€/mois économisés", delai: "Aujourd'hui", priorite: 5 },
 ];
 
-const mockOpportunities = [
-  { titre: "Segment PME Tech non adressé", potentiel: "Élevé", description: "Marché de 12 000 entreprises en France, penetration actuelle < 1%." },
-  { titre: "Upsell sur la base clients existante", potentiel: "Élevé", description: "68% des clients n'utilisent qu'un seul module. Potentiel de +40% ARPU." },
-  { titre: "Partenariats intégrateurs", potentiel: "Moyen", description: "3 intégrateurs CRM intéressés par un programme partenaire." },
+const mockAutomations = [
+  { titre: "Relance panier abandonné → email J+1, J+3, J+7", impact: "+2 400€/mois", status: "Prêt à déployer" },
+  { titre: "Suivi post-vente automatique → NPS + upsell", impact: "3h/semaine gagnées", status: "Recommandé" },
+  { titre: "Qualification leads entrants → scoring automatique", impact: "+12% conversion", status: "Recommandé" },
 ];
 
 const chartData = [
