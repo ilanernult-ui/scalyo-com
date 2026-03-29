@@ -5,10 +5,10 @@ import type { Json } from "@/integrations/supabase/types";
 const ACCENT = "hsl(262, 60%, 55%)";
 
 const mockKpis = [
-  { label: "Score de rétention", value: "78/100", change: "+4 pts", icon: ShieldCheck },
-  { label: "Taux de churn", value: "4.2%", change: "-0.8 pts", icon: TrendingDown },
-  { label: "Clients à risque", value: "23", change: "-5", icon: AlertCircle },
-  { label: "LTV moyenne", value: "18 400 €", change: "+2 200 €", icon: Activity },
+  { label: "Croissance estimée", value: "+25%", change: "sur 6 mois", icon: ShieldCheck },
+  { label: "Temps gagné", value: "15h", change: "/semaine", icon: Activity },
+  { label: "Churn réduit", value: "-40%", change: "vs mois dernier", icon: TrendingDown },
+  { label: "Gains additionnels", value: "+8 200 €", change: "/mois estimés", icon: AlertCircle },
 ];
 
 const churnSegments = [
@@ -197,7 +197,7 @@ const LoyaltyLoopTab = ({ onConnect, dataConnected, aiResults }: LoyaltyLoopTabP
     <EmptyStateOverlay
       icon={Heart}
       serviceName="LoyaltyLoop"
-      description="Prédisez le churn, identifiez vos clients à risque et déployez des stratégies de rétention personnalisées grâce à l'IA pour maximiser la valeur vie client."
+      description="Transformation business complète : optimisation continue automatique, nouvelles recommandations chaque semaine, suivi ROI en temps réel. En bonus : prédiction du churn et stratégies de rétention. Résultat moyen : +25% de croissance et -40% de churn."
       accentColor={ACCENT}
       onConnect={onConnect}
       buttonLabel={dataConnected ? "Mettre à jour mes données" : "Connecter mes données"}

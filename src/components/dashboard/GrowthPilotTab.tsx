@@ -1,41 +1,30 @@
-import { Rocket, TrendingUp, ShoppingCart, UserPlus, BarChart3, Target, Lightbulb, FileText } from "lucide-react";
+import { Rocket, TrendingUp, ShoppingCart, UserPlus, BarChart3, Target, FileText } from "lucide-react";
 import EmptyStateOverlay from "./EmptyStateOverlay";
 import type { Json } from "@/integrations/supabase/types";
 
 const ACCENT = "hsl(142, 69%, 49%)";
 
 const mockKpis = [
-  { label: "Taux de conversion", value: "3.2%", change: "+0.4 pts", icon: TrendingUp },
-  { label: "Panier moyen", value: "2 400 €", change: "+180 €", icon: ShoppingCart },
-  { label: "Nouveaux clients", value: "47", change: "+12%", icon: UserPlus },
-  { label: "Taux de croissance", value: "14.8%", change: "+2.1 pts", icon: BarChart3 },
+  { label: "Croissance estimée", value: "+15%", change: "sur 90 jours", icon: TrendingUp },
+  { label: "Temps gagné", value: "10h", change: "/semaine", icon: BarChart3 },
+  { label: "Revenus additionnels", value: "+4 650 €", change: "/mois estimés", icon: ShoppingCart },
+  { label: "Actions en cours", value: "5", change: "cette semaine", icon: UserPlus },
 ];
 
 const mockActions = [
-  { action: "Optimiser les pages de conversion (CTA, formulaire)", delai: "2 semaines", impact: "Élevé", priorite: 1 },
-  { action: "Lancer campagne de nurturing email sur les leads tièdes", delai: "1 semaine", impact: "Élevé", priorite: 2 },
-  { action: "Tester un pricing tier intermédiaire", delai: "1 mois", impact: "Moyen", priorite: 3 },
-  { action: "Développer un programme de parrainage", delai: "3 semaines", impact: "Moyen", priorite: 4 },
-  { action: "Automatiser la qualification des leads entrants", delai: "2 semaines", impact: "Élevé", priorite: 5 },
+  { action: "Relancer les paniers abandonnés avec séquence email", gain: "+2 400€/mois", delai: "Cette semaine", priorite: 1 },
+  { action: "Automatiser le suivi post-vente", gain: "3h/semaine gagnées", delai: "2 semaines", priorite: 2 },
+  { action: "Optimiser page de paiement (3 frictions détectées)", gain: "+8% conversion", delai: "1 semaine", priorite: 3 },
+  { action: "Lancer offre bundle sur 2 produits phares", gain: "+1 800€/mois", delai: "2 semaines", priorite: 4 },
+  { action: "Supprimer 2 canaux d'acquisition non rentables", gain: "450€/mois économisés", delai: "Aujourd'hui", priorite: 5 },
 ];
 
-const mockOpportunities = [
-  { titre: "Segment PME Tech non adressé", potentiel: "Élevé", description: "Marché de 12 000 entreprises en France, penetration actuelle < 1%." },
-  { titre: "Upsell sur la base clients existante", potentiel: "Élevé", description: "68% des clients n'utilisent qu'un seul module. Potentiel de +40% ARPU." },
-  { titre: "Partenariats intégrateurs", potentiel: "Moyen", description: "3 intégrateurs CRM intéressés par un programme partenaire." },
+const mockAutomations = [
+  { titre: "Relance panier abandonné → email J+1, J+3, J+7", impact: "+2 400€/mois", status: "Prêt à déployer" },
+  { titre: "Suivi post-vente automatique → NPS + upsell", impact: "3h/semaine gagnées", status: "Recommandé" },
+  { titre: "Qualification leads entrants → scoring automatique", impact: "+12% conversion", status: "Recommandé" },
 ];
 
-const chartData = [
-  { month: "Oct", ventes: 18, conv: 2.4 }, { month: "Nov", ventes: 22, conv: 2.7 },
-  { month: "Déc", ventes: 19, conv: 2.5 }, { month: "Jan", ventes: 26, conv: 3.0 },
-  { month: "Fév", ventes: 30, conv: 3.1 }, { month: "Mar", ventes: 35, conv: 3.2 },
-];
-
-const potentielColors: Record<string, string> = {
-  "Élevé": "text-success",
-  "Moyen": "text-warning",
-  "Faible": "text-muted-foreground",
-};
 
 const PreviewContent = () => (
   <div className="space-y-6">
@@ -52,24 +41,18 @@ const PreviewContent = () => (
       ))}
     </div>
 
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
-      <h3 className="text-sm font-semibold text-foreground mb-6">Ventes & conversions sur 6 mois</h3>
-      <div className="flex items-end gap-3 h-40">
-        {chartData.map((d) => (
-          <div key={d.month} className="flex-1 flex flex-col items-center gap-1.5">
-            <span className="text-[10px] font-medium text-foreground">{d.ventes}</span>
-            <div className="w-full rounded-t-lg bg-success/80" style={{ height: `${(d.ventes / 40) * 120}px` }} />
-            <span className="text-[10px] text-muted-foreground">{d.month}</span>
-          </div>
-        ))}
-      </div>
+    {/* Gains estimés banner */}
+    <div className="rounded-2xl border-2 border-success/30 bg-success/5 p-6">
+      <p className="text-sm font-semibold text-success mb-1">🚀 Gains estimés : +4 650€/mois et +10h/semaine</p>
+      <p className="text-xs text-muted-foreground">En appliquant le plan d'action priorisé ci-dessous sur 90 jours.</p>
     </div>
 
     <div className="grid lg:grid-cols-2 gap-6">
+      {/* Plan d'action priorisé */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
         <div className="flex items-center gap-2 mb-4">
           <Target className="h-4 w-4 text-success" />
-          <h3 className="text-sm font-semibold text-foreground">Plan d'action IA — 5 priorités</h3>
+          <h3 className="text-sm font-semibold text-foreground">Plan d'action PRIORISÉ par ROI</h3>
         </div>
         <div className="space-y-3">
           {mockActions.map((a) => (
@@ -79,41 +62,43 @@ const PreviewContent = () => (
               </span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground">{a.action}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Délai : {a.delai} · Impact : {a.impact}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{a.gain} · {a.delai}</p>
               </div>
             </div>
           ))}
         </div>
       </div>
 
+      {/* Automatisations recommandées */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
         <div className="flex items-center gap-2 mb-4">
-          <Lightbulb className="h-4 w-4 text-success" />
-          <h3 className="text-sm font-semibold text-foreground">Opportunités de croissance</h3>
+          <Rocket className="h-4 w-4 text-success" />
+          <h3 className="text-sm font-semibold text-foreground">Automatisations recommandées</h3>
         </div>
         <div className="space-y-3">
-          {mockOpportunities.map((o, i) => (
+          {mockAutomations.map((a, i) => (
             <div key={i} className="rounded-xl bg-secondary/50 p-3">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-sm font-medium text-foreground">{o.titre}</p>
-                <span className={`text-[11px] font-medium ${potentielColors[o.potentiel]}`}>{o.potentiel}</span>
+              <p className="text-sm font-medium text-foreground">{a.titre}</p>
+              <div className="flex items-center justify-between mt-1.5">
+                <span className="text-[11px] text-success font-medium">{a.impact}</span>
+                <span className="text-[10px] bg-success/10 text-success px-2 py-0.5 rounded-full font-medium">{a.status}</span>
               </div>
-              <p className="text-[11px] text-muted-foreground">{o.description}</p>
             </div>
           ))}
         </div>
       </div>
     </div>
 
+    {/* Rapport */}
     <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
       <div className="flex items-center gap-2 mb-3">
         <FileText className="h-4 w-4 text-success" />
-        <h3 className="text-sm font-semibold text-foreground">Rapport hebdomadaire synthèse</h3>
+        <h3 className="text-sm font-semibold text-foreground">Rapport hebdomadaire — l'IA vous explique COMMENT</h3>
       </div>
       <p className="text-sm text-muted-foreground leading-relaxed">
-        Cette semaine, votre taux de conversion a progressé de 0.4 points grâce à l'optimisation des landing pages. 
-        Le pipeline commercial est en hausse avec 47 nouveaux clients. Focus recommandé sur le segment PME Tech 
-        qui représente une opportunité de croissance significative avec un potentiel de +15% de chiffre d'affaires additionnel…
+        Cette semaine, concentrez-vous sur la relance des paniers abandonnés : voici les 4 étapes exactes pour mettre en place la séquence email. 
+        Résultat attendu : +2 400€/mois. Ensuite, supprimez les 2 canaux d'acquisition non rentables identifiés (Google Display et LinkedIn Ads organiques) 
+        pour économiser 450€/mois immédiatement. Votre croissance estimée sur 90 jours : +15%.
       </p>
     </div>
   </div>
@@ -154,7 +139,7 @@ const GrowthPilotTab = ({ onConnect, dataConnected, aiResults }: GrowthPilotTabP
     <EmptyStateOverlay
       icon={Rocket}
       serviceName="GrowthPilot"
-      description="Analysez vos ventes et votre profil entreprise pour recevoir un plan d'action IA personnalisé, identifier les opportunités de croissance et suivre vos performances."
+      description="Votre co-pilote IA : plan d'action priorisé par ROI, quick wins avec gains estimés en €, automatisations recommandées. Résultat moyen : +15% de croissance et +10h gagnées/semaine."
       accentColor={ACCENT}
       onConnect={onConnect}
       buttonLabel={dataConnected ? "Mettre à jour mes données" : "Connecter mes données"}

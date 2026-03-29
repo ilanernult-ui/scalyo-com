@@ -18,7 +18,7 @@ const PricingPreview = () => {
             Des tarifs simples et transparents
           </h2>
           <p className="text-muted-foreground mb-8">
-            À partir de 149€/mois. Sans engagement, annulation à tout moment. 14 jours d'essai gratuit.
+            À partir de 79€/mois. Diagnostic business complet, plan d'action IA et optimisation continue. Sans engagement.
           </p>
           <Button asChild size="lg">
             <Link to="/pricing">
