@@ -1,4 +1,4 @@
-import { Rocket, TrendingUp, ShoppingCart, UserPlus, BarChart3, Target, Lightbulb, FileText } from "lucide-react";
+import { Rocket, TrendingUp, ShoppingCart, UserPlus, BarChart3, Target, FileText } from "lucide-react";
 import EmptyStateOverlay from "./EmptyStateOverlay";
 import type { Json } from "@/integrations/supabase/types";
 
