@@ -26,66 +26,65 @@ const mockActions = [
   { action: "Automatiser relance client", gain: "6h/semaine gagnées", delai: "2 semaines" },
 ];
 
-const chartData = [
-  { month: "Avr", value: 32 }, { month: "Mai", value: 35 }, { month: "Juin", value: 38 },
-  { month: "Juil", value: 36 }, { month: "Août", value: 34 }, { month: "Sep", value: 37 },
-  { month: "Oct", value: 40 }, { month: "Nov", value: 42 }, { month: "Déc", value: 39 },
-  { month: "Jan", value: 44 }, { month: "Fév", value: 43 }, { month: "Mar", value: 45 },
-];
-
 const PreviewContent = () => (
   <div className="space-y-6">
-    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {mockKpis.map((kpi) => (
-        <div key={kpi.label} className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-sm)]">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs text-muted-foreground">{kpi.label}</p>
-            <kpi.icon className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <p className="text-2xl font-bold text-foreground tracking-tight">{kpi.value}</p>
-          <p className="text-xs font-medium mt-1 text-success">{kpi.change}</p>
-        </div>
-      ))}
-    </div>
-
+    {/* Score Business 360° */}
     <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
-      <h3 className="text-sm font-semibold text-foreground mb-6">Évolution du CA sur 12 mois (k€)</h3>
-      <div className="flex items-end gap-2 h-40">
-        {chartData.map((d) => (
-          <div key={d.month} className="flex-1 flex flex-col items-center gap-1.5">
-            <span className="text-[10px] font-medium text-foreground">{d.value}k</span>
-            <div className="w-full rounded-t-lg bg-primary" style={{ height: `${(d.value / 50) * 130}px` }} />
-            <span className="text-[10px] text-muted-foreground">{d.month}</span>
+      <div className="flex items-center gap-2 mb-5">
+        <Target className="h-4 w-4 text-primary" />
+        <h3 className="text-sm font-semibold text-foreground">Score Business 360°</h3>
+      </div>
+      <div className="grid sm:grid-cols-3 gap-4">
+        {mockScores.map((s) => (
+          <div key={s.label} className="text-center">
+            <p className="text-3xl font-bold text-foreground mb-1">{s.value}<span className="text-base text-muted-foreground">/100</span></p>
+            <div className="h-2 rounded-full bg-secondary overflow-hidden mb-1.5">
+              <div className={`h-full rounded-full ${s.color} transition-all`} style={{ width: `${s.value}%` }} />
+            </div>
+            <p className="text-xs text-muted-foreground">{s.label}</p>
           </div>
         ))}
       </div>
     </div>
 
+    {/* Estimation perte */}
+    <div className="rounded-2xl border-2 border-destructive/30 bg-destructive/5 p-6">
+      <p className="text-sm font-semibold text-destructive mb-1">⚠️ Estimation : vous perdez environ 6 169 €/mois</p>
+      <p className="text-xs text-muted-foreground">Pertes d'argent et de temps détectées par l'analyse de vos données.</p>
+    </div>
+
     <div className="grid lg:grid-cols-2 gap-6">
+      {/* Pertes détectées */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
-        <h3 className="text-sm font-semibold text-foreground mb-4">Anomalies détectées</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-4">Pertes détectées</h3>
         <div className="space-y-3">
-          {mockAnomalies.map((a, i) => (
+          {mockPertes.map((p, i) => (
             <div key={i} className="flex items-start gap-3 rounded-xl bg-secondary/50 p-3">
-              <AlertTriangle className={`h-4 w-4 mt-0.5 shrink-0 ${a.color}`} />
-              <div>
-                <p className="text-sm font-medium text-foreground">{a.title}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5 capitalize">Criticité : {a.criticite}</p>
+              <AlertTriangle className={`h-4 w-4 mt-0.5 shrink-0 ${p.color}`} />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">{p.title}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5 font-semibold">{p.montant}</p>
               </div>
             </div>
           ))}
         </div>
       </div>
 
+      {/* Top 5 actions rapides */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
-        <h3 className="text-sm font-semibold text-foreground mb-4">Alertes automatiques</h3>
+        <div className="flex items-center gap-2 mb-4">
+          <Zap className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-semibold text-foreground">Top 5 actions rapides</h3>
+        </div>
         <div className="space-y-3">
-          {mockAlerts.map((a, i) => (
+          {mockActions.map((a, i) => (
             <div key={i} className="flex items-start gap-3 rounded-xl bg-secondary/50 p-3">
-              <Bell className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
-              <div>
-                <p className="text-sm font-medium text-foreground">{a.title}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Priorité : {a.priorite} · {a.action}</p>
+              <span className="w-5 h-5 rounded-full bg-primary/15 text-primary text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                {i + 1}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground">{a.action}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{a.gain} · {a.delai}</p>
               </div>
             </div>
           ))}
@@ -93,15 +92,16 @@ const PreviewContent = () => (
       </div>
     </div>
 
+    {/* Rapport IA */}
     <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
       <div className="flex items-center gap-2 mb-3">
         <FileText className="h-4 w-4 text-primary" />
-        <h3 className="text-sm font-semibold text-foreground">Rapport de diagnostic mensuel</h3>
+        <h3 className="text-sm font-semibold text-foreground">Rapport IA mensuel</h3>
       </div>
       <p className="text-sm text-muted-foreground leading-relaxed">
-        La santé financière de votre entreprise est globalement stable avec un chiffre d'affaires en croissance de 8.2% sur le trimestre. 
-        Cependant, deux anomalies critiques nécessitent une attention immédiate : un doublon de facturation et un écart de TVA. 
-        La trésorerie reste sous surveillance avec un seuil critique prévu dans 15 jours si les créances ne sont pas relancées…
+        Votre score business global est de 70/100. La rentabilité est correcte mais l'efficacité opérationnelle peut être améliorée. 
+        Nous avons détecté 6 169€ de pertes mensuelles évitables. En appliquant les 5 actions prioritaires ci-dessus, 
+        vous pouvez récupérer jusqu'à 4 769€/mois et gagner 9h/semaine dès les premières semaines.
       </p>
     </div>
   </div>
