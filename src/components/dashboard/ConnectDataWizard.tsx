@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight, Loader2, Check, Building2, BarChart3, ShoppingCart, Users } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ChevronLeft, ChevronRight, Loader2, Check, Building2, BarChart3, ShoppingCart, Users, Sparkles, Upload, Image, FileText, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { PlanType } from "@/contexts/AuthContext";
@@ -22,6 +24,7 @@ const stepsMeta = [
   { id: "financial", label: "Données financières", icon: BarChart3 },
   { id: "commercial", label: "Données commerciales", icon: ShoppingCart },
   { id: "clients", label: "Données clients", icon: Users },
+  { id: "enrichment", label: "Données bonus", icon: Sparkles },
   { id: "recap", label: "Récapitulatif", icon: Check },
 ];
 
@@ -29,7 +32,8 @@ const getSteps = (plan: PlanType) => {
   const base = [stepsMeta[0], stepsMeta[1]];
   if (plan === "growthpilot" || plan === "loyaltyloop") base.push(stepsMeta[2]);
   if (plan === "loyaltyloop") base.push(stepsMeta[3]);
-  base.push(stepsMeta[4]);
+  base.push(stepsMeta[4]); // enrichment (always)
+  base.push(stepsMeta[5]); // recap (always)
   return base;
 };
 
@@ -37,6 +41,9 @@ const sectors = ["Retail", "E-commerce", "SaaS", "Restauration", "BTP", "Santé"
 const sizes = ["TPE (1-10)", "PME (11-250)", "ETI (250+)"];
 const channels = ["Site web", "Boutique physique", "Téléphone", "Marketplace", "Réseaux sociaux", "Autre"];
 const churnReasons = ["Prix", "Concurrent", "Qualité", "Service client", "Autre"];
+
+const ACCEPTED_FILES = ".csv,.xlsx,.xls,.pdf";
+const ACCEPTED_IMAGES = ".jpg,.jpeg,.png,.webp,.gif";
 
 const Field = ({ label, optional, children }: { label: string; optional?: boolean; children: React.ReactNode }) => (
   <div className="space-y-1.5">
@@ -136,7 +143,46 @@ export default function ConnectDataWizard({ open, onOpenChange, plan, userId, on
   const [vipRevenue, setVipRevenue] = useState<number | undefined>();
   const [mainChurnReason, setMainChurnReason] = useState("");
 
+  // Enrichment step
+  const [enrichFiles, setEnrichFiles] = useState<File[]>([]);
+  const [enrichImages, setEnrichImages] = useState<File[]>([]);
+  const [enrichText, setEnrichText] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const hasEnrichment = enrichFiles.length > 0 || enrichImages.length > 0 || enrichText.trim().length > 0;
+
   const currentStepId = steps[step]?.id;
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, type: "files" | "images") => {
+    const selected = Array.from(e.target.files || []);
+    if (type === "files") {
+      setEnrichFiles((prev) => [...prev, ...selected].slice(0, 5));
+    } else {
+      setEnrichImages((prev) => [...prev, ...selected].slice(0, 5));
+    }
+    e.target.value = "";
+  };
+
+  const removeFile = (type: "files" | "images", index: number) => {
+    if (type === "files") setEnrichFiles((prev) => prev.filter((_, i) => i !== index));
+    else setEnrichImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const uploadEnrichmentFiles = async (): Promise<string[]> => {
+    const urls: string[] = [];
+    const allFiles = [...enrichFiles, ...enrichImages];
+    for (const file of allFiles) {
+      const path = `${userId}/${Date.now()}-${file.name}`;
+      const { error } = await supabase.storage.from("enrichment-uploads").upload(path, file);
+      if (error) {
+        console.error("Upload error:", error);
+        continue;
+      }
+      urls.push(path);
+    }
+    return urls;
+  };
 
   const buildPayload = () => ({
     user_id: userId,
@@ -163,10 +209,24 @@ export default function ConnectDataWizard({ open, onOpenChange, plan, userId, on
       const { error: saveError } = await supabase.from("company_data").upsert(payload, { onConflict: "user_id" });
       if (saveError) throw saveError;
 
+      // Upload enrichment files
+      let enrichmentUrls: string[] = [];
+      if (enrichFiles.length > 0 || enrichImages.length > 0) {
+        enrichmentUrls = await uploadEnrichmentFiles();
+      }
+
       // Call edge functions based on plan
       const services: string[] = ["datadiag"];
       if (plan === "growthpilot" || plan === "loyaltyloop") services.push("growthpilot");
       if (plan === "loyaltyloop") services.push("loyaltyloop");
+
+      const enrichmentPayload = hasEnrichment ? {
+        enrichment: {
+          fichiers: enrichmentUrls,
+          texte_libre: enrichText.trim() || null,
+          analyse_enrichie: true,
+        },
+      } : {};
 
       for (const service of services) {
         let body: Record<string, unknown> = {};
@@ -180,6 +240,7 @@ export default function ConnectDataWizard({ open, onOpenChange, plan, userId, on
               delai_paiement_clients: avgClientDays, delai_paiement_fournisseurs: avgSupplierDays,
               entreprise: companyName, secteur: sector, taille: companySize, ca_annuel: annualRevenue,
             },
+            ...enrichmentPayload,
           };
         } else if (service === "growthpilot") {
           body = {
@@ -190,6 +251,7 @@ export default function ConnectDataWizard({ open, onOpenChange, plan, userId, on
               budget_marketing: marketingBudget, cac, ltv, taux_upsell: upsellRate,
               objectif_6m: growthTarget6m, objectif_12m: growthTarget12m,
             },
+            ...enrichmentPayload,
           };
         } else if (service === "loyaltyloop") {
           body = {
@@ -200,6 +262,7 @@ export default function ConnectDataWizard({ open, onOpenChange, plan, userId, on
               taux_renouvellement: renewalRate, taux_retention: retentionRate, ltv: clientLtv,
               clients_vip: vipClients, ca_vip: vipRevenue, motif_depart: mainChurnReason,
             },
+            ...enrichmentPayload,
           };
         }
 
@@ -268,6 +331,19 @@ export default function ConnectDataWizard({ open, onOpenChange, plan, userId, on
 
     return (
       <div className="space-y-4">
+        {hasEnrichment && (
+          <div className="flex items-center gap-2 mb-2">
+            <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/15">
+              <Sparkles className="h-3 w-3 mr-1" />
+              Analyse enrichie
+            </Badge>
+            <span className="text-xs text-muted-foreground">
+              {enrichFiles.length > 0 && `${enrichFiles.length} fichier(s)`}
+              {enrichImages.length > 0 && `${enrichFiles.length > 0 ? " · " : ""}${enrichImages.length} image(s)`}
+              {enrichText.trim() && `${(enrichFiles.length > 0 || enrichImages.length > 0) ? " · " : ""}description ajoutée`}
+            </span>
+          </div>
+        )}
         {blocks.map((b) => (
           <div key={b.title} className="rounded-xl border border-border p-4">
             <h4 className="text-sm font-semibold text-foreground mb-3">{b.title}</h4>
@@ -285,6 +361,123 @@ export default function ConnectDataWizard({ open, onOpenChange, plan, userId, on
     );
   };
 
+  const renderEnrichment = () => (
+    <div className="space-y-5">
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-1">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-semibold text-foreground">
+            Ajoutez plus de données pour une analyse plus précise
+          </h3>
+          <Badge variant="secondary" className="text-[10px]">optionnel</Badge>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Plus vous ajoutez d'informations, plus votre analyse sera précise et personnalisée.
+        </p>
+      </div>
+
+      {/* File upload */}
+      <div className="rounded-xl border border-border p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <Upload className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium text-foreground">Importez vos données</span>
+        </div>
+        <p className="text-xs text-muted-foreground">Factures, exports, bilan… (CSV, Excel, PDF)</p>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={ACCEPTED_FILES}
+          multiple
+          className="hidden"
+          onChange={(e) => handleFileSelect(e, "files")}
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => fileInputRef.current?.click()}
+          className="text-xs"
+        >
+          <Upload className="h-3 w-3 mr-1" /> Choisir des fichiers
+        </Button>
+        {enrichFiles.length > 0 && (
+          <div className="space-y-1">
+            {enrichFiles.map((f, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs text-foreground bg-secondary rounded-lg px-3 py-1.5">
+                <FileText className="h-3 w-3 text-muted-foreground shrink-0" />
+                <span className="truncate flex-1">{f.name}</span>
+                <span className="text-muted-foreground shrink-0">{(f.size / 1024).toFixed(0)} Ko</span>
+                <button onClick={() => removeFile("files", i)} className="text-muted-foreground hover:text-destructive">
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Image upload */}
+      <div className="rounded-xl border border-border p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <Image className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium text-foreground">Ajoutez une capture</span>
+        </div>
+        <p className="text-xs text-muted-foreground">Analysez votre marketing ou organisation (site web, dashboard, publicités…)</p>
+        <input
+          ref={imageInputRef}
+          type="file"
+          accept={ACCEPTED_IMAGES}
+          multiple
+          className="hidden"
+          onChange={(e) => handleFileSelect(e, "images")}
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => imageInputRef.current?.click()}
+          className="text-xs"
+        >
+          <Image className="h-3 w-3 mr-1" /> Choisir des images
+        </Button>
+        {enrichImages.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {enrichImages.map((f, i) => (
+              <div key={i} className="relative group">
+                <img
+                  src={URL.createObjectURL(f)}
+                  alt={f.name}
+                  className="h-16 w-16 object-cover rounded-lg border border-border"
+                />
+                <button
+                  onClick={() => removeFile("images", i)}
+                  className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Free text */}
+      <div className="rounded-xl border border-border p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <FileText className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium text-foreground">Décrivez votre situation</span>
+        </div>
+        <p className="text-xs text-muted-foreground">Décrivez votre situation ou vos problématiques en détail</p>
+        <Textarea
+          placeholder="Ex: Notre principal défi est la rétention client. Nous perdons environ 15% de nos clients chaque trimestre..."
+          value={enrichText}
+          onChange={(e) => setEnrichText(e.target.value)}
+          className="min-h-[100px] text-sm"
+        />
+      </div>
+    </div>
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-0">
@@ -292,7 +485,6 @@ export default function ConnectDataWizard({ open, onOpenChange, plan, userId, on
         <div className="sticky top-0 z-10 bg-background border-b border-border px-6 pt-6 pb-4">
           <div className="flex items-center gap-2 mb-2">
             {steps.map((s, i) => {
-              const StepIcon = s.icon;
               const isActive = i === step;
               const isDone = i < step;
               return (
@@ -434,6 +626,9 @@ export default function ConnectDataWizard({ open, onOpenChange, plan, userId, on
             </>
           )}
 
+          {/* Enrichment step */}
+          {currentStepId === "enrichment" && renderEnrichment()}
+
           {/* Recap */}
           {currentStepId === "recap" && renderRecap()}
         </div>
@@ -450,7 +645,7 @@ export default function ConnectDataWizard({ open, onOpenChange, plan, userId, on
 
           {step < steps.length - 1 ? (
             <Button onClick={() => setStep((s) => s + 1)}>
-              Suivant <ChevronRight className="h-4 w-4" />
+              {currentStepId === "enrichment" ? (hasEnrichment ? "Suivant" : "Passer") : "Suivant"} <ChevronRight className="h-4 w-4" />
             </Button>
           ) : (
             <Button onClick={handleSubmit} disabled={loading}>
