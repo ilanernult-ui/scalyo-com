@@ -142,7 +142,7 @@ const DataDiagTab = ({ onConnect, dataConnected, aiResults }: DataDiagTabProps) 
     <EmptyStateOverlay
       icon={Activity}
       serviceName="DataDiag"
-      description="Analysez vos données financières pour obtenir un diagnostic complet : détection d'anomalies, KPIs clés, alertes automatiques et rapport mensuel généré par IA."
+      description="Diagnostic business complet en 48h : Score 360°, détection des pertes d'argent et de temps, Top 5 actions à impact immédiat et estimation de vos pertes mensuelles."
       accentColor={ACCENT}
       onConnect={onConnect}
       buttonLabel={dataConnected ? "Mettre à jour mes données" : "Connecter mes données"}

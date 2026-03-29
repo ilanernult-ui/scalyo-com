@@ -75,19 +75,19 @@ const plans = [
 ];
 
 const comparisonRows = [
-  { feature: "Analyse données financières", datadiag: "✓", growth: "✓", loyalty: "✓" },
-  { feature: "Rapport de diagnostic", datadiag: "Mensuel", growth: "Hebdomadaire", loyalty: "Temps réel" },
-  { feature: "Détection anomalies", datadiag: "✓", growth: "✓", loyalty: "✓" },
+  { feature: "Score Business 360°", datadiag: "✓", growth: "✓", loyalty: "✓" },
+  { feature: "Détection pertes d'argent & temps", datadiag: "✓", growth: "✓", loyalty: "✓" },
+  { feature: "Top 5 actions rapides", datadiag: "✓", growth: "✓", loyalty: "✓" },
+  { feature: "Estimation perte financière", datadiag: "✓", growth: "✓", loyalty: "✓" },
   { feature: "Dashboard KPIs", datadiag: "Essentiel", growth: "Avancé", loyalty: "Complet 360°" },
-  { feature: "Alertes", datadiag: "Email", growth: "Email+SMS", loyalty: "Email+SMS+Slack" },
-  { feature: "Plan d'action IA", datadiag: "—", growth: "✓", loyalty: "✓" },
-  { feature: "Analyse conversion", datadiag: "—", growth: "✓", loyalty: "✓" },
-  { feature: "Prédiction churn", datadiag: "—", growth: "—", loyalty: "✓" },
-  { feature: "Stratégie rétention IA", datadiag: "—", growth: "—", loyalty: "✓" },
-  { feature: "Intégrations", datadiag: "3", growth: "10", loyalty: "Illimité" },
+  { feature: "Plan d'action priorisé par ROI", datadiag: "—", growth: "Hebdomadaire", loyalty: "Hebdomadaire" },
+  { feature: "Quick wins avec gains en €", datadiag: "—", growth: "✓", loyalty: "✓" },
+  { feature: "Automatisations recommandées", datadiag: "—", growth: "+10h/sem", loyalty: "+15h/sem" },
+  { feature: "Optimisation continue automatique", datadiag: "—", growth: "—", loyalty: "✓" },
+  { feature: "Prédiction churn & rétention", datadiag: "—", growth: "—", loyalty: "✓" },
+  { feature: "Intégrations CRM", datadiag: "—", growth: "—", loyalty: "Illimité" },
   { feature: "Utilisateurs", datadiag: "1-3", growth: "Jusqu'à 10", loyalty: "Illimité" },
   { feature: "Support", datadiag: "Email 48h", growth: "Prioritaire 4h", loyalty: "Account manager" },
-  { feature: "Onboarding", datadiag: "Guides vidéo", growth: "Webinar dédié", loyalty: "Session setup 2h" },
   { feature: "Prix mensuel", datadiag: "79€", growth: "189€", loyalty: "349€" },
 ];
 

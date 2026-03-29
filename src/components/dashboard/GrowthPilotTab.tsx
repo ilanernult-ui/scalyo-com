@@ -150,7 +150,7 @@ const GrowthPilotTab = ({ onConnect, dataConnected, aiResults }: GrowthPilotTabP
     <EmptyStateOverlay
       icon={Rocket}
       serviceName="GrowthPilot"
-      description="Analysez vos ventes et votre profil entreprise pour recevoir un plan d'action IA personnalisé, identifier les opportunités de croissance et suivre vos performances."
+      description="Votre co-pilote IA : plan d'action priorisé par ROI, quick wins avec gains estimés en €, automatisations recommandées. Résultat moyen : +15% de croissance et +10h gagnées/semaine."
       accentColor={ACCENT}
       onConnect={onConnect}
       buttonLabel={dataConnected ? "Mettre à jour mes données" : "Connecter mes données"}

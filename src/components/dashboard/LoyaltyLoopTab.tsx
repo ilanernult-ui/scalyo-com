@@ -197,7 +197,7 @@ const LoyaltyLoopTab = ({ onConnect, dataConnected, aiResults }: LoyaltyLoopTabP
     <EmptyStateOverlay
       icon={Heart}
       serviceName="LoyaltyLoop"
-      description="Prédisez le churn, identifiez vos clients à risque et déployez des stratégies de rétention personnalisées grâce à l'IA pour maximiser la valeur vie client."
+      description="Transformation business complète : optimisation continue automatique, nouvelles recommandations chaque semaine, suivi ROI en temps réel. En bonus : prédiction du churn et stratégies de rétention. Résultat moyen : +25% de croissance et -40% de churn."
       accentColor={ACCENT}
       onConnect={onConnect}
       buttonLabel={dataConnected ? "Mettre à jour mes données" : "Connecter mes données"}
