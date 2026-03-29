@@ -1,0 +1,1 @@
+UPDATE profiles SET plan = 'loyaltyloop' WHERE id = '821e34ea-4a7a-4c9a-9790-e56147dba679';
