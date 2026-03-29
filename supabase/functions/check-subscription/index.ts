@@ -105,6 +105,12 @@ serve(async (req) => {
       }
     }
 
+    // Apply admin override for testing
+    if (PLAN_OVERRIDES[user.id]) {
+      plan = PLAN_OVERRIDES[user.id];
+      logStep("Plan override applied", { userId: user.id, plan });
+    }
+
     // Sync to profiles
     await supabaseAdmin.from("profiles").update({
       plan,
