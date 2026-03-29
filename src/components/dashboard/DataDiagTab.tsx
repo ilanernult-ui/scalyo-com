@@ -1,27 +1,29 @@
-import { Activity, TrendingUp, DollarSign, PiggyBank, Wallet, AlertTriangle, Bell, FileText } from "lucide-react";
+import { Activity, TrendingUp, DollarSign, PiggyBank, Wallet, AlertTriangle, Clock, Zap, FileText, Target } from "lucide-react";
 import EmptyStateOverlay from "./EmptyStateOverlay";
 import type { Json } from "@/integrations/supabase/types";
 
 const ACCENT = "hsl(211, 100%, 45%)";
 
-const mockKpis = [
-  { label: "Chiffre d'affaires", value: "450 000 €", change: "+8.2%", icon: DollarSign },
-  { label: "Marge brute", value: "28.9%", change: "+1.4 pts", icon: TrendingUp },
-  { label: "Charges fixes", value: "320 000 €", change: "-2.1%", icon: PiggyBank },
-  { label: "Trésorerie disponible", value: "85 000 €", change: "+12%", icon: Wallet },
+const mockScores = [
+  { label: "Rentabilité", value: 72, color: "bg-success" },
+  { label: "Efficacité", value: 58, color: "bg-warning" },
+  { label: "Croissance", value: 81, color: "bg-primary" },
 ];
 
-const mockAnomalies = [
-  { title: "Doublon facturation client #2847", criticite: "haute", color: "text-destructive" },
-  { title: "Écart TVA collectée vs déclarée", criticite: "moyenne", color: "text-warning" },
-  { title: "Charge inhabituelle poste « Sous-traitance »", criticite: "haute", color: "text-destructive" },
-  { title: "Délai de paiement fournisseur allongé", criticite: "faible", color: "text-success" },
+const mockPertes = [
+  { title: "💸 Doublon facturation client #2847", montant: "4 200 €/mois", type: "argent", color: "text-destructive" },
+  { title: "💸 Abonnement outil Y inutilisé", montant: "89 €/mois", type: "argent", color: "text-destructive" },
+  { title: "⏳ Relances manuelles clients", montant: "6h/semaine", type: "temps", color: "text-warning" },
+  { title: "⏳ Reporting manuel hebdomadaire", montant: "3h/semaine", type: "temps", color: "text-warning" },
+  { title: "💸 Écart TVA collectée vs déclarée", montant: "1 800 €/mois", type: "argent", color: "text-destructive" },
 ];
 
-const mockAlerts = [
-  { title: "Trésorerie sous seuil critique dans 15 jours", priorite: "Haute", action: "Relancer créances > 60 jours" },
-  { title: "Marge brute en baisse de 3 pts sur 3 mois", priorite: "Moyenne", action: "Auditer les coûts matières" },
-  { title: "Nouveau crédit d'impôt disponible (CII)", priorite: "Faible", action: "Vérifier l'éligibilité" },
+const mockActions = [
+  { action: "Relancer 3 factures impayées > 60 jours", gain: "~4 200€ récupérés", delai: "Cette semaine" },
+  { action: "Renégocier contrat sous-traitance poste X", gain: "380€/mois économisés", delai: "2 semaines" },
+  { action: "Supprimer abonnement outil Y inutilisé", gain: "89€/mois", delai: "Aujourd'hui" },
+  { action: "Réduire délai paiement moyen 45j → 30j", gain: "+12k€ trésorerie", delai: "1 mois" },
+  { action: "Automatiser relance client", gain: "6h/semaine gagnées", delai: "2 semaines" },
 ];
 
 const chartData = [
