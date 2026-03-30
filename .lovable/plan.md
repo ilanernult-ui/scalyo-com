@@ -1,31 +1,22 @@
 
 
-## Plan: Remplacer "Démarrer gratuitement" par "Essayer" avec redirection conditionnelle
+## Plan : Mettre à jour les pages Services et FeaturesSection avec le contenu repositionné
 
-### Comportement souhaité
-- Texte du bouton : **"Essayer"** (au lieu de "Démarrer gratuitement")
-- Si l'utilisateur est **connecté** → redirige vers `/tarifs`
-- Si l'utilisateur est **non connecté** → redirige vers `/auth`
+### Problème
+Les données des services dans `Services.tsx` et `FeaturesSection.tsx` utilisent les anciennes descriptions, incohérentes avec le positionnement défini dans `stripe-plans.ts`.
 
 ### Fichiers à modifier
 
-1. **`src/components/landing/HeroSection.tsx`**
-   - Importer `useAuth`
-   - Changer le bouton "Démarrer gratuitement" → "Essayer"
-   - Logique : `navigate(user ? "/tarifs" : "/auth")`
+**1. `src/pages/Services.tsx`** — Réécrire le tableau `services` :
 
-2. **`src/components/landing/FinalCTA.tsx`**
-   - Importer `useAuth`
-   - Même changement de texte et de logique de redirection
+- **DataDiag** : title → "Diagnostic Business 360°", description → axée pertes d'argent/temps, features → Score Business 360°, Détection pertes d'argent, Détection pertes de temps, Top 5 actions rapides, Estimation "vous perdez X€/mois", Dashboard KPIs temps réel, Rapport IA mensuel. FAQ et cas concrets mis à jour.
 
-3. **`src/components/landing/Navbar.tsx`**
-   - Le bouton "Démarrer gratuitement" dans la navbar (visible quand non connecté) → "Essayer"
-   - Redirection vers `/auth` (déjà le cas, mais on change le texte)
+- **GrowthPilot** : title → "Co-pilote IA de croissance", description → plan d'action priorisé ROI + automatisations, features → Tout DataDiag inclus, Plan d'action PRIORISÉ par ROI hebdo, Quick wins avec gains estimés en €, Automatisations recommandées (+10h/semaine), Analyse ventes & tunnel de conversion, IA qui explique le COMMENT pas-à-pas, Suivi d'impact temps réel. Tagline "+15% de croissance · +10h/semaine".
 
-4. **`src/pages/Pricing.tsx`**
-   - Même changement texte + logique conditionnelle
+- **LoyaltyLoop** : title → "Transformation Business Complète", description → optimisation continue + résultats mesurables, features → Tout GrowthPilot inclus, Optimisation continue automatique, Recommandations hebdomadaires, Suivi résultats & ROI temps réel, Automatisations avancées, Analyse 360°, Prédiction churn & rétention, Intégrations CRM avancées. Tagline "+25% de croissance".
 
-### Détail technique
-- Utilisation du hook `useAuth()` déjà disponible dans le projet pour vérifier `user`
-- Suppression du texte "14 jours gratuits · Sans carte bancaire · Sans engagement" dans FinalCTA (plus cohérent avec "Essayer")
+**2. `src/components/landing/FeaturesSection.tsx`** — Mettre à jour les descriptions courtes des 3 services pour correspondre au nouveau positionnement.
+
+### Principe
+Aligner toutes les descriptions sur le contenu de `stripe-plans.ts` pour garantir la cohérence sur l'ensemble du site.
 
