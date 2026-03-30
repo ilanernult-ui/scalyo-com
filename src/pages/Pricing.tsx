@@ -210,9 +210,9 @@ const Pricing = () => {
                   className="w-full mb-2"
                   variant={plan.popular ? "default" : "outline"}
                   size="lg"
-                  onClick={() => navigate("/auth")}
+                  onClick={() => navigate(user ? "/tarifs" : "/auth")}
                 >
-                  Commencer l'essai gratuit{plan.popular && " →"}
+                  Essayer{plan.popular && " →"}
                 </Button>
                 <p className="text-xs text-muted-foreground text-center mb-6">
                   14 jours gratuits · aucune carte requise
