@@ -115,6 +115,7 @@ const fadeUp = {
 
 const Pricing = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [annual, setAnnual] = useState(false);
 
   const getPrice = (monthly: number) => annual ? Math.round(monthly * 0.83) : monthly;
