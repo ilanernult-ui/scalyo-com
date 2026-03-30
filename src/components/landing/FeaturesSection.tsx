@@ -6,26 +6,25 @@ const services = [
   {
     icon: Activity,
     name: "DataDiag",
-    title: "Diagnostic de performance",
-    description: "Analyse complète des données métier : finance, RH, opérations. Identifie les anomalies et les zones de sous-performance.",
+    title: "Diagnostic Business 360°",
+    description: "Identifie vos pertes d'argent et de temps en 48h. Score de performance global, top 5 actions rapides et estimation « vous perdez X€/mois ».",
     href: "/services/datadiag",
   },
   {
     icon: Rocket,
     name: "GrowthPilot",
-    title: "Optimisation & Recommandations IA",
-    description: "Génère un plan d'action personnalisé avec des recommandations priorisées selon leur impact potentiel sur votre activité.",
+    title: "Co-pilote IA de croissance",
+    description: "Plan d'action priorisé par ROI chaque semaine, quick wins chiffrés en € et automatisations pour gagner +10h/semaine.",
     href: "/services/growthpilot",
   },
   {
     icon: Heart,
     name: "LoyaltyLoop",
-    title: "Fidélisation & Engagement client",
-    description: "Analyse le comportement client, détecte les risques de churn et propose des stratégies de rétention automatisées.",
+    title: "Transformation Business Complète",
+    description: "Optimisation continue automatique : recommandations hebdomadaires, suivi ROI temps réel, analyse 360° et prédiction du churn.",
     href: "/services/loyaltyloop",
   },
 ];
-
 const FeaturesSection = () => {
   return (
     <section style={{ padding: "120px 0" }}>
