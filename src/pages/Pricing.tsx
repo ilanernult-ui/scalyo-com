@@ -5,6 +5,7 @@ import { Check, Minus, Shield, CreditCard, Gift, Headphones, ChevronDown, ArrowR
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Accordion,
   AccordionContent,

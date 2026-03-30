@@ -2,9 +2,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
 
 const FinalCTA = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   return (
     <section style={{ padding: "120px 0" }}>
@@ -21,12 +23,9 @@ const FinalCTA = () => {
           <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
             Rejoignez +200 entreprises qui utilisent Scalyo pour prendre de meilleures décisions, plus vite.
           </p>
-          <Button size="lg" onClick={() => navigate("/dashboard")}>
-            Démarrer gratuitement <ArrowRight className="ml-1 h-5 w-5" />
+          <Button size="lg" onClick={() => navigate(user ? "/tarifs" : "/auth")}>
+            Essayer <ArrowRight className="ml-1 h-5 w-5" />
           </Button>
-          <p className="text-xs text-muted-foreground mt-4">
-            14 jours gratuits · Sans carte bancaire · Sans engagement
-          </p>
         </motion.div>
       </div>
     </section>

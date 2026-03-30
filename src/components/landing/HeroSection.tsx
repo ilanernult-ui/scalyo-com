@@ -49,8 +49,8 @@ const HeroSection = () => {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
         >
-          <Button size="lg" onClick={() => navigate("/dashboard")}>
-            Démarrer gratuitement <ArrowRight className="ml-1 h-5 w-5" />
+          <Button size="lg" onClick={() => navigate(user ? "/tarifs" : "/auth")}>
+            Essayer <ArrowRight className="ml-1 h-5 w-5" />
           </Button>
           <Button variant="outline" size="lg" onClick={() => navigate("/dashboard")}>
             Voir la démo
