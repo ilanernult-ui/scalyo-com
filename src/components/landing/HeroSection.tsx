@@ -2,9 +2,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
 
 const HeroSection = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   return (
     <section className="pt-32 pb-24" style={{ paddingTop: "clamp(120px, 15vh, 180px)", paddingBottom: "clamp(80px, 10vh, 120px)" }}>
@@ -47,8 +49,8 @@ const HeroSection = () => {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
         >
-          <Button size="lg" onClick={() => navigate("/dashboard")}>
-            Démarrer gratuitement <ArrowRight className="ml-1 h-5 w-5" />
+          <Button size="lg" onClick={() => navigate(user ? "/tarifs" : "/auth")}>
+            Essayer <ArrowRight className="ml-1 h-5 w-5" />
           </Button>
           <Button variant="outline" size="lg" onClick={() => navigate("/dashboard")}>
             Voir la démo
