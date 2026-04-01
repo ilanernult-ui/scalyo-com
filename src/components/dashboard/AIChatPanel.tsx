@@ -179,9 +179,9 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
                   : "bg-secondary border border-border text-foreground rounded-bl-sm"
               }`}>
                 {msg.role === "assistant" ? (
-                  <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0 [&>ul]:m-0 [&>ol]:m-0 [&>h2]:text-sm [&>h2]:mt-2 [&>h2]:mb-1 [&>h3]:text-sm [&>h3]:mt-2 [&>h3]:mb-1">
-                    {msg.content}
-                  </ReactMarkdown>
+                  <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0 [&>ul]:m-0 [&>ol]:m-0 [&>h2]:text-sm [&>h2]:mt-2 [&>h2]:mb-1 [&>h3]:text-sm [&>h3]:mt-2 [&>h3]:mb-1">
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  </div>
                 ) : (
                   <span className="whitespace-pre-wrap">{msg.content}</span>
                 )}

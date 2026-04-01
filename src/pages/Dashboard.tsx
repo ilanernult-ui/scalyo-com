@@ -301,7 +301,7 @@ const Dashboard = () => {
             </div>
             {activeTab !== "settings" && (
               <div className="w-full xl:w-auto">
-                <AIChatPanel activeTab={activeTab} userInitials={initials} />
+                <AIChatPanel activeTab={activeTab} userInitials={initials} plan={userPlan} />
               </div>
             )}
           </div>
