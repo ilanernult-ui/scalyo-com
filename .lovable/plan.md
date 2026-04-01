@@ -1,38 +1,40 @@
 
 
-## Plan : Améliorer le chat IA avec adaptation au plan et conseils détaillés
+## Plan : Ajouter un bouton "Données de test" pour remplir le formulaire avec des données fictives
 
 ### Objectif
-Transformer le chat assistant en un vrai consultant business qui s'adapte au plan souscrit (DataDiag/GrowthPilot/LoyaltyLoop), donne des réponses plus riches et détaillées, et propose des suggestions contextuelles selon l'abonnement.
+Permettre de tester rapidement le chat IA et les analyses sans remplir manuellement le formulaire, en injectant des données d'entreprise fictives réalistes.
 
-### Fichiers à modifier
+### Approche
+Ajouter un bouton **"Remplir avec des données de test"** dans le `ConnectDataWizard` qui pré-remplit tous les champs avec des données fictives d'une PME française réaliste, puis soumet automatiquement.
 
-**1. `supabase/functions/scalyo-chat/index.ts`** — Le backend est déjà sur OpenAI, mais on améliore :
-- Récupérer le plan de l'utilisateur depuis la table `profiles`
-- Adapter le system prompt selon le plan :
-  - **DataDiag** : expert diagnostic financier, détection pertes, Score Business 360°, estimation "vous perdez X€/mois"
-  - **GrowthPilot** : tout DataDiag + co-pilote croissance, plans d'action priorisés ROI, quick wins en €, automatisations (+10h/semaine)
-  - **LoyaltyLoop** : tout GrowthPilot + transformation complète, optimisation continue, prédiction churn, stratégies rétention, CRM
-- Augmenter `max_tokens` à 2000 pour des réponses plus détaillées
-- Mentionner dans le prompt les fonctionnalités exactes du plan pour que l'IA puisse les expliquer et les exploiter
-- Ajouter une instruction pour que l'IA suggère l'upgrade quand une question dépasse le scope du plan actuel
+### Fichier à modifier
 
-**2. `src/components/dashboard/AIChatPanel.tsx`** — Adapter le frontend :
-- Recevoir le `plan` en prop (depuis Dashboard qui a déjà `useAuth`)
-- Envoyer le `plan` dans le body de la requête au backend
-- Adapter les suggestions rapides selon le plan :
-  - DataDiag : "Score Business", "Pertes d'argent", "Actions prioritaires", "Estimation pertes"
-  - GrowthPilot : + "Plan de croissance ROI", "Quick wins", "Automatisations"
-  - LoyaltyLoop : + "Prédiction churn", "Stratégie rétention", "Optimisation 360°"
-- Adapter le message de bienvenue selon le plan
-- Ajouter le rendu markdown avec `react-markdown` pour des réponses mieux formatées
-- Afficher un badge du plan actif dans le header du chat
+**`src/components/dashboard/ConnectDataWizard.tsx`**
 
-**3. `src/pages/Dashboard.tsx`** — Passer le `plan` en prop au `AIChatPanel`
+- Ajouter une fonction `fillTestData()` qui set toutes les valeurs d'état avec des données fictives :
+  - Entreprise : "TechShop Paris", secteur E-commerce, PME, 25 salariés
+  - CA annuel : 850 000€, CA mensuel : 72 000€, historique 6 mois réaliste
+  - Charges fixes : 35 000€, variables : 18 000€, trésorerie : 95 000€
+  - Marges, impayés, délais paiement, clients actifs, panier moyen, etc.
+  - Données clients/fidélisation pour LoyaltyLoop : churn, NPS, VIP, rétention
+- Ajouter un bouton visible uniquement à l'étape 1 (ou en header) : `🧪 Remplir données test`
+- Quand cliqué : remplit tout et passe à l'étape récapitulatif
 
-### Détail technique
-- La table `profiles` contient déjà le champ `plan` — on le fetch côté Edge Function avec le service role ou via l'auth user
-- Le system prompt sera structuré en sections cumulatives (DataDiag = base, GrowthPilot = base + croissance, LoyaltyLoop = tout)
-- Les suggestions rapides changent dynamiquement selon le plan pour guider l'utilisateur vers les bonnes questions
-- `react-markdown` sera ajouté comme dépendance pour le rendu des réponses formatées
+### Données fictives prévues
+
+```text
+Entreprise: TechShop Paris | E-commerce | PME (11-250) | 25 employés
+CA annuel: 850 000€ | CA mensuel: 72 000€
+Historique: [58000, 62000, 65000, 71000, 68000, 72000]
+Charges fixes: 35 000€ | Variables: 18 000€
+Trésorerie: 95 000€ | Marge brute: 42% | Marge nette: 12%
+Impayés: 8 factures / 15 200€
+Clients actifs: 340 | Total: 1200 | Panier moyen: 85€
+CAC: 45€ | LTV: 520€ | NPS: 38 | Rétention: 62%
+Budget marketing: 5 000€ | Objectif croissance 6m: 15%
+```
+
+### Résultat
+Un clic → données injectées → analyse IA lancée → chat et dashboard fonctionnels avec des données réalistes pour tester.
 
