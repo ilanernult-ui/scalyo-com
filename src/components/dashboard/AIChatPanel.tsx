@@ -157,9 +157,9 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
           </div>
           <div>
             <div className="max-w-[80%] px-3.5 py-2.5 rounded-xl rounded-bl-sm bg-secondary border border-border text-[13px] leading-relaxed text-foreground">
-              <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0">
-                {`Bonjour 👋 ${welcome}\n\nPar quoi souhaitez-vous commencer ?`}
-              </ReactMarkdown>
+              <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0">
+                <ReactMarkdown>{`Bonjour 👋 ${welcome}\n\nPar quoi souhaitez-vous commencer ?`}</ReactMarkdown>
+              </div>
             </div>
             <p className="text-[10px] text-muted-foreground mt-1">maintenant</p>
           </div>
