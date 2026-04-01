@@ -22,10 +22,10 @@ import type { Json } from "@/integrations/supabase/types";
 
 /* ── Nav items ── */
 const navItems = [
-  { id: "overview", label: "Dashboard", icon: LayoutDashboard, minPlan: "datadiag" as PlanType },
-  { id: "datadiag", label: "Diagnostic", icon: Activity, minPlan: "datadiag" as PlanType },
-  { id: "growthpilot", label: "Croissance", icon: Rocket, minPlan: "growthpilot" as PlanType },
-  { id: "loyaltyloop", label: "Fidélisation", icon: Heart, minPlan: "loyaltyloop" as PlanType },
+  { id: "overview", label: "Vue d'ensemble", icon: LayoutDashboard, minPlan: "datadiag" as PlanType },
+  { id: "datadiag", label: "DataDiag", icon: Activity, minPlan: "datadiag" as PlanType },
+  { id: "growthpilot", label: "GrowthPilot", icon: Rocket, minPlan: "growthpilot" as PlanType },
+  { id: "loyaltyloop", label: "LoyaltyLoop", icon: Heart, minPlan: "loyaltyloop" as PlanType },
   { id: "settings", label: "Paramètres", icon: Settings, minPlan: "datadiag" as PlanType },
 ] as const;
 
