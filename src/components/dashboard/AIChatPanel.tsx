@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send } from "lucide-react";
+import { Send, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import type { PlanType } from "@/contexts/AuthContext";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   role: "user" | "assistant";
@@ -10,14 +12,41 @@ interface Message {
 interface AIChatPanelProps {
   activeTab: string;
   userInitials: string;
+  plan: PlanType;
 }
 
-const suggestions = [
-  { emoji: "📊", label: "Analyse globale", prompt: "Donne-moi une analyse globale de mes données et les 3 actions prioritaires à mener." },
-  { emoji: "📉", label: "Réduire le churn", prompt: "Comment réduire concrètement mon taux de churn ?" },
-  { emoji: "🚀", label: "Plan de croissance", prompt: "Génère-moi un plan de croissance basé sur mes données actuelles." },
-  { emoji: "💡", label: "Points d'attention", prompt: "Quels sont les points d'alerte que tu vois dans mes données ?" },
-];
+const planSuggestions: Record<PlanType, { emoji: string; label: string; prompt: string }[]> = {
+  datadiag: [
+    { emoji: "📊", label: "Score Business", prompt: "Calcule mon Score Business 360° et donne-moi un diagnostic complet de ma rentabilité, efficacité et croissance." },
+    { emoji: "💸", label: "Pertes d'argent", prompt: "Détecte toutes mes pertes d'argent et estime combien je perds par mois." },
+    { emoji: "⚡", label: "Actions prioritaires", prompt: "Donne-moi le Top 5 des actions rapides à impact immédiat pour mon entreprise." },
+    { emoji: "📉", label: "Estimation pertes", prompt: "Estime précisément combien je perds en € chaque mois et sur quels postes." },
+  ],
+  growthpilot: [
+    { emoji: "🎯", label: "Plan croissance ROI", prompt: "Génère-moi un plan d'action de croissance priorisé par ROI avec les gains estimés en €." },
+    { emoji: "⚡", label: "Quick wins", prompt: "Identifie mes quick wins immédiats avec les gains estimés en € et en temps." },
+    { emoji: "🤖", label: "Automatisations", prompt: "Quelles automatisations me feraient gagner +10h/semaine ? Donne-moi le détail." },
+    { emoji: "📈", label: "Tunnel conversion", prompt: "Analyse mon tunnel de conversion et donne-moi les optimisations prioritaires." },
+  ],
+  loyaltyloop: [
+    { emoji: "🔮", label: "Prédiction churn", prompt: "Prédis mon taux de churn et identifie les clients à risque avec des stratégies de rétention." },
+    { emoji: "🏆", label: "Stratégie rétention", prompt: "Crée-moi une stratégie de rétention complète avec calendrier et ROI attendu." },
+    { emoji: "🔄", label: "Optimisation 360°", prompt: "Lance une analyse 360° complète : clients + croissance + rentabilité avec plan d'action." },
+    { emoji: "💎", label: "Stratégie VIP", prompt: "Analyse mes clients VIP et propose une stratégie pour maximiser leur valeur." },
+  ],
+};
+
+const planBadges: Record<PlanType, { label: string; color: string }> = {
+  datadiag: { label: "DataDiag", color: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
+  growthpilot: { label: "GrowthPilot", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" },
+  loyaltyloop: { label: "LoyaltyLoop", color: "bg-purple-500/10 text-purple-600 border-purple-500/20" },
+};
+
+const planWelcome: Record<PlanType, string> = {
+  datadiag: "Je suis votre expert en **diagnostic financier**. Je peux calculer votre Score Business 360°, détecter vos pertes d'argent et identifier les actions prioritaires. 🎯",
+  growthpilot: "Je suis votre **co-pilote de croissance**. Diagnostic complet, plans d'action ROI, quick wins chiffrés et automatisations — je vous guide pas-à-pas vers +15% de croissance. 🚀",
+  loyaltyloop: "Je suis votre **consultant en transformation business**. Diagnostic, croissance, fidélisation, prédiction churn — j'ai accès à l'analyse complète 360° pour transformer votre entreprise. 💎",
+};
 
 const TypingIndicator = () => (
   <div className="flex gap-1 items-center px-3.5 py-2.5 bg-secondary border border-border rounded-xl rounded-bl-sm w-fit">
@@ -31,7 +60,7 @@ const TypingIndicator = () => (
   </div>
 );
 
-const AIChatPanel = ({ activeTab, userInitials }: AIChatPanelProps) => {
+const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -46,6 +75,10 @@ const AIChatPanel = ({ activeTab, userInitials }: AIChatPanelProps) => {
 
   useEffect(() => { scrollToBottom(); }, [messages, loading, scrollToBottom]);
 
+  const suggestions = planSuggestions[plan] || planSuggestions.datadiag;
+  const badge = planBadges[plan] || planBadges.datadiag;
+  const welcome = planWelcome[plan] || planWelcome.datadiag;
+
   const sendMessage = async (text: string) => {
     if (!text.trim() || loading) return;
     setError(false);
@@ -57,15 +90,14 @@ const AIChatPanel = ({ activeTab, userInitials }: AIChatPanelProps) => {
     setInput("");
     setLoading(true);
 
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-    }
+    if (textareaRef.current) textareaRef.current.style.height = "auto";
 
     try {
       const { data, error: fnError } = await supabase.functions.invoke("scalyo-chat", {
         body: {
           messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
           activeTab,
+          plan,
         },
       });
 
@@ -100,10 +132,15 @@ const AIChatPanel = ({ activeTab, userInitials }: AIChatPanelProps) => {
       {/* Header */}
       <div className="px-5 py-4 border-b border-border flex items-center gap-3">
         <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground text-base">
-          ✦
+          <Sparkles className="h-4 w-4" />
         </div>
         <div className="flex-1">
-          <p className="text-sm font-semibold text-foreground">Assistant Scalyo IA</p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-semibold text-foreground">Assistant Scalyo IA</p>
+            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full border ${badge.color}`}>
+              {badge.label}
+            </span>
+          </div>
           <p className="text-[11px] text-success flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-success" />
             En ligne – analyse vos données
@@ -115,10 +152,14 @@ const AIChatPanel = ({ activeTab, userInitials }: AIChatPanelProps) => {
       <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3 min-h-[300px] max-h-[450px] scrollbar-thin">
         {/* Welcome message */}
         <div className="flex gap-2 items-end">
-          <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center text-xs shrink-0">✦</div>
+          <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center text-xs shrink-0">
+            <Sparkles className="h-3 w-3" />
+          </div>
           <div>
             <div className="max-w-[80%] px-3.5 py-2.5 rounded-xl rounded-bl-sm bg-secondary border border-border text-[13px] leading-relaxed text-foreground">
-              Bonjour 👋 Je suis votre assistant IA Scalyo. J'analyse vos données en temps réel et je suis prêt à vous donner des recommandations concrètes. Par quoi souhaitez-vous commencer ?
+              <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0">
+                {`Bonjour 👋 ${welcome}\n\nPar quoi souhaitez-vous commencer ?`}
+              </ReactMarkdown>
             </div>
             <p className="text-[10px] text-muted-foreground mt-1">maintenant</p>
           </div>
@@ -129,15 +170,21 @@ const AIChatPanel = ({ activeTab, userInitials }: AIChatPanelProps) => {
             <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs shrink-0 ${
               msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary"
             }`}>
-              {msg.role === "user" ? userInitials : "✦"}
+              {msg.role === "user" ? userInitials : <Sparkles className="h-3 w-3" />}
             </div>
             <div>
-              <div className={`max-w-[80%] px-3.5 py-2.5 rounded-xl text-[13px] leading-relaxed whitespace-pre-wrap ${
+              <div className={`max-w-[80%] px-3.5 py-2.5 rounded-xl text-[13px] leading-relaxed ${
                 msg.role === "user"
                   ? "bg-primary text-primary-foreground rounded-br-sm"
                   : "bg-secondary border border-border text-foreground rounded-bl-sm"
               }`}>
-                {msg.content}
+                {msg.role === "assistant" ? (
+                  <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0 [&>ul]:m-0 [&>ol]:m-0 [&>h2]:text-sm [&>h2]:mt-2 [&>h2]:mb-1 [&>h3]:text-sm [&>h3]:mt-2 [&>h3]:mb-1">
+                    {msg.content}
+                  </ReactMarkdown>
+                ) : (
+                  <span className="whitespace-pre-wrap">{msg.content}</span>
+                )}
               </div>
               <p className={`text-[10px] text-muted-foreground mt-1 ${msg.role === "user" ? "text-right" : ""}`}>
                 {formatTime()}
@@ -148,7 +195,9 @@ const AIChatPanel = ({ activeTab, userInitials }: AIChatPanelProps) => {
 
         {loading && (
           <div className="flex gap-2 items-end">
-            <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center text-xs shrink-0">✦</div>
+            <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center text-xs shrink-0">
+              <Sparkles className="h-3 w-3" />
+            </div>
             <TypingIndicator />
           </div>
         )}
