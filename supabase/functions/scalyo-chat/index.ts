@@ -10,8 +10,8 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-    if (!ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY not configured");
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
 
     // Authenticate user
     const authHeader = req.headers.get("authorization");
@@ -117,29 +117,32 @@ Règles :
 - Maximum 4-5 phrases par réponse pour rester concis
 - Si l'utilisateur n'a pas de données connectées, donne des conseils génériques mais encourage-le à connecter ses données`;
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const openaiMessages = [
+      { role: "system", content: systemPrompt },
+      ...messages.slice(-20),
+    ];
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
+        "Authorization": `Bearer ${OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        model: "gpt-4o",
         max_tokens: 1000,
-        system: systemPrompt,
-        messages: messages.slice(-20), // Keep last 20 messages for context
+        messages: openaiMessages,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Anthropic API error:", response.status, errorText);
+      console.error("OpenAI API error:", response.status, errorText);
       throw new Error("AI service error");
     }
 
     const data = await response.json();
-    const text = data.content?.[0]?.text || "Désolé, je n'ai pas pu générer une réponse.";
+    const text = data.choices?.[0]?.message?.content || "Désolé, je n'ai pas pu générer une réponse.";
 
     return new Response(JSON.stringify({ text }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
