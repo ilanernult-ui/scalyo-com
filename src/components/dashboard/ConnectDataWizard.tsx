@@ -556,7 +556,12 @@ export default function ConnectDataWizard({ open, onOpenChange, plan, userId, on
               );
             })}
           </div>
-          <p className="text-sm font-semibold text-foreground">{steps[step]?.label}</p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-foreground">{steps[step]?.label}</p>
+            <Button variant="outline" size="sm" onClick={fillTestData} className="text-xs gap-1.5 h-7 px-3">
+              🧪 Données test
+            </Button>
+          </div>
         </div>
 
         <div className="px-6 py-4 space-y-4">
