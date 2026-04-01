@@ -10,20 +10,19 @@ serve(async (req) => {
 
   try {
     const { donnees_ventes, profil_entreprise } = await req.json();
-    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-    if (!ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY is not configured");
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY is not configured");
 
     const prompt = `Tu es un expert en croissance commerciale. Profil : ${JSON.stringify(profil_entreprise)}. Ventes : ${JSON.stringify(donnees_ventes)}. Génère une analyse en JSON avec les clés : plan_action, analyse_ventes, opportunites, rapport_hebdo`;
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
+        "Authorization": `Bearer ${OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        model: "gpt-4o",
         max_tokens: 2000,
         messages: [{ role: "user", content: prompt }],
       }),
@@ -31,7 +30,7 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Anthropic API error:", response.status, errorText);
+      console.error("OpenAI API error:", response.status, errorText);
       return new Response(JSON.stringify({ error: "AI service error" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -39,11 +38,12 @@ serve(async (req) => {
     }
 
     const data = await response.json();
+    const rawText = data.choices?.[0]?.message?.content || "";
     let result;
     try {
-      result = JSON.parse(data.content[0].text);
+      result = JSON.parse(rawText);
     } catch {
-      result = { raw: data.content[0].text };
+      result = { raw: rawText };
     }
 
     return new Response(JSON.stringify(result), {

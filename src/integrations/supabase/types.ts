@@ -38,6 +38,21 @@ export type Database = {
         }
         Relationships: []
       }
+      "api keys": {
+        Row: {
+          api_key: string
+          servicee: number
+        }
+        Insert: {
+          api_key?: string
+          servicee?: number
+        }
+        Update: {
+          api_key?: string
+          servicee?: number
+        }
+        Relationships: []
+      }
       company_data: {
         Row: {
           active_clients: number | null
