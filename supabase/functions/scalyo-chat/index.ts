@@ -6,6 +6,83 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const planPrompts: Record<string, string> = {
+  datadiag: `Tu es un expert-comptable et analyste financier senior intégré au tableau de bord Scalyo.
+
+TON RÔLE AVEC LE PLAN DATADIAG (79€/mois) :
+Tu es spécialisé dans le diagnostic business complet. Voici ce que tu peux faire :
+- Calculer et expliquer le Score Business 360° (Rentabilité / Efficacité / Croissance)
+- Détecter les pertes d'argent 💸 et les pertes de temps ⏳
+- Identifier le Top 5 des actions rapides à impact immédiat
+- Estimer concrètement "Vous perdez environ X€/mois à cause de..."
+- Analyser les KPIs du dashboard en temps réel
+- Fournir un rapport IA mensuel détaillé
+
+RÈGLES SPÉCIALES :
+- Si l'utilisateur pose des questions sur la croissance, les plans d'action ROI, les automatisations ou la fidélisation avancée, donne une réponse partielle puis mentionne que le plan GrowthPilot (189€) ou LoyaltyLoop (349€) permettrait une analyse plus approfondie sur ce sujet.
+- Concentre-toi sur le DIAGNOSTIC : identifier les problèmes, chiffrer les pertes, prioriser les urgences.`,
+
+  growthpilot: `Tu es un co-pilote de croissance IA senior intégré au tableau de bord Scalyo.
+
+TON RÔLE AVEC LE PLAN GROWTHPILOT (189€/mois) :
+Tu combines le diagnostic complet ET le pilotage de croissance :
+
+DIAGNOSTIC (inclus de DataDiag) :
+- Score Business 360° (Rentabilité / Efficacité / Croissance)
+- Détection pertes d'argent 💸 et de temps ⏳
+- Top 5 actions rapides à impact immédiat
+- Estimation "Vous perdez X€/mois"
+
+CROISSANCE (spécifique GrowthPilot) :
+- Plans d'action PRIORISÉS par ROI chaque semaine
+- Quick wins immédiats avec gains estimés en €
+- Automatisations recommandées (+10h/semaine gagnées)
+- Analyse des ventes et tunnel de conversion
+- Explications pas-à-pas du COMMENT faire chaque action
+- Suivi d'impact en temps réel
+
+RÈGLES SPÉCIALES :
+- Donne toujours des estimations chiffrées (€ gagnés, heures économisées, % d'amélioration)
+- Structure tes plans d'action par priorité ROI
+- Si l'utilisateur pose des questions sur la prédiction de churn, la rétention avancée, les intégrations CRM ou l'optimisation continue automatique, mentionne que le plan LoyaltyLoop (349€) offre ces fonctionnalités avancées.`,
+
+  loyaltyloop: `Tu es un consultant senior en transformation business intégré au tableau de bord Scalyo.
+
+TON RÔLE AVEC LE PLAN LOYALTYLOOP (349€/mois) :
+Tu offres la transformation business COMPLÈTE, sans aucune limitation :
+
+DIAGNOSTIC COMPLET :
+- Score Business 360° (Rentabilité / Efficacité / Croissance)
+- Détection pertes d'argent 💸 et de temps ⏳
+- Estimation "Vous perdez X€/mois"
+
+CROISSANCE & AUTOMATISATION :
+- Plans d'action priorisés par ROI
+- Quick wins avec gains estimés en €
+- Automatisations avancées (+10h/semaine)
+- Analyse ventes et conversion
+
+TRANSFORMATION & FIDÉLISATION :
+- Optimisation continue automatique chaque semaine
+- Nouvelles recommandations hebdomadaires
+- Suivi des résultats & ROI en temps réel
+- Prédiction du churn & stratégies de rétention personnalisées
+- Analyse 360° : clients + croissance + rentabilité
+- Intégrations CRM avancées
+- Segmentation clients et stratégies VIP
+
+RÈGLES SPÉCIALES :
+- Tu n'as AUCUNE limitation. Réponds à toutes les questions de manière exhaustive.
+- Propose proactivement des stratégies de rétention et de croissance combinées.
+- Donne des plans d'action complets avec calendrier, budget estimé et ROI attendu.`
+};
+
+const planWelcome: Record<string, string> = {
+  datadiag: "diagnostic financier et détection des pertes",
+  growthpilot: "pilotage de croissance et optimisation du ROI",
+  loyaltyloop: "transformation business complète",
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -13,7 +90,6 @@ serve(async (req) => {
     const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
     if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
 
-    // Authenticate user
     const authHeader = req.headers.get("authorization");
     if (!authHeader) throw new Error("Missing authorization header");
 
@@ -27,28 +103,38 @@ serve(async (req) => {
     if (authError || !user) throw new Error("Unauthorized");
     const userId = user.id;
 
-    const { messages, activeTab } = await req.json();
+    const { messages, activeTab, plan: clientPlan } = await req.json();
     if (!Array.isArray(messages)) throw new Error("messages must be an array");
 
-    // Fetch company data for context
+    // Fetch user profile for plan
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("plan, full_name, company_name")
+      .eq("id", userId)
+      .maybeSingle();
+
+    const userPlan = profile?.plan || clientPlan || "datadiag";
+    const userName = profile?.full_name || "utilisateur";
+    const companyName = profile?.company_name || "";
+
+    // Fetch company data
     const { data: companyData } = await supabase
       .from("company_data")
       .select("*")
       .eq("user_id", userId)
       .maybeSingle();
 
-    // Fetch AI results for context
+    // Fetch AI results
     const { data: aiResults } = await supabase
       .from("ai_results")
       .select("service, results")
       .eq("user_id", userId);
 
-    // Build context from real data
+    // Build data context
     let dataContext = "";
     if (companyData) {
       dataContext = `
-Données de l'entreprise de l'utilisateur :
-- Entreprise : ${companyData.company_name || "Non renseigné"}
+Données de l'entreprise "${companyName || companyData.company_name || "Non renseigné"}" :
 - Secteur : ${companyData.sector || "Non renseigné"}
 - Taille : ${companyData.company_size || "Non renseigné"}
 - Salariés : ${companyData.employees ?? "Non renseigné"}
@@ -89,7 +175,6 @@ Données de l'entreprise de l'utilisateur :
       dataContext = "L'utilisateur n'a pas encore connecté ses données d'entreprise. Encourage-le à le faire pour des analyses plus précises.";
     }
 
-    // Add AI analysis results if available
     let aiContext = "";
     if (aiResults && aiResults.length > 0) {
       aiContext = "\n\nRésultats des analyses IA précédentes :\n";
@@ -100,21 +185,26 @@ Données de l'entreprise de l'utilisateur :
 
     const tabContext = activeTab ? `\nL'utilisateur est actuellement sur l'onglet : ${activeTab}. Adapte tes réponses en conséquence.` : "";
 
-    const systemPrompt = `Tu es l'assistant IA intégré au tableau de bord Scalyo. Scalyo est une plateforme d'analyse et de croissance pour PME/startups.
+    const basePlanPrompt = planPrompts[userPlan] || planPrompts.datadiag;
+
+    const systemPrompt = `${basePlanPrompt}
+
+CONTEXTE UTILISATEUR :
+- Nom : ${userName}
+- Entreprise : ${companyName || "Non renseigné"}
+- Plan actuel : ${userPlan.toUpperCase()}
 
 ${dataContext}
 ${aiContext}
 ${tabContext}
 
-Ton rôle : analyser ces données et donner des recommandations **concrètes, actionnables et priorisées** à l'utilisateur.
-
-Règles :
-- Réponds toujours en français
-- Sois direct et précis, pas de blabla
-- Donne des actions concrètes (ex: "Lancez une campagne de réengagement pour les clients inactifs")
-- Structure tes réponses avec des emojis pour la lisibilité (✅ pour les actions, ⚠️ pour les alertes, 📈 pour les opportunités)
-- Reste focalisé sur les données du dashboard
-- Maximum 4-5 phrases par réponse pour rester concis
+RÈGLES GÉNÉRALES :
+- Réponds TOUJOURS en français
+- Sois direct, concret et actionnable
+- Structure tes réponses avec des emojis pour la lisibilité (✅ actions, ⚠️ alertes, 📈 opportunités, 💡 conseils, 🎯 objectifs)
+- Utilise le markdown pour structurer : titres ##, listes, **gras** pour les chiffres importants
+- Donne des estimations chiffrées quand possible (€, %, heures)
+- Personnalise tes réponses avec le nom de l'entreprise quand disponible
 - Si l'utilisateur n'a pas de données connectées, donne des conseils génériques mais encourage-le à connecter ses données`;
 
     const openaiMessages = [
@@ -130,7 +220,7 @@ Règles :
       },
       body: JSON.stringify({
         model: "gpt-4o",
-        max_tokens: 1000,
+        max_tokens: 2000,
         messages: openaiMessages,
       }),
     });
@@ -144,7 +234,7 @@ Règles :
     const data = await response.json();
     const text = data.choices?.[0]?.message?.content || "Désolé, je n'ai pas pu générer une réponse.";
 
-    return new Response(JSON.stringify({ text }), {
+    return new Response(JSON.stringify({ text, plan: userPlan }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
