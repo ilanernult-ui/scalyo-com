@@ -1,22 +1,35 @@
 
 
-## Plan : Mettre à jour les pages Services et FeaturesSection avec le contenu repositionné
+## Plan : Migrer les Edge Functions vers l'API OpenAI
 
 ### Problème
-Les données des services dans `Services.tsx` et `FeaturesSection.tsx` utilisent les anciennes descriptions, incohérentes avec le positionnement défini dans `stripe-plans.ts`.
+Les 4 Edge Functions (`datadiag`, `growthpilot`, `loyaltyloop`, `scalyo-chat`) utilisent actuellement l'API Anthropic, mais la clé API configurée dans Supabase est une clé OpenAI (`OPENAI_API_KEY`).
+
+### Solution
+Modifier les 4 fonctions pour utiliser l'API OpenAI (`https://api.openai.com/v1/chat/completions`) avec le secret `OPENAI_API_KEY` déjà présent dans Supabase.
 
 ### Fichiers à modifier
 
-**1. `src/pages/Services.tsx`** — Réécrire le tableau `services` :
+**1. `supabase/functions/datadiag/index.ts`**
+- Remplacer `ANTHROPIC_API_KEY` → `OPENAI_API_KEY`
+- URL : `https://api.openai.com/v1/chat/completions`
+- Header : `Authorization: Bearer ${key}`
+- Format body : `{ model: "gpt-4o", messages: [...] }`
+- Parsing réponse : `data.choices[0].message.content`
 
-- **DataDiag** : title → "Diagnostic Business 360°", description → axée pertes d'argent/temps, features → Score Business 360°, Détection pertes d'argent, Détection pertes de temps, Top 5 actions rapides, Estimation "vous perdez X€/mois", Dashboard KPIs temps réel, Rapport IA mensuel. FAQ et cas concrets mis à jour.
+**2. `supabase/functions/growthpilot/index.ts`**
+- Même migration Anthropic → OpenAI
 
-- **GrowthPilot** : title → "Co-pilote IA de croissance", description → plan d'action priorisé ROI + automatisations, features → Tout DataDiag inclus, Plan d'action PRIORISÉ par ROI hebdo, Quick wins avec gains estimés en €, Automatisations recommandées (+10h/semaine), Analyse ventes & tunnel de conversion, IA qui explique le COMMENT pas-à-pas, Suivi d'impact temps réel. Tagline "+15% de croissance · +10h/semaine".
+**3. `supabase/functions/loyaltyloop/index.ts`**
+- Même migration Anthropic → OpenAI
 
-- **LoyaltyLoop** : title → "Transformation Business Complète", description → optimisation continue + résultats mesurables, features → Tout GrowthPilot inclus, Optimisation continue automatique, Recommandations hebdomadaires, Suivi résultats & ROI temps réel, Automatisations avancées, Analyse 360°, Prédiction churn & rétention, Intégrations CRM avancées. Tagline "+25% de croissance".
+**4. `supabase/functions/scalyo-chat/index.ts`**
+- Même migration, en gardant le system prompt et le contexte utilisateur intacts
+- Adapter le format des messages (déjà compatible OpenAI)
 
-**2. `src/components/landing/FeaturesSection.tsx`** — Mettre à jour les descriptions courtes des 3 services pour correspondre au nouveau positionnement.
-
-### Principe
-Aligner toutes les descriptions sur le contenu de `stripe-plans.ts` pour garantir la cohérence sur l'ensemble du site.
+### Détail technique
+- Modèle utilisé : `gpt-4o` (meilleur rapport qualité/prix)
+- Les prompts en français restent identiques
+- Le format de réponse OpenAI diffère : `choices[0].message.content` au lieu de `content[0].text`
+- Aucun changement côté frontend nécessaire
 
