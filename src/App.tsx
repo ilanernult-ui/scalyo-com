@@ -18,6 +18,7 @@ import ResetPassword from "./pages/ResetPassword.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import DataDiagPage from "./pages/DataDiagPage.tsx";
 import GrowthPilotPage from "./pages/GrowthPilotPage.tsx";
+import LoyaltyLoopPage from "./pages/LoyaltyLoopPage.tsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.tsx";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/datadiag-demo" element={<DataDiagPage />} />
             <Route path="/growthpilot-demo" element={<GrowthPilotPage />} />
+            <Route path="/loyaltyloop-demo" element={<LoyaltyLoopPage />} />
             <Route path="/services" element={<Services />} />
             <Route path="/services/:slug" element={<Services />} />
             <Route path="/pricing" element={<Pricing />} />
