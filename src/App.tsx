@@ -18,6 +18,7 @@ import ResetPassword from "./pages/ResetPassword.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import DataDiagPage from "./pages/DataDiagPage.tsx";
 import GrowthPilotPage from "./pages/GrowthPilotPage.tsx";
+import LoyaltyLoopPage from "./pages/LoyaltyLoopPage.tsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.tsx";
 
 const queryClient = new QueryClient();
