@@ -1,13 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Menu, LogOut, LayoutDashboard, Activity, Rocket, Heart,
-  Lock, Settings, ChevronRight, Loader2
+  Lock, Settings, ChevronRight
 } from "lucide-react";
 import { useAuth, PlanType } from "@/contexts/AuthContext";
 import scalyoLogo from "@/assets/scalyo-logo.png";
-import { supabase } from "@/integrations/supabase/client";
 import { STRIPE_PLANS } from "@/lib/stripe-plans";
 import DashboardOverview from "@/components/dashboard/DashboardOverview";
 import DataDiagTab from "@/components/dashboard/DataDiagTab";
@@ -18,8 +17,9 @@ import ConnectDataWizard from "@/components/dashboard/ConnectDataWizard";
 import SettingsTab from "@/components/dashboard/SettingsTab";
 import AIChatPanel from "@/components/dashboard/AIChatPanel";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { useAiGeneration } from "@/hooks/useAiGeneration";
 import { useToast } from "@/hooks/use-toast";
-import type { Json } from "@/integrations/supabase/types";
 
 /* ── Nav items ── */
 const navItems = [
@@ -45,10 +45,6 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
-  const [dataConnected, setDataConnected] = useState(false);
-  const [aiResults, setAiResults] = useState<Record<string, Json>>({});
-  const [companyData, setCompanyData] = useState<Record<string, unknown> | null>(null);
-  const [generatingAnalysis, setGeneratingAnalysis] = useState(false);
 
   const userPlan = plan;
   const initials = user?.user_metadata?.full_name
@@ -58,6 +54,9 @@ const Dashboard = () => {
   const planConfig = STRIPE_PLANS[userPlan];
   const hasPaid = !!stripeSubscriptionId;
 
+  const { companyData, dataConnected, aiResults, loadAiResults, onWizardComplete } = useDashboardData(user?.id);
+  const { generatingAnalysis, generate } = useAiGeneration();
+
   /* ── Checkout success ── */
   useEffect(() => {
     if (searchParams.get("checkout") === "success") {
@@ -66,77 +65,15 @@ const Dashboard = () => {
     }
   }, [searchParams]);
 
-  /* ── Load data ── */
-  const loadAiResults = useCallback(async () => {
-    if (!user?.id) return;
-    const { data } = await supabase
-      .from("ai_results")
-      .select("service, results")
-      .eq("user_id", user.id);
-    if (data) {
-      const map: Record<string, Json> = {};
-      data.forEach((r) => { map[r.service] = r.results; });
-      setAiResults(map);
-    }
-  }, [user?.id]);
-
-  useEffect(() => {
-    if (!user?.id) return;
-    supabase
-      .from("company_data")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) {
-          setDataConnected(true);
-          setCompanyData(data as unknown as Record<string, unknown>);
-        }
-      });
-    loadAiResults();
-  }, [user?.id, loadAiResults]);
-
-  const handleWizardComplete = () => {
-    setDataConnected(true);
-    // Reload company data
-    if (user?.id) {
-      supabase
-        .from("company_data")
-        .select("*")
-        .eq("user_id", user.id)
-        .maybeSingle()
-        .then(({ data }) => {
-          if (data) setCompanyData(data as unknown as Record<string, unknown>);
-        });
-    }
-    loadAiResults();
-  };
+  const handleWizardComplete = onWizardComplete;
 
   const handleGenerate = async () => {
     if (!user?.id) return;
-    setGeneratingAnalysis(true);
-    try {
-      const services: string[] = ["datadiag"];
-      if (hasAccess(userPlan, "growthpilot")) services.push("growthpilot");
-      if (hasAccess(userPlan, "loyaltyloop")) services.push("loyaltyloop");
-
-      for (const service of services) {
-        const { data, error } = await supabase.functions.invoke(service, {
-          body: companyData || {},
-        });
-        if (error) { console.error(`${service} error:`, error); continue; }
-        await supabase.from("ai_results").upsert(
-          { user_id: user.id, service, results: data },
-          { onConflict: "user_id,service" }
-        );
-      }
-      await loadAiResults();
+    const { ok, message } = await generate(user.id, userPlan, companyData, loadAiResults);
+    if (ok) {
       toast({ title: "Analyse terminée ! 🎉", description: "Consultez vos résultats dans les onglets dédiés." });
-    } catch (e) {
-      console.error("Generate error:", e);
-      toast({ title: "Erreur", description: "Impossible de générer l'analyse.", variant: "destructive" });
-    } finally {
-      setGeneratingAnalysis(false);
+    } else {
+      toast({ title: "Erreur", description: message, variant: "destructive" });
     }
   };
 
