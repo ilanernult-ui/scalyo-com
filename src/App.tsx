@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Services from "./pages/Services.tsx";
@@ -36,7 +37,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><ErrorBoundary name="dashboard"><Dashboard /></ErrorBoundary></ProtectedRoute>} />
             <Route path="/datadiag-demo" element={<DataDiagPage />} />
             <Route path="/growthpilot-demo" element={<GrowthPilotPage />} />
             <Route path="/loyaltyloop-demo" element={<LoyaltyLoopPage />} />

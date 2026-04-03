@@ -17,6 +17,7 @@ import LockedTabOverlay from "@/components/dashboard/LockedTabOverlay";
 import ConnectDataWizard from "@/components/dashboard/ConnectDataWizard";
 import SettingsTab from "@/components/dashboard/SettingsTab";
 import AIChatPanel from "@/components/dashboard/AIChatPanel";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { useToast } from "@/hooks/use-toast";
 import type { Json } from "@/integrations/supabase/types";
 
@@ -168,9 +169,9 @@ const Dashboard = () => {
 
     const tabContent = (() => {
       switch (activeTab) {
-        case "datadiag": return <DataDiagTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["datadiag"]} />;
-        case "growthpilot": return <GrowthPilotTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["growthpilot"]} />;
-        case "loyaltyloop": return <LoyaltyLoopTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["loyaltyloop"]} />;
+        case "datadiag": return <ErrorBoundary name="datadiag"><DataDiagTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["datadiag"]} /></ErrorBoundary>;
+        case "growthpilot": return <ErrorBoundary name="growthpilot"><GrowthPilotTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["growthpilot"]} /></ErrorBoundary>;
+        case "loyaltyloop": return <ErrorBoundary name="loyaltyloop"><LoyaltyLoopTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["loyaltyloop"]} /></ErrorBoundary>;
         default: return null;
       }
     })();
