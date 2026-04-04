@@ -118,7 +118,7 @@ const EdgeFunctionPanel = ({ functionName, title, description, samplePayload, re
           {/* Render known keys as cards */}
           <div className="grid sm:grid-cols-2 gap-4">
             {responseKeys.map((key) => {
-              const value = result[key] ?? result?.raw;
+              const value = result[key] ?? (result as any)?.raw;
               if (!value) return null;
               return (
                 <div key={key} className="rounded-xl bg-secondary/50 p-4">

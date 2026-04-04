@@ -87,7 +87,7 @@ const DashboardOverview = ({ plan, dataConnected, companyData, onConnect, onGene
             Vue d'ensemble — {currentMonth().charAt(0).toUpperCase() + currentMonth().slice(1)}
           </h2>
           {companyData?.company_name && (
-            <p className="text-sm text-muted-foreground mt-0.5">{String(companyData.company_name)}</p>
+            <p className="text-sm text-muted-foreground mt-0.5">{String(companyData.company_name as string)}</p>
           )}
         </div>
         <div className="flex gap-2">
