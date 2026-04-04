@@ -118,7 +118,7 @@ const EdgeFunctionPanel = ({ functionName, title, description, samplePayload, re
           {/* Render known keys as cards */}
           <div className="grid sm:grid-cols-2 gap-4">
             {responseKeys.map((key) => {
-              const value = result[key] ?? result?.raw;
+              const value: any = result[key] ?? (result as any)?.raw;
               if (!value) return null;
               return (
                 <div key={key} className="rounded-xl bg-secondary/50 p-4">
@@ -132,14 +132,14 @@ const EdgeFunctionPanel = ({ functionName, title, description, samplePayload, re
           </div>
 
           {/* Raw fallback */}
-          {result.raw && (
+          {result.raw ? (
             <div className="mt-4 rounded-xl bg-secondary/50 p-4">
               <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Réponse brute</p>
               <pre className="text-xs text-foreground overflow-auto max-h-60 whitespace-pre-wrap break-words">
                 {typeof result.raw === "string" ? result.raw : JSON.stringify(result.raw, null, 2)}
               </pre>
             </div>
-          )}
+          ) : null}
         </motion.div>
       )}
     </motion.div>

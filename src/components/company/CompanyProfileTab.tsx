@@ -532,11 +532,11 @@ const CompanyProfileTab = ({ companyData, aiResults }: CompanyProfileTabProps) =
               {profile?.company_name ?? "Mon entreprise"}
             </h2>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-              {(profile?.sector ?? companyData?.sector) && (
-                <span className="text-xs text-muted-foreground">{String(profile?.sector ?? companyData?.sector)}</span>
+              {String(profile?.sector ?? companyData?.sector ?? "") && (
+                <span className="text-xs text-muted-foreground">{String(profile?.sector ?? companyData?.sector ?? "")}</span>
               )}
-              {(profile?.company_size ?? companyData?.company_size) && (
-                <Badge variant="secondary" className="text-[10px]">{String(profile?.company_size ?? companyData?.company_size)}</Badge>
+              {String(profile?.company_size ?? companyData?.company_size ?? "") && (
+                <Badge variant="secondary" className="text-[10px]">{String(profile?.company_size ?? companyData?.company_size ?? "")}</Badge>
               )}
             </div>
             <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">

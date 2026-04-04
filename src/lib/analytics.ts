@@ -80,8 +80,10 @@ export type AnalyticsEvent =
   | "analysis_started"
   | "analysis_completed"
   | "report_generated"
+  | "report_emailed"
   | "recommendation_viewed"
   | "recommendation_status_changed"
+  | "recommendation_completed"
   // Navigation
   | "tab_viewed"
   // Conversion

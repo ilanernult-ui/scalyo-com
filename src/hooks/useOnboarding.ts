@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const ONBOARDING_TOTAL_STEPS = 5;
 
 interface OnboardingState {
-  step: number;       // 0 = not started, 1-5 = in progress, 6 = done
+  step: number;
   done: boolean;
   loading: boolean;
 }
@@ -19,16 +19,16 @@ export function useOnboarding(userId: string | undefined): UseOnboardingReturn {
 
   useEffect(() => {
     if (!userId) return;
-    supabase
+    (supabase as any)
       .from("profiles")
       .select("onboarding_step, onboarding_done")
       .eq("id", userId)
       .single()
-      .then(({ data }) => {
+      .then(({ data }: any) => {
         if (data) {
           setState({
-            step: (data as { onboarding_step: number; onboarding_done: boolean }).onboarding_step ?? 0,
-            done: (data as { onboarding_step: number; onboarding_done: boolean }).onboarding_done ?? false,
+            step: data.onboarding_step ?? 0,
+            done: data.onboarding_done ?? false,
             loading: false,
           });
         } else {
@@ -40,7 +40,7 @@ export function useOnboarding(userId: string | undefined): UseOnboardingReturn {
   const setStep = useCallback(async (step: number) => {
     if (!userId) return;
     setState((s) => ({ ...s, step }));
-    await supabase
+    await (supabase as any)
       .from("profiles")
       .update({ onboarding_step: step, updated_at: new Date().toISOString() })
       .eq("id", userId);
@@ -49,7 +49,7 @@ export function useOnboarding(userId: string | undefined): UseOnboardingReturn {
   const complete = useCallback(async () => {
     if (!userId) return;
     setState((s) => ({ ...s, done: true, step: ONBOARDING_TOTAL_STEPS }));
-    await supabase
+    await (supabase as any)
       .from("profiles")
       .update({ onboarding_done: true, onboarding_step: ONBOARDING_TOTAL_STEPS, updated_at: new Date().toISOString() })
       .eq("id", userId);
