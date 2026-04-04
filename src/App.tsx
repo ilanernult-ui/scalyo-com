@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Services from "./pages/Services.tsx";
@@ -20,8 +21,14 @@ import DataDiagPage from "./pages/DataDiagPage.tsx";
 import GrowthPilotPage from "./pages/GrowthPilotPage.tsx";
 import LoyaltyLoopPage from "./pages/LoyaltyLoopPage.tsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.tsx";
+import { usePageTracking } from "./hooks/usePageTracking.ts";
 
 const queryClient = new QueryClient();
+
+const RouterWithTracking = ({ children }: { children: React.ReactNode }) => {
+  usePageTracking();
+  return <>{children}</>;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -30,13 +37,14 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <RouterWithTracking>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/index" element={<Navigate to="/" replace />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><ErrorBoundary name="dashboard"><Dashboard /></ErrorBoundary></ProtectedRoute>} />
             <Route path="/datadiag-demo" element={<DataDiagPage />} />
             <Route path="/growthpilot-demo" element={<GrowthPilotPage />} />
             <Route path="/loyaltyloop-demo" element={<LoyaltyLoopPage />} />
@@ -49,6 +57,7 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </RouterWithTracking>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

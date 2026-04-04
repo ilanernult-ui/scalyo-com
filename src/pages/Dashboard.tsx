@@ -1,13 +1,13 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Menu, LogOut, LayoutDashboard, Activity, Rocket, Heart,
-  Lock, Settings, ChevronRight, Loader2
+  Lock, Settings, ChevronRight, Building2, Plug2, Sparkles, FileText
 } from "lucide-react";
-import { useAuth, PlanType } from "@/contexts/AuthContext";
+import type { PlanType } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import scalyoLogo from "@/assets/scalyo-logo.png";
-import { supabase } from "@/integrations/supabase/client";
 import { STRIPE_PLANS } from "@/lib/stripe-plans";
 import DashboardOverview from "@/components/dashboard/DashboardOverview";
 import DataDiagTab from "@/components/dashboard/DataDiagTab";
@@ -17,17 +17,61 @@ import LockedTabOverlay from "@/components/dashboard/LockedTabOverlay";
 import ConnectDataWizard from "@/components/dashboard/ConnectDataWizard";
 import SettingsTab from "@/components/dashboard/SettingsTab";
 import AIChatPanel from "@/components/dashboard/AIChatPanel";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import CompanyProfileTab from "@/components/company/CompanyProfileTab";
+import DataConnectorsTab from "@/components/connectors/DataConnectorsTab";
+import RecommendationsTab from "@/components/dashboard/RecommendationsTab";
+import ReportsTab from "@/components/dashboard/ReportsTab";
+import OnboardingWizard from "@/components/dashboard/OnboardingWizard";
+import { useOnboarding } from "@/hooks/useOnboarding";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { useAiGeneration } from "@/hooks/useAiGeneration";
 import { useToast } from "@/hooks/use-toast";
-import type { Json } from "@/integrations/supabase/types";
+import { analytics } from "@/lib/analytics";
 
-/* ── Nav items ── */
-const navItems = [
-  { id: "overview", label: "Vue d'ensemble", icon: LayoutDashboard, minPlan: "datadiag" as PlanType },
-  { id: "datadiag", label: "DataDiag", icon: Activity, minPlan: "datadiag" as PlanType },
-  { id: "growthpilot", label: "GrowthPilot", icon: Rocket, minPlan: "growthpilot" as PlanType },
-  { id: "loyaltyloop", label: "LoyaltyLoop", icon: Heart, minPlan: "loyaltyloop" as PlanType },
-  { id: "settings", label: "Paramètres", icon: Settings, minPlan: "datadiag" as PlanType },
-] as const;
+/* ── Nav structure ── */
+type NavItem = { id: string; label: string; icon: React.ComponentType<{ className?: string }>; minPlan: PlanType };
+type NavGroup = { section: string | null; items: NavItem[] };
+
+const navGroups: NavGroup[] = [
+  {
+    section: null,
+    items: [
+      { id: "overview", label: "Tableau de bord", icon: LayoutDashboard, minPlan: "datadiag" },
+    ],
+  },
+  {
+    section: "Mon entreprise",
+    items: [
+      { id: "company", label: "Fiche entreprise", icon: Building2, minPlan: "datadiag" },
+      { id: "connectors", label: "Mes données", icon: Plug2, minPlan: "datadiag" },
+    ],
+  },
+  {
+    section: "Analyses & Rapports",
+    items: [
+      { id: "datadiag", label: "DataDiag", icon: Activity, minPlan: "datadiag" },
+      { id: "growthpilot", label: "GrowthPilot", icon: Rocket, minPlan: "growthpilot" },
+      { id: "loyaltyloop", label: "LoyaltyLoop", icon: Heart, minPlan: "loyaltyloop" },
+      { id: "reports", label: "Rapports PDF", icon: FileText, minPlan: "datadiag" },
+    ],
+  },
+  {
+    section: null,
+    items: [
+      { id: "recommendations", label: "Recommandations IA", icon: Sparkles, minPlan: "datadiag" },
+    ],
+  },
+  {
+    section: null,
+    items: [
+      { id: "settings", label: "Paramètres & Abonnement", icon: Settings, minPlan: "datadiag" },
+    ],
+  },
+];
+
+// Flat list for title lookups
+const navItems = navGroups.flatMap((g) => g.items);
 
 const planHierarchy: Record<PlanType, number> = { datadiag: 0, growthpilot: 1, loyaltyloop: 2 };
 const hasAccess = (userPlan: PlanType, requiredPlan: PlanType) =>
@@ -44,10 +88,6 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
-  const [dataConnected, setDataConnected] = useState(false);
-  const [aiResults, setAiResults] = useState<Record<string, Json>>({});
-  const [companyData, setCompanyData] = useState<Record<string, unknown> | null>(null);
-  const [generatingAnalysis, setGeneratingAnalysis] = useState(false);
 
   const userPlan = plan;
   const initials = user?.user_metadata?.full_name
@@ -57,85 +97,31 @@ const Dashboard = () => {
   const planConfig = STRIPE_PLANS[userPlan];
   const hasPaid = !!stripeSubscriptionId;
 
+  const { companyData, dataConnected, aiResults, loadAiResults, onWizardComplete } = useDashboardData(user?.id);
+  const { generatingAnalysis, generate } = useAiGeneration();
+  const { done: onboardingDone, loading: onboardingLoading } = useOnboarding(user?.id);
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
+
+  const showOnboarding = !onboardingLoading && !onboardingDone && !onboardingDismissed;
+
   /* ── Checkout success ── */
   useEffect(() => {
     if (searchParams.get("checkout") === "success") {
       toast({ title: "Votre plan a été activé avec succès ! 🎉" });
       refreshSubscription();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  /* ── Load data ── */
-  const loadAiResults = useCallback(async () => {
-    if (!user?.id) return;
-    const { data } = await supabase
-      .from("ai_results")
-      .select("service, results")
-      .eq("user_id", user.id);
-    if (data) {
-      const map: Record<string, Json> = {};
-      data.forEach((r) => { map[r.service] = r.results; });
-      setAiResults(map);
-    }
-  }, [user?.id]);
-
-  useEffect(() => {
-    if (!user?.id) return;
-    supabase
-      .from("company_data")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) {
-          setDataConnected(true);
-          setCompanyData(data as unknown as Record<string, unknown>);
-        }
-      });
-    loadAiResults();
-  }, [user?.id, loadAiResults]);
-
-  const handleWizardComplete = () => {
-    setDataConnected(true);
-    // Reload company data
-    if (user?.id) {
-      supabase
-        .from("company_data")
-        .select("*")
-        .eq("user_id", user.id)
-        .maybeSingle()
-        .then(({ data }) => {
-          if (data) setCompanyData(data as unknown as Record<string, unknown>);
-        });
-    }
-    loadAiResults();
-  };
+  const handleWizardComplete = onWizardComplete;
 
   const handleGenerate = async () => {
     if (!user?.id) return;
-    setGeneratingAnalysis(true);
-    try {
-      const services: string[] = ["datadiag"];
-      if (hasAccess(userPlan, "growthpilot")) services.push("growthpilot");
-      if (hasAccess(userPlan, "loyaltyloop")) services.push("loyaltyloop");
-
-      for (const service of services) {
-        const { data, error } = await supabase.functions.invoke(service, {
-          body: companyData || {},
-        });
-        if (error) { console.error(`${service} error:`, error); continue; }
-        await supabase.from("ai_results").upsert(
-          { user_id: user.id, service, results: data },
-          { onConflict: "user_id,service" }
-        );
-      }
-      await loadAiResults();
+    const { ok, message } = await generate(user.id, userPlan, companyData, loadAiResults);
+    if (ok) {
       toast({ title: "Analyse terminée ! 🎉", description: "Consultez vos résultats dans les onglets dédiés." });
-    } catch (e) {
-      console.error("Generate error:", e);
-      toast({ title: "Erreur", description: "Impossible de générer l'analyse.", variant: "destructive" });
-    } finally {
-      setGeneratingAnalysis(false);
+    } else {
+      toast({ title: "Erreur", description: message, variant: "destructive" });
     }
   };
 
@@ -163,14 +149,46 @@ const Dashboard = () => {
 
     if (activeTab === "settings") return <SettingsTab />;
 
+    if (activeTab === "recommendations") {
+      return (
+        <ErrorBoundary name="recommendations">
+          <RecommendationsTab />
+        </ErrorBoundary>
+      );
+    }
+
+    if (activeTab === "reports") {
+      return (
+        <ErrorBoundary name="reports">
+          <ReportsTab />
+        </ErrorBoundary>
+      );
+    }
+
+    if (activeTab === "company") {
+      return (
+        <ErrorBoundary name="company-profile">
+          <CompanyProfileTab companyData={companyData} aiResults={aiResults} />
+        </ErrorBoundary>
+      );
+    }
+
+    if (activeTab === "connectors") {
+      return (
+        <ErrorBoundary name="connectors">
+          <DataConnectorsTab />
+        </ErrorBoundary>
+      );
+    }
+
     const nav = navItems.find((t) => t.id === activeTab);
     if (!nav) return null;
 
     const tabContent = (() => {
       switch (activeTab) {
-        case "datadiag": return <DataDiagTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["datadiag"]} />;
-        case "growthpilot": return <GrowthPilotTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["growthpilot"]} />;
-        case "loyaltyloop": return <LoyaltyLoopTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["loyaltyloop"]} />;
+        case "datadiag": return <ErrorBoundary name="datadiag"><DataDiagTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["datadiag"]} companyData={companyData} /></ErrorBoundary>;
+        case "growthpilot": return <ErrorBoundary name="growthpilot"><GrowthPilotTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["growthpilot"]} /></ErrorBoundary>;
+        case "loyaltyloop": return <ErrorBoundary name="loyaltyloop"><LoyaltyLoopTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["loyaltyloop"]} /></ErrorBoundary>;
         default: return null;
       }
     })();
@@ -203,33 +221,46 @@ const Dashboard = () => {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 p-3 space-y-0.5">
-          {navItems.map((item) => {
-            const locked = item.id !== "overview" && item.id !== "settings" && !hasAccess(userPlan, item.minPlan);
-            const isActive = activeTab === item.id;
-
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  if (locked) { navigate("/tarifs"); return; }
-                  setActiveTab(item.id);
-                  setSidebarOpen(false);
-                }}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  locked
-                    ? "text-muted-foreground/40 cursor-pointer"
-                    : isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                }`}
-              >
-                <item.icon className="h-4 w-4" />
-                <span className="flex-1 text-left">{item.label}</span>
-                {locked && <Lock className="h-3 w-3 text-muted-foreground/30" />}
-              </button>
-            );
-          })}
+        <nav className="flex-1 p-3 overflow-y-auto space-y-1">
+          {navGroups.map((group, gi) => (
+            <div key={gi} className={gi > 0 ? "pt-1" : ""}>
+              {group.section && (
+                <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider px-3.5 py-1.5">
+                  {group.section}
+                </p>
+              )}
+              {group.items.map((item) => {
+                const locked = item.id !== "overview" && item.id !== "settings" && !hasAccess(userPlan, item.minPlan);
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      if (locked) {
+                        analytics.track("upgrade_clicked", { from_tab: item.id, plan: userPlan });
+                        navigate("/tarifs");
+                        return;
+                      }
+                      setActiveTab(item.id);
+                      setSidebarOpen(false);
+                      analytics.track("tab_viewed", { tab: item.id, plan: userPlan });
+                    }}
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                      locked
+                        ? "text-muted-foreground/40 cursor-pointer"
+                        : isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span className="flex-1 text-left">{item.label}</span>
+                    {locked && <Lock className="h-3 w-3 text-muted-foreground/30" />}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* Plan badge */}
@@ -308,7 +339,7 @@ const Dashboard = () => {
         </motion.div>
       </main>
 
-      {/* Wizard */}
+      {/* Connect data wizard */}
       {user?.id && (
         <ConnectDataWizard
           open={wizardOpen}
@@ -316,6 +347,15 @@ const Dashboard = () => {
           plan={userPlan}
           userId={user.id}
           onComplete={handleWizardComplete}
+        />
+      )}
+
+      {/* Onboarding wizard — shown to new users until completed or dismissed */}
+      {user?.id && showOnboarding && (
+        <OnboardingWizard
+          userId={user.id}
+          onComplete={() => setOnboardingDismissed(true)}
+          onDismiss={() => setOnboardingDismissed(true)}
         />
       )}
     </div>

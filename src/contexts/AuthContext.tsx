@@ -1,6 +1,8 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
-import { Session, User } from "@supabase/supabase-js";
+import type { ReactNode} from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { analytics } from "@/lib/analytics";
 
 export type PlanType = "datadiag" | "growthpilot" | "loyaltyloop";
 export type PlanStatus = "active" | "cancelled" | "past_due";
@@ -72,13 +74,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
+    analytics.init();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         setSession(session);
         if (session?.user) {
           setTimeout(() => checkSubscription(), 0);
+          analytics.identify(session.user.id, {
+            email: session.user.email,
+            created_at: session.user.created_at,
+          });
+          if (event === "SIGNED_IN") analytics.track("user_signed_in");
         } else {
           setSub({ plan: "datadiag", planStatus: "active", subscriptionEnd: null, stripeSubscriptionId: null, subscribed: false });
+          analytics.reset();
         }
         setLoading(false);
       }
@@ -101,6 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [session?.user, checkSubscription]);
 
   const signOut = async () => {
+    analytics.track("user_signed_out");
     await supabase.auth.signOut();
     setSub({ plan: "datadiag", planStatus: "active", subscriptionEnd: null, stripeSubscriptionId: null, subscribed: false });
   };
