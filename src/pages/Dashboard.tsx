@@ -129,7 +129,7 @@ const Dashboard = () => {
 
     const tabContent = (() => {
       switch (activeTab) {
-        case "datadiag": return <ErrorBoundary name="datadiag"><DataDiagTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["datadiag"]} /></ErrorBoundary>;
+        case "datadiag": return <ErrorBoundary name="datadiag"><DataDiagTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["datadiag"]} companyData={companyData} /></ErrorBoundary>;
         case "growthpilot": return <ErrorBoundary name="growthpilot"><GrowthPilotTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["growthpilot"]} /></ErrorBoundary>;
         case "loyaltyloop": return <ErrorBoundary name="loyaltyloop"><LoyaltyLoopTab onConnect={handleConnect} dataConnected={dataConnected} aiResults={aiResults["loyaltyloop"]} /></ErrorBoundary>;
         default: return null;

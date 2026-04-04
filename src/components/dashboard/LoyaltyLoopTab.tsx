@@ -1,185 +1,317 @@
-import { Heart, ShieldCheck, TrendingDown, Users, Activity, AlertCircle, UserCheck, FileText } from "lucide-react";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  Heart, ShieldCheck, TrendingDown, Users, AlertTriangle,
+  Gift, Star, ArrowUpRight, FileText, Download, Clock, Zap
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import EmptyStateOverlay from "./EmptyStateOverlay";
 import type { Json } from "@/integrations/supabase/types";
 
 const ACCENT = "hsl(262, 60%, 55%)";
+const ACCENT_BG = "hsl(262, 60%, 55%, 0.12)";
 
-const mockKpis = [
-  { label: "Croissance estimée", value: "+25%", change: "sur 6 mois", icon: ShieldCheck },
-  { label: "Temps gagné", value: "15h", change: "/semaine", icon: Activity },
-  { label: "Churn réduit", value: "-40%", change: "vs mois dernier", icon: TrendingDown },
-  { label: "Gains additionnels", value: "+8 200 €", change: "/mois estimés", icon: AlertCircle },
+// ─── Sub-tab navigation ───────────────────────────────────────────
+type SubTab = "retention" | "fidelisation";
+
+const SUB_TABS: { id: SubTab; label: string }[] = [
+  { id: "retention", label: "Rétention" },
+  { id: "fidelisation", label: "Fidélisation" },
 ];
 
-const churnSegments = [
-  { segment: "Grands comptes", score: 18, clients: 45, urgence: "Faible" },
-  { segment: "PME Tech", score: 42, clients: 120, urgence: "Moyenne" },
-  { segment: "TPE / Indépendants", score: 67, clients: 89, urgence: "Haute" },
-  { segment: "Nouveaux clients (<3 mois)", score: 54, clients: 86, urgence: "Moyenne" },
+// ─── Rétention Dashboard ──────────────────────────────────────────
+const mockChurnSegments = [
+  { segment: "Grands comptes", churnScore: 18, clients: 45, risk: "low" as const },
+  { segment: "PME Tech", churnScore: 42, clients: 120, risk: "medium" as const },
+  { segment: "TPE / Indépendants", churnScore: 67, clients: 89, risk: "high" as const },
+  { segment: "Nouveaux clients (<3 mois)", churnScore: 54, clients: 86, risk: "medium" as const },
 ];
 
-const mockStrategies = [
-  { profil: "Client dormant (>60 jours sans activité)", strategie: "Campagne de réactivation personnalisée", actions: "Email séquence + offre exclusive + appel CSM" },
-  { profil: "Client à risque (score churn >60)", strategie: "Intervention proactive du CSM", actions: "Audit satisfaction + plan de rétention sur mesure" },
-  { profil: "Client fidèle (>12 mois, usage élevé)", strategie: "Programme ambassadeur", actions: "Récompenses, accès bêta, co-marketing" },
+const mockChurnHistory = [
+  { month: "Oct", rate: 5.8 }, { month: "Nov", rate: 5.4 },
+  { month: "Déc", rate: 5.0 }, { month: "Jan", rate: 4.7 },
+  { month: "Fév", rate: 4.5 }, { month: "Mar", rate: 4.2 },
 ];
 
-const mockCrmActions = [
-  { action: "Relancer 23 clients à risque immédiat", priorite: "Haute", impact: "Prévenir 38k€ de churn potentiel" },
-  { action: "Déployer enquête NPS sur segment PME Tech", priorite: "Moyenne", impact: "Identifier les irritants clés" },
-  { action: "Automatiser l'onboarding des nouveaux clients", priorite: "Haute", impact: "Réduire le churn des 90 premiers jours de 20%" },
+const mockAlerts = [
+  { client: "Dupont & Associés", lastActivity: "68 jours", score: 74, action: "Appel CSM urgent" },
+  { client: "TechStart SAS", lastActivity: "45 jours", score: 61, action: "Email de réactivation" },
+  { client: "Innova Corp", lastActivity: "32 jours", score: 52, action: "Offre de renouvellement" },
 ];
 
-const chartData = [
-  { month: "Oct", churn: 5.8 }, { month: "Nov", churn: 5.4 },
-  { month: "Déc", churn: 5.0 }, { month: "Jan", churn: 4.7 },
-  { month: "Fév", churn: 4.5 }, { month: "Mar", churn: 4.2 },
-];
-
-const urgenceColors: Record<string, string> = {
-  "Haute": "text-destructive",
-  "Moyenne": "text-warning",
-  "Faible": "text-success",
+const riskConfig = {
+  low: { label: "Faible", color: "text-emerald-600", bar: "bg-emerald-400" },
+  medium: { label: "Moyen", color: "text-orange-500", bar: "bg-orange-400" },
+  high: { label: "Élevé", color: "text-red-500", bar: "bg-red-400" },
 };
 
-const getGaugeColor = (score: number) => {
-  if (score >= 60) return "bg-destructive";
-  if (score >= 40) return "bg-warning";
-  return "bg-success";
-};
-
-const PreviewContent = () => (
-  <div className="space-y-6">
-    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {mockKpis.map((kpi) => (
-        <div key={kpi.label} className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-sm)]">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs text-muted-foreground">{kpi.label}</p>
-            <kpi.icon className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <p className="text-2xl font-bold text-foreground tracking-tight">{kpi.value}</p>
-          <p className="text-xs font-medium mt-1 text-success">{kpi.change}</p>
-        </div>
-      ))}
-    </div>
-
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
-      <h3 className="text-sm font-semibold text-foreground mb-6">Évolution du churn sur 6 mois (%)</h3>
-      <div className="flex items-end gap-3 h-40">
-        {chartData.map((d) => (
-          <div key={d.month} className="flex-1 flex flex-col items-center gap-1.5">
-            <span className="text-[10px] font-medium text-foreground">{d.churn}%</span>
-            <div className="w-full rounded-t-lg" style={{ height: `${(d.churn / 8) * 120}px`, backgroundColor: "hsl(262, 60%, 55%)" }} />
-            <span className="text-[10px] text-muted-foreground">{d.month}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-
-    <div className="grid lg:grid-cols-2 gap-6">
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
-        <div className="flex items-center gap-2 mb-4">
-          <Users className="h-4 w-4" style={{ color: "hsl(262, 60%, 55%)" }} />
-          <h3 className="text-sm font-semibold text-foreground">Prédiction Churn par segment</h3>
-        </div>
-        <div className="space-y-4">
-          {churnSegments.map((s) => (
-            <div key={s.segment}>
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-sm text-foreground">{s.segment}</span>
-                <div className="flex items-center gap-2">
-                  <span className={`text-[11px] font-medium ${urgenceColors[s.urgence]}`}>{s.urgence}</span>
-                  <span className="text-sm font-bold text-foreground">{s.score}</span>
-                </div>
-              </div>
-              <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                <div className={`h-full rounded-full ${getGaugeColor(s.score)} transition-all`} style={{ width: `${s.score}%` }} />
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-1">{s.clients} clients</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
-        <div className="flex items-center gap-2 mb-4">
-          <UserCheck className="h-4 w-4" style={{ color: "hsl(262, 60%, 55%)" }} />
-          <h3 className="text-sm font-semibold text-foreground">Stratégies de rétention IA</h3>
-        </div>
-        <div className="space-y-3">
-          {mockStrategies.map((s, i) => (
-            <div key={i} className="rounded-xl bg-secondary/50 p-3">
-              <p className="text-[11px] font-medium text-muted-foreground mb-1">{s.profil}</p>
-              <p className="text-sm font-medium text-foreground">{s.strategie}</p>
-              <p className="text-[11px] text-muted-foreground mt-1">{s.actions}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
-      <div className="flex items-center gap-2 mb-4">
-        <FileText className="h-4 w-4" style={{ color: "hsl(262, 60%, 55%)" }} />
-        <h3 className="text-sm font-semibold text-foreground">Recommandations CRM</h3>
-      </div>
-      <div className="space-y-3">
-        {mockCrmActions.map((a, i) => (
-          <div key={i} className="flex items-start gap-3 rounded-xl bg-secondary/50 p-3">
-            <span className="w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: "hsl(262, 60%, 55%, 0.12)", color: "hsl(262, 60%, 55%)" }}>
-              {i + 1}
-            </span>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">{a.action}</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">Priorité : {a.priorite} · {a.impact}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
-      <h3 className="text-sm font-semibold text-foreground mb-3">Suivi 360° — Santé du portefeuille client</h3>
-      <div className="grid sm:grid-cols-4 gap-4">
-        <div className="text-center p-3 rounded-xl bg-secondary/50">
-          <p className="text-2xl font-bold text-foreground">78</p>
-          <p className="text-[11px] text-muted-foreground">Score global</p>
-        </div>
-        <div className="text-center p-3 rounded-xl bg-secondary/50">
-          <p className="text-sm font-medium text-success">↑ En hausse</p>
-          <p className="text-[11px] text-muted-foreground">Tendance</p>
-        </div>
-        <div className="text-center p-3 rounded-xl bg-secondary/50">
-          <p className="text-sm font-medium text-foreground">Satisfaction, Engagement</p>
-          <p className="text-[11px] text-muted-foreground">Points forts</p>
-        </div>
-        <div className="text-center p-3 rounded-xl bg-secondary/50">
-          <p className="text-sm font-medium text-foreground">Onboarding, Support</p>
-          <p className="text-[11px] text-muted-foreground">Points faibles</p>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const AiResultsContent = ({ data }: { data: Record<string, unknown> }) => {
-  const rapport = typeof data.rapport === "string" ? data.rapport : typeof data.analysis === "string" ? data.analysis : JSON.stringify(data, null, 2);
+const RetentionDashboard = ({ aiData }: { aiData: Record<string, unknown> | null }) => {
+  const segments = (aiData?.churn_segments as typeof mockChurnSegments | null) ?? mockChurnSegments;
+  const history = (aiData?.churn_history as typeof mockChurnHistory | null) ?? mockChurnHistory;
+  const alerts = (aiData?.churn_alerts as typeof mockAlerts | null) ?? mockAlerts;
+  const maxRate = Math.max(...history.map((h) => h.rate));
+  const latestRate = history[history.length - 1]?.rate ?? 0;
+  const retentionScore = Math.round(100 - latestRate * 10);
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
-        <div className="flex items-center gap-2 mb-3">
-          <FileText className="h-4 w-4" style={{ color: ACCENT }} />
-          <h3 className="text-sm font-semibold text-foreground">Résultats de l'analyse LoyaltyLoop</h3>
+    <div className="space-y-4">
+      {/* Score rétention */}
+      <div className="grid sm:grid-cols-3 gap-3">
+        {[
+          { label: "Score rétention", value: `${retentionScore}/100`, sub: "Excellent si > 85" },
+          { label: "Taux de churn", value: `${latestRate}%`, sub: "Moy. SaaS B2B : 5%" },
+          { label: "Clients à risque", value: `${alerts.length}`, sub: "Action requise" },
+        ].map((k) => (
+          <div key={k.label} className="rounded-2xl border border-border bg-card p-4">
+            <p className="text-xs text-muted-foreground mb-1">{k.label}</p>
+            <p className="text-xl font-bold text-foreground">{k.value}</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{k.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Churn evolution bar chart */}
+      <div className="rounded-2xl border border-border bg-card p-5">
+        <h3 className="text-sm font-semibold text-foreground mb-4">Évolution du churn (%)</h3>
+        <div className="flex items-end gap-2 h-28">
+          {history.map((h, i) => (
+            <div key={h.month} className="flex-1 flex flex-col items-center gap-1">
+              <span className="text-[10px] font-medium text-foreground">{h.rate}%</span>
+              <motion.div
+                initial={{ height: 0 }}
+                animate={{ height: `${(h.rate / maxRate) * 80}px` }}
+                transition={{ duration: 0.6, delay: i * 0.05 }}
+                className="w-full rounded-t-lg"
+                style={{ backgroundColor: ACCENT, opacity: i === history.length - 1 ? 1 : 0.5 }}
+              />
+              <span className="text-[10px] text-muted-foreground">{h.month}</span>
+            </div>
+          ))}
         </div>
-        <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-          {rapport}
+        <p className="text-[10px] text-emerald-600 font-medium mt-2 flex items-center gap-1">
+          <TrendingDown className="h-3 w-3" /> Churn en baisse de {((mockChurnHistory[0].rate - latestRate) / mockChurnHistory[0].rate * 100).toFixed(0)}% sur 6 mois
+        </p>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-4">
+        {/* Churn par segment */}
+        <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Users className="h-4 w-4" style={{ color: ACCENT }} />
+            <h3 className="text-sm font-semibold text-foreground">Risque churn par segment</h3>
+          </div>
+          <div className="space-y-3">
+            {segments.map((s) => {
+              const rc = riskConfig[s.risk];
+              return (
+                <div key={s.segment}>
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-muted-foreground">{s.segment}</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[10px] font-medium ${rc.color}`}>{rc.label}</span>
+                      <span className="font-bold text-foreground">{s.churnScore}</span>
+                    </div>
+                  </div>
+                  <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${s.churnScore}%` }}
+                      transition={{ duration: 0.7 }}
+                      className={`h-full rounded-full ${rc.bar}`}
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{s.clients} clients</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Alertes prédictives */}
+        <div className="rounded-2xl border-2 border-destructive/20 bg-card p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle className="h-4 w-4 text-destructive" />
+            <h3 className="text-sm font-semibold text-foreground">Alertes prédictives</h3>
+          </div>
+          <div className="space-y-2">
+            {alerts.map((a, i) => (
+              <div key={i} className="rounded-xl bg-destructive/5 border border-destructive/10 p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{a.client}</p>
+                    <p className="text-[11px] text-muted-foreground">Inactif depuis {a.lastActivity}</p>
+                  </div>
+                  <span className="text-[10px] font-bold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full">{a.score}</span>
+                </div>
+                <p className="text-xs text-primary font-medium mt-1.5 flex items-center gap-1">
+                  <ArrowUpRight className="h-3 w-3" /> {a.action}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
+// ─── Fidélisation Dashboard ───────────────────────────────────────
+const mockPrograms = [
+  { name: "Programme Ambassadeur", members: 34, upsellRate: 42, status: "active" as const },
+  { name: "Early Access Beta", members: 87, upsellRate: 28, status: "active" as const },
+  { name: "Club Premium (>24 mois)", members: 19, upsellRate: 61, status: "active" as const },
+];
+
+const mockUpsells = [
+  { from: "DataDiag", to: "GrowthPilot", opportunities: 28, revenue: "5 292 €/mois" },
+  { from: "GrowthPilot", to: "LoyaltyLoop", opportunities: 14, revenue: "2 240 €/mois" },
+];
+
+const mockCrossells = [
+  { product: "Module Reporting PDF", targetClients: 45, conversionRate: 18, gain: "+15 min par rapport" },
+  { product: "Connecteur Shopify", targetClients: 23, conversionRate: 31, gain: "+28% données e-comm" },
+];
+
+const FidelisationDashboard = ({ aiData }: { aiData: Record<string, unknown> | null }) => {
+  const programs = (aiData?.loyalty_programs as typeof mockPrograms | null) ?? mockPrograms;
+  const upsells = (aiData?.upsell_opportunities as typeof mockUpsells | null) ?? mockUpsells;
+  const crossells = (aiData?.crosssell_opportunities as typeof mockCrossells | null) ?? mockCrossells;
+  const totalUpsellRevenue = upsells.reduce((s, u) => s + parseInt(u.revenue.replace(/[^0-9]/g, "")), 0);
+
+  return (
+    <div className="space-y-4">
+      {/* Programmes fidélité */}
+      <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Gift className="h-4 w-4" style={{ color: ACCENT }} />
+          <h3 className="text-sm font-semibold text-foreground">Programmes de fidélité actifs</h3>
+        </div>
+        <div className="space-y-3">
+          {programs.map((p) => (
+            <div key={p.name} className="flex items-center gap-4 rounded-xl bg-secondary/50 p-3">
+              <Star className="h-4 w-4 text-yellow-500 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground">{p.name}</p>
+                <p className="text-xs text-muted-foreground">{p.members} membres</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-bold text-emerald-600">{p.upsellRate}%</p>
+                <p className="text-[10px] text-muted-foreground">taux upsell</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Upsell opportunities */}
+      <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <ArrowUpRight className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">Opportunités upsell</h3>
+          </div>
+          <Badge variant="secondary" className="text-[10px] text-emerald-600">
+            ~{(totalUpsellRevenue / 1000).toFixed(1)}k€/mois potentiels
+          </Badge>
+        </div>
+        <div className="space-y-2">
+          {upsells.map((u, i) => (
+            <div key={i} className="rounded-xl bg-secondary/50 p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="font-medium text-muted-foreground">{u.from}</span>
+                  <ArrowUpRight className="h-3.5 w-3.5 text-primary" />
+                  <span className="font-semibold text-foreground">{u.to}</span>
+                </div>
+                <span className="text-xs font-bold text-emerald-600">{u.revenue}</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1">{u.opportunities} clients éligibles identifiés</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Cross-sell */}
+      <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <ShieldCheck className="h-4 w-4" style={{ color: ACCENT }} />
+          <h3 className="text-sm font-semibold text-foreground">Cross-sell recommandé</h3>
+        </div>
+        <div className="space-y-2">
+          {crossells.map((c, i) => (
+            <div key={i} className="rounded-xl bg-secondary/50 p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium text-foreground">{c.product}</p>
+                  <p className="text-[11px] text-muted-foreground">{c.targetClients} clients cibles · {c.conversionRate}% conv. estimée</p>
+                </div>
+                <span className="text-[10px] text-primary font-medium bg-primary/10 px-2 py-0.5 rounded-full shrink-0">{c.gain}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Recommendations */}
+      <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <Zap className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-semibold text-foreground">Actions fidélisation prioritaires</h3>
+        </div>
+        <div className="space-y-2">
+          {[
+            { text: "Contacter 28 clients DataDiag éligibles GrowthPilot (usage élevé)", gain: "+5 292€/mois" },
+            { text: "Déployer programme ambassadeur sur segment 12–18 mois d'ancienneté", gain: "+42% upsell taux" },
+            { text: "Proposer module Reporting PDF aux 45 clients sans export actif", gain: "+8 clients add-on" },
+          ].map((r, i) => (
+            <div key={i} className="flex items-start gap-3 rounded-xl bg-secondary/50 p-3">
+              <span className="w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5"
+                style={{ backgroundColor: ACCENT_BG, color: ACCENT }}>{i + 1}</span>
+              <div>
+                <p className="text-sm font-medium text-foreground">{r.text}</p>
+                <p className="text-xs text-emerald-600 font-medium mt-0.5">{r.gain}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Report Card ──────────────────────────────────────────────────
+const ReportCard = ({ aiData }: { aiData: Record<string, unknown> | null }) => {
+  const rapport = aiData
+    ? (typeof aiData.rapport === "string" ? aiData.rapport
+      : typeof aiData.analysis === "string" ? aiData.analysis
+        : null)
+    : null;
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <FileText className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-semibold text-foreground">Rapport LoyaltyLoop</h3>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-[10px]">
+            <Clock className="h-2.5 w-2.5 mr-1" /> Ce mois
+          </Badge>
+          <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5">
+            <Download className="h-3 w-3" /> PDF
+          </Button>
+        </div>
+      </div>
+      <p className="text-sm text-muted-foreground leading-relaxed">
+        {rapport ?? "Votre taux de churn est en baisse constante (-28% sur 6 mois). 3 clients à risque immédiat ont été identifiés et nécessitent une intervention CSM. Le potentiel upsell non exploité représente ~7 500€/mois. Priorité : contacter les 28 clients DataDiag éligibles GrowthPilot."}
+      </p>
+    </div>
+  );
+};
+
+// ─── Main Component ───────────────────────────────────────────────
 interface LoyaltyLoopTabProps {
   onConnect?: () => void;
   dataConnected?: boolean;
@@ -187,22 +319,51 @@ interface LoyaltyLoopTabProps {
 }
 
 const LoyaltyLoopTab = ({ onConnect, dataConnected, aiResults }: LoyaltyLoopTabProps) => {
-  if (dataConnected && aiResults && typeof aiResults === "object" && !Array.isArray(aiResults)) {
-    return <AiResultsContent data={aiResults as Record<string, unknown>} />;
-  }
+  const [subTab, setSubTab] = useState<SubTab>("retention");
 
-  if (dataConnected) return <PreviewContent />;
+  const aiData = (aiResults && typeof aiResults === "object" && !Array.isArray(aiResults))
+    ? aiResults as Record<string, unknown>
+    : null;
+
+  const content = (
+    <div className="space-y-4">
+      {/* Sub-tab pills */}
+      <div className="flex gap-1.5 bg-secondary/50 rounded-xl p-1 w-fit">
+        {SUB_TABS.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setSubTab(t.id)}
+            className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              subTab === t.id
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Sub-dashboard */}
+      {subTab === "retention" && <RetentionDashboard aiData={aiData} />}
+      {subTab === "fidelisation" && <FidelisationDashboard aiData={aiData} />}
+
+      <ReportCard aiData={aiData} />
+    </div>
+  );
+
+  if (dataConnected) return content;
 
   return (
     <EmptyStateOverlay
       icon={Heart}
       serviceName="LoyaltyLoop"
-      description="Transformation business complète : optimisation continue automatique, nouvelles recommandations chaque semaine, suivi ROI en temps réel. En bonus : prédiction du churn et stratégies de rétention. Résultat moyen : +25% de croissance et -40% de churn."
+      description="Prédiction du churn par segment, alertes clients à risque, programmes fidélité et opportunités upsell/cross-sell. Résultat moyen : +25% de croissance et -40% de churn."
       accentColor={ACCENT}
       onConnect={onConnect}
-      buttonLabel={dataConnected ? "Mettre à jour mes données" : "Connecter mes données"}
+      buttonLabel="Connecter mes données"
     >
-      <PreviewContent />
+      {content}
     </EmptyStateOverlay>
   );
 };
