@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { PlanType } from "@/contexts/AuthContext";
 import type { Json } from "@/integrations/supabase/types";
+import { analytics } from "@/lib/analytics";
 
 const planHierarchy: Record<PlanType, number> = { datadiag: 0, growthpilot: 1, loyaltyloop: 2 };
 const hasAccess = (userPlan: PlanType, required: PlanType) =>
@@ -27,6 +28,7 @@ export function useAiGeneration(): UseAiGenerationReturn {
     onSuccess: () => Promise<void>
   ) => {
     setGeneratingAnalysis(true);
+    analytics.track("analysis_started", { plan });
     try {
       const services: PlanType[] = ["datadiag"];
       if (hasAccess(plan, "growthpilot")) services.push("growthpilot");
@@ -43,6 +45,7 @@ export function useAiGeneration(): UseAiGenerationReturn {
         );
       }
       await onSuccess();
+      analytics.track("analysis_completed", { plan, services });
       return { ok: true, message: "Analyse terminée !" };
     } catch (e) {
       console.error("Generate error:", e);

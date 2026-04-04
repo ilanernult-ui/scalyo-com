@@ -22,6 +22,7 @@ import CompanyProfileTab from "@/components/company/CompanyProfileTab";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useAiGeneration } from "@/hooks/useAiGeneration";
 import { useToast } from "@/hooks/use-toast";
+import { analytics } from "@/lib/analytics";
 
 /* ── Nav items ── */
 const navItems = [
@@ -162,9 +163,14 @@ const Dashboard = () => {
               <button
                 key={item.id}
                 onClick={() => {
-                  if (locked) { navigate("/tarifs"); return; }
+                  if (locked) {
+                    analytics.track("upgrade_clicked", { from_tab: item.id, plan: userPlan });
+                    navigate("/tarifs");
+                    return;
+                  }
                   setActiveTab(item.id);
                   setSidebarOpen(false);
+                  analytics.track("tab_viewed", { tab: item.id, plan: userPlan });
                 }}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                   locked

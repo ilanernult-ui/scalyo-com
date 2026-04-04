@@ -21,8 +21,14 @@ import DataDiagPage from "./pages/DataDiagPage.tsx";
 import GrowthPilotPage from "./pages/GrowthPilotPage.tsx";
 import LoyaltyLoopPage from "./pages/LoyaltyLoopPage.tsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.tsx";
+import { usePageTracking } from "./hooks/usePageTracking.ts";
 
 const queryClient = new QueryClient();
+
+const RouterWithTracking = ({ children }: { children: React.ReactNode }) => {
+  usePageTracking();
+  return <>{children}</>;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -31,6 +37,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <RouterWithTracking>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/index" element={<Navigate to="/" replace />} />
@@ -50,6 +57,7 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </RouterWithTracking>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
