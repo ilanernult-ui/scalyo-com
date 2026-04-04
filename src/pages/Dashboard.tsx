@@ -29,18 +29,49 @@ import { useAiGeneration } from "@/hooks/useAiGeneration";
 import { useToast } from "@/hooks/use-toast";
 import { analytics } from "@/lib/analytics";
 
-/* ── Nav items ── */
-const navItems = [
-  { id: "overview", label: "Vue d'ensemble", icon: LayoutDashboard, minPlan: "datadiag" as PlanType },
-  { id: "company", label: "Mon entreprise", icon: Building2, minPlan: "datadiag" as PlanType },
-  { id: "connectors", label: "Mes données", icon: Plug2, minPlan: "datadiag" as PlanType },
-  { id: "datadiag", label: "DataDiag", icon: Activity, minPlan: "datadiag" as PlanType },
-  { id: "growthpilot", label: "GrowthPilot", icon: Rocket, minPlan: "growthpilot" as PlanType },
-  { id: "loyaltyloop", label: "LoyaltyLoop", icon: Heart, minPlan: "loyaltyloop" as PlanType },
-  { id: "recommendations", label: "Recommandations IA", icon: Sparkles, minPlan: "datadiag" as PlanType },
-  { id: "reports", label: "Rapports PDF", icon: FileText, minPlan: "datadiag" as PlanType },
-  { id: "settings", label: "Paramètres", icon: Settings, minPlan: "datadiag" as PlanType },
-] as const;
+/* ── Nav structure ── */
+type NavItem = { id: string; label: string; icon: React.ComponentType<{ className?: string }>; minPlan: PlanType };
+type NavGroup = { section: string | null; items: NavItem[] };
+
+const navGroups: NavGroup[] = [
+  {
+    section: null,
+    items: [
+      { id: "overview", label: "Tableau de bord", icon: LayoutDashboard, minPlan: "datadiag" },
+    ],
+  },
+  {
+    section: "Mon entreprise",
+    items: [
+      { id: "company", label: "Fiche entreprise", icon: Building2, minPlan: "datadiag" },
+      { id: "connectors", label: "Mes données", icon: Plug2, minPlan: "datadiag" },
+    ],
+  },
+  {
+    section: "Analyses & Rapports",
+    items: [
+      { id: "datadiag", label: "DataDiag", icon: Activity, minPlan: "datadiag" },
+      { id: "growthpilot", label: "GrowthPilot", icon: Rocket, minPlan: "growthpilot" },
+      { id: "loyaltyloop", label: "LoyaltyLoop", icon: Heart, minPlan: "loyaltyloop" },
+      { id: "reports", label: "Rapports PDF", icon: FileText, minPlan: "datadiag" },
+    ],
+  },
+  {
+    section: null,
+    items: [
+      { id: "recommendations", label: "Recommandations IA", icon: Sparkles, minPlan: "datadiag" },
+    ],
+  },
+  {
+    section: null,
+    items: [
+      { id: "settings", label: "Paramètres & Abonnement", icon: Settings, minPlan: "datadiag" },
+    ],
+  },
+];
+
+// Flat list for title lookups
+const navItems = navGroups.flatMap((g) => g.items);
 
 const planHierarchy: Record<PlanType, number> = { datadiag: 0, growthpilot: 1, loyaltyloop: 2 };
 const hasAccess = (userPlan: PlanType, requiredPlan: PlanType) =>
@@ -190,38 +221,46 @@ const Dashboard = () => {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 p-3 space-y-0.5">
-          {navItems.map((item) => {
-            const locked = item.id !== "overview" && item.id !== "settings" && !hasAccess(userPlan, item.minPlan);
-            const isActive = activeTab === item.id;
-
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  if (locked) {
-                    analytics.track("upgrade_clicked", { from_tab: item.id, plan: userPlan });
-                    navigate("/tarifs");
-                    return;
-                  }
-                  setActiveTab(item.id);
-                  setSidebarOpen(false);
-                  analytics.track("tab_viewed", { tab: item.id, plan: userPlan });
-                }}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  locked
-                    ? "text-muted-foreground/40 cursor-pointer"
-                    : isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                }`}
-              >
-                <item.icon className="h-4 w-4" />
-                <span className="flex-1 text-left">{item.label}</span>
-                {locked && <Lock className="h-3 w-3 text-muted-foreground/30" />}
-              </button>
-            );
-          })}
+        <nav className="flex-1 p-3 overflow-y-auto space-y-1">
+          {navGroups.map((group, gi) => (
+            <div key={gi} className={gi > 0 ? "pt-1" : ""}>
+              {group.section && (
+                <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider px-3.5 py-1.5">
+                  {group.section}
+                </p>
+              )}
+              {group.items.map((item) => {
+                const locked = item.id !== "overview" && item.id !== "settings" && !hasAccess(userPlan, item.minPlan);
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      if (locked) {
+                        analytics.track("upgrade_clicked", { from_tab: item.id, plan: userPlan });
+                        navigate("/tarifs");
+                        return;
+                      }
+                      setActiveTab(item.id);
+                      setSidebarOpen(false);
+                      analytics.track("tab_viewed", { tab: item.id, plan: userPlan });
+                    }}
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                      locked
+                        ? "text-muted-foreground/40 cursor-pointer"
+                        : isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span className="flex-1 text-left">{item.label}</span>
+                    {locked && <Lock className="h-3 w-3 text-muted-foreground/30" />}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* Plan badge */}
