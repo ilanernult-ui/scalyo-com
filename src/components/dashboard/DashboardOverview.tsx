@@ -86,9 +86,9 @@ const DashboardOverview = ({ plan, dataConnected, companyData, onConnect, onGene
           <h2 className="text-xl font-semibold text-foreground tracking-tight">
             Vue d'ensemble — {currentMonth().charAt(0).toUpperCase() + currentMonth().slice(1)}
           </h2>
-          {companyData?.company_name && (
-            <p className="text-sm text-muted-foreground mt-0.5">{String(companyData.company_name as string)}</p>
-          )}
+          {companyData?.company_name ? (
+            <p className="text-sm text-muted-foreground mt-0.5">{String(companyData.company_name)}</p>
+          ) : null}
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={onConnect} className="gap-2">
