@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Menu, LogOut, LayoutDashboard, Activity, Rocket, Heart,
-  Lock, Settings, ChevronRight, Building2, Plug2, Sparkles
+  Lock, Settings, ChevronRight, Building2, Plug2, Sparkles, FileText
 } from "lucide-react";
 import type { PlanType } from "@/contexts/AuthContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,6 +21,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import CompanyProfileTab from "@/components/company/CompanyProfileTab";
 import DataConnectorsTab from "@/components/connectors/DataConnectorsTab";
 import RecommendationsTab from "@/components/dashboard/RecommendationsTab";
+import ReportsTab from "@/components/dashboard/ReportsTab";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useAiGeneration } from "@/hooks/useAiGeneration";
 import { useToast } from "@/hooks/use-toast";
@@ -35,6 +36,7 @@ const navItems = [
   { id: "growthpilot", label: "GrowthPilot", icon: Rocket, minPlan: "growthpilot" as PlanType },
   { id: "loyaltyloop", label: "LoyaltyLoop", icon: Heart, minPlan: "loyaltyloop" as PlanType },
   { id: "recommendations", label: "Recommandations IA", icon: Sparkles, minPlan: "datadiag" as PlanType },
+  { id: "reports", label: "Rapports PDF", icon: FileText, minPlan: "datadiag" as PlanType },
   { id: "settings", label: "Paramètres", icon: Settings, minPlan: "datadiag" as PlanType },
 ] as const;
 
@@ -114,6 +116,14 @@ const Dashboard = () => {
       return (
         <ErrorBoundary name="recommendations">
           <RecommendationsTab />
+        </ErrorBoundary>
+      );
+    }
+
+    if (activeTab === "reports") {
+      return (
+        <ErrorBoundary name="reports">
+          <ReportsTab />
         </ErrorBoundary>
       );
     }
