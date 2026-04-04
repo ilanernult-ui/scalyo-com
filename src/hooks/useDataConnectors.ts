@@ -12,18 +12,16 @@ interface UseDataConnectorsReturn {
   simulateSync: (connectorId: ConnectorKey) => Promise<void>;
 }
 
+const db = supabase as any;
+
 export function useDataConnectors(userId: string | undefined): UseDataConnectorsReturn {
   const [connectors, setConnectors] = useState<DataConnector[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
     if (!userId) return;
-    const { data } = await supabase
-      .from("data_connectors")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
-    if (data) setConnectors(data as unknown as DataConnector[]);
+    const { data } = await db.from("data_connectors").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+    if (data) setConnectors(data as DataConnector[]);
     setLoading(false);
   }, [userId]);
 
@@ -31,7 +29,7 @@ export function useDataConnectors(userId: string | undefined): UseDataConnectors
 
   const addConnector = useCallback(async (connectorId: ConnectorKey, config: Record<string, unknown> = {}) => {
     if (!userId) return;
-    const { data } = await supabase
+    const { data } = await db
       .from("data_connectors")
       .upsert(
         { user_id: userId, connector_id: connectorId, status: "connected", config, last_sync_at: new Date().toISOString() },
@@ -39,23 +37,23 @@ export function useDataConnectors(userId: string | undefined): UseDataConnectors
       )
       .select()
       .single();
-    if (data) setConnectors((prev) => {
+    if (data) setConnectors((prev: DataConnector[]) => {
       const exists = prev.find((c) => c.connector_id === connectorId);
-      if (exists) return prev.map((c) => c.connector_id === connectorId ? data as unknown as DataConnector : c);
-      return [data as unknown as DataConnector, ...prev];
+      if (exists) return prev.map((c) => c.connector_id === connectorId ? data as DataConnector : c);
+      return [data as DataConnector, ...prev];
     });
   }, [userId]);
 
   const updateConnector = useCallback(async (connectorId: ConnectorKey, updates: Partial<DataConnector>) => {
     if (!userId) return;
-    const { data } = await supabase
+    const { data } = await db
       .from("data_connectors")
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq("user_id", userId)
       .eq("connector_id", connectorId)
       .select()
       .single();
-    if (data) setConnectors((prev) => prev.map((c) => c.connector_id === connectorId ? data as unknown as DataConnector : c));
+    if (data) setConnectors((prev: DataConnector[]) => prev.map((c) => c.connector_id === connectorId ? data as DataConnector : c));
   }, [userId]);
 
   const disconnectConnector = useCallback(async (connectorId: ConnectorKey) => {
@@ -66,7 +64,6 @@ export function useDataConnectors(userId: string | undefined): UseDataConnectors
     await updateConnector(connectorId, { frequency });
   }, [updateConnector]);
 
-  /** Simulates a sync (in real app this would call an Edge Function) */
   const simulateSync = useCallback(async (connectorId: ConnectorKey) => {
     await updateConnector(connectorId, { last_sync_at: new Date().toISOString(), status: "connected", sync_error: null });
   }, [updateConnector]);

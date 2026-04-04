@@ -30,14 +30,14 @@ export function useCompanyProfile(userId: string | undefined): UseCompanyProfile
     setLoading(true);
     const [p, c, o, n] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", userId).single(),
-      supabase.from("company_contacts").select("*").eq("user_id", userId).order("is_main", { ascending: false }),
-      supabase.from("business_objectives").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
-      supabase.from("company_notes").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
+      (supabase as any).from("company_contacts").select("*").eq("user_id", userId).order("is_main", { ascending: false }),
+      (supabase as any).from("business_objectives").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
+      (supabase as any).from("company_notes").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
     ]);
     if (p.data) setProfile(p.data as unknown as CompanyProfile);
-    if (c.data) setContacts(c.data as unknown as CompanyContact[]);
-    if (o.data) setObjectives(o.data as unknown as BusinessObjective[]);
-    if (n.data) setNotes(n.data as unknown as CompanyNote[]);
+    if (c.data) setContacts(c.data as CompanyContact[]);
+    if (o.data) setObjectives(o.data as BusinessObjective[]);
+    if (n.data) setNotes(n.data as CompanyNote[]);
     setLoading(false);
   }, [userId]);
 
@@ -47,7 +47,7 @@ export function useCompanyProfile(userId: string | undefined): UseCompanyProfile
     if (!userId) return;
     const { data } = await supabase
       .from("profiles")
-      .update({ ...updates, updated_at: new Date().toISOString() })
+      .update({ ...updates, updated_at: new Date().toISOString() } as any)
       .eq("id", userId)
       .select()
       .single();
@@ -56,39 +56,39 @@ export function useCompanyProfile(userId: string | undefined): UseCompanyProfile
 
   const addContact = useCallback(async (c: Omit<CompanyContact, "id" | "user_id" | "created_at">) => {
     if (!userId) return;
-    const { data } = await supabase.from("company_contacts").insert({ ...c, user_id: userId }).select().single();
-    if (data) setContacts((prev) => [data as unknown as CompanyContact, ...prev]);
+    const { data } = await (supabase as any).from("company_contacts").insert({ ...c, user_id: userId }).select().single();
+    if (data) setContacts((prev) => [data as CompanyContact, ...prev]);
   }, [userId]);
 
   const deleteContact = useCallback(async (id: string) => {
-    await supabase.from("company_contacts").delete().eq("id", id);
+    await (supabase as any).from("company_contacts").delete().eq("id", id);
     setContacts((prev) => prev.filter((c) => c.id !== id));
   }, []);
 
   const addObjective = useCallback(async (o: Omit<BusinessObjective, "id" | "user_id" | "created_at">) => {
     if (!userId) return;
-    const { data } = await supabase.from("business_objectives").insert({ ...o, user_id: userId }).select().single();
-    if (data) setObjectives((prev) => [data as unknown as BusinessObjective, ...prev]);
+    const { data } = await (supabase as any).from("business_objectives").insert({ ...o, user_id: userId }).select().single();
+    if (data) setObjectives((prev) => [data as BusinessObjective, ...prev]);
   }, [userId]);
 
   const updateObjective = useCallback(async (id: string, updates: Partial<BusinessObjective>) => {
-    const { data } = await supabase.from("business_objectives").update(updates).eq("id", id).select().single();
-    if (data) setObjectives((prev) => prev.map((o) => (o.id === id ? data as unknown as BusinessObjective : o)));
+    const { data } = await (supabase as any).from("business_objectives").update(updates).eq("id", id).select().single();
+    if (data) setObjectives((prev) => prev.map((o) => (o.id === id ? data as BusinessObjective : o)));
   }, []);
 
   const deleteObjective = useCallback(async (id: string) => {
-    await supabase.from("business_objectives").delete().eq("id", id);
+    await (supabase as any).from("business_objectives").delete().eq("id", id);
     setObjectives((prev) => prev.filter((o) => o.id !== id));
   }, []);
 
   const addNote = useCallback(async (content: string) => {
     if (!userId) return;
-    const { data } = await supabase.from("company_notes").insert({ content, user_id: userId }).select().single();
-    if (data) setNotes((prev) => [data as unknown as CompanyNote, ...prev]);
+    const { data } = await (supabase as any).from("company_notes").insert({ content, user_id: userId }).select().single();
+    if (data) setNotes((prev) => [data as CompanyNote, ...prev]);
   }, [userId]);
 
   const deleteNote = useCallback(async (id: string) => {
-    await supabase.from("company_notes").delete().eq("id", id);
+    await (supabase as any).from("company_notes").delete().eq("id", id);
     setNotes((prev) => prev.filter((n) => n.id !== id));
   }, []);
 
