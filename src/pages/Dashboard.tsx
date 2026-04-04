@@ -3,9 +3,10 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Menu, LogOut, LayoutDashboard, Activity, Rocket, Heart,
-  Lock, Settings, ChevronRight
+  Lock, Settings, ChevronRight, Building2
 } from "lucide-react";
-import { useAuth, PlanType } from "@/contexts/AuthContext";
+import type { PlanType } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import scalyoLogo from "@/assets/scalyo-logo.png";
 import { STRIPE_PLANS } from "@/lib/stripe-plans";
 import DashboardOverview from "@/components/dashboard/DashboardOverview";
@@ -17,6 +18,7 @@ import ConnectDataWizard from "@/components/dashboard/ConnectDataWizard";
 import SettingsTab from "@/components/dashboard/SettingsTab";
 import AIChatPanel from "@/components/dashboard/AIChatPanel";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import CompanyProfileTab from "@/components/company/CompanyProfileTab";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useAiGeneration } from "@/hooks/useAiGeneration";
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 /* ── Nav items ── */
 const navItems = [
   { id: "overview", label: "Vue d'ensemble", icon: LayoutDashboard, minPlan: "datadiag" as PlanType },
+  { id: "company", label: "Mon entreprise", icon: Building2, minPlan: "datadiag" as PlanType },
   { id: "datadiag", label: "DataDiag", icon: Activity, minPlan: "datadiag" as PlanType },
   { id: "growthpilot", label: "GrowthPilot", icon: Rocket, minPlan: "growthpilot" as PlanType },
   { id: "loyaltyloop", label: "LoyaltyLoop", icon: Heart, minPlan: "loyaltyloop" as PlanType },
@@ -63,6 +66,7 @@ const Dashboard = () => {
       toast({ title: "Votre plan a été activé avec succès ! 🎉" });
       refreshSubscription();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   const handleWizardComplete = onWizardComplete;
@@ -100,6 +104,14 @@ const Dashboard = () => {
     }
 
     if (activeTab === "settings") return <SettingsTab />;
+
+    if (activeTab === "company") {
+      return (
+        <ErrorBoundary name="company-profile">
+          <CompanyProfileTab companyData={companyData} aiResults={aiResults} />
+        </ErrorBoundary>
+      );
+    }
 
     const nav = navItems.find((t) => t.id === activeTab);
     if (!nav) return null;
