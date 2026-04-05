@@ -212,7 +212,7 @@ const Pricing = () => {
                   size="lg"
                   onClick={() => navigate(user ? "/tarifs" : "/auth")}
                 >
-                  Essayer{plan.popular && " →"}
+                  Choisir ce plan{plan.popular && " →"}
                 </Button>
                 <p className="text-xs text-muted-foreground text-center mb-6">
                   14 jours gratuits · aucune carte requise
