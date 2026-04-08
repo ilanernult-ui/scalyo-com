@@ -22,8 +22,6 @@ import CompanyProfileTab from "@/components/company/CompanyProfileTab";
 import DataConnectorsTab from "@/components/connectors/DataConnectorsTab";
 import RecommendationsTab from "@/components/dashboard/RecommendationsTab";
 import ReportsTab from "@/components/dashboard/ReportsTab";
-import OnboardingWizard from "@/components/dashboard/OnboardingWizard";
-import { useOnboarding } from "@/hooks/useOnboarding";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useAiGeneration } from "@/hooks/useAiGeneration";
 import { useToast } from "@/hooks/use-toast";
@@ -99,10 +97,6 @@ const Dashboard = () => {
 
   const { companyData, dataConnected, aiResults, loadAiResults, onWizardComplete } = useDashboardData(user?.id);
   const { generatingAnalysis, generate } = useAiGeneration();
-  const { done: onboardingDone, loading: onboardingLoading } = useOnboarding(user?.id);
-  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
-
-  const showOnboarding = !onboardingLoading && !onboardingDone && !onboardingDismissed;
 
   /* ── Checkout success ── */
   useEffect(() => {
@@ -350,14 +344,6 @@ const Dashboard = () => {
         />
       )}
 
-      {/* Onboarding wizard — shown to new users until completed or dismissed */}
-      {user?.id && showOnboarding && (
-        <OnboardingWizard
-          userId={user.id}
-          onComplete={() => setOnboardingDismissed(true)}
-          onDismiss={() => setOnboardingDismissed(true)}
-        />
-      )}
     </div>
   );
 };
