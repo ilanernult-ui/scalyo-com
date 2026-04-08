@@ -236,7 +236,13 @@ const ContactsCard = ({ contacts, onAdd, onDelete }: {
       </div>
 
       {contacts.length === 0 ? (
-        <p className="text-xs text-muted-foreground text-center py-4">Aucun contact enregistré.</p>
+        <div className="text-center py-6 px-4 rounded-xl bg-secondary/30 border border-dashed border-border">
+          <Users className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
+          <p className="text-xs text-muted-foreground">Ajoutez vos contacts clés pour que Scalyo puisse personnaliser vos rapports et recommandations.</p>
+          <Button variant="outline" size="sm" className="mt-3 h-7 text-xs gap-1" onClick={() => setOpen(true)}>
+            <Plus className="h-3 w-3" /> Ajouter un contact
+          </Button>
+        </div>
       ) : (
         <div className="space-y-2">
           {contacts.map((c) => (
@@ -262,10 +268,22 @@ const ContactsCard = ({ contacts, onAdd, onDelete }: {
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>Ajouter un contact</DialogTitle></DialogHeader>
           <div className="space-y-3 pt-2">
-            <Input placeholder="Nom *" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
-            <Input placeholder="Rôle (ex : CEO, DAF)" value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))} />
-            <Input placeholder="Email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
-            <Input placeholder="Téléphone" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Nom *</label>
+              <Input placeholder="Jean Dupont" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Poste</label>
+              <Input placeholder="CEO, DAF, Directeur commercial…" value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Email</label>
+              <Input placeholder="jean@entreprise.fr" type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Téléphone</label>
+              <Input placeholder="+33 6 12 34 56 78" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
+            </div>
             <label className="flex items-center gap-2 text-sm cursor-pointer">
               <input type="checkbox" checked={form.is_main} onChange={(e) => setForm((f) => ({ ...f, is_main: e.target.checked }))} />
               Contact principal
@@ -293,6 +311,14 @@ const statusIcon = (s: ObjectiveStatus) => ({
 
 const statusLabel = (s: ObjectiveStatus) => ({ active: "En cours", achieved: "Atteint", paused: "En pause" }[s]);
 
+const PREDEFINED_OBJECTIVES = [
+  "Augmenter le CA",
+  "Réduire le churn",
+  "Améliorer la marge",
+  "Optimiser les coûts",
+  "Fidéliser les clients",
+];
+
 const ObjectivesCard = ({ objectives, onAdd, onUpdate, onDelete }: {
   objectives: ReturnType<typeof useCompanyProfile>["objectives"];
   onAdd: ReturnType<typeof useCompanyProfile>["addObjective"];
@@ -302,6 +328,7 @@ const ObjectivesCard = ({ objectives, onAdd, onUpdate, onDelete }: {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ title: "", kpi_target: "", deadline: "", status: "active" as ObjectiveStatus });
   const [saving, setSaving] = useState(false);
+  const [addingPreset, setAddingPreset] = useState<string | null>(null);
 
   const handleAdd = async () => {
     if (!form.title.trim()) return;
@@ -312,6 +339,16 @@ const ObjectivesCard = ({ objectives, onAdd, onUpdate, onDelete }: {
     setOpen(false);
   };
 
+  const handlePresetClick = async (title: string) => {
+    const alreadyExists = objectives.some((o) => o.title === title);
+    if (alreadyExists) return;
+    setAddingPreset(title);
+    await onAdd({ title, kpi_target: null, deadline: null, status: "active" });
+    setAddingPreset(null);
+  };
+
+  const existingTitles = new Set(objectives.map((o) => o.title));
+
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
       <div className="flex items-center justify-between mb-3">
@@ -320,12 +357,38 @@ const ObjectivesCard = ({ objectives, onAdd, onUpdate, onDelete }: {
           <h3 className="text-sm font-semibold text-foreground">Objectifs business</h3>
         </div>
         <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setOpen(true)}>
-          <Plus className="h-3 w-3" /> Ajouter
+          <Plus className="h-3 w-3" /> Personnalisé
         </Button>
       </div>
 
+      {/* Predefined objectives chips */}
+      <div className="flex flex-wrap gap-1.5 mb-4">
+        {PREDEFINED_OBJECTIVES.map((title) => {
+          const isActive = existingTitles.has(title);
+          const isLoading = addingPreset === title;
+          return (
+            <button
+              key={title}
+              onClick={() => handlePresetClick(title)}
+              disabled={isActive || isLoading}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+                isActive
+                  ? "bg-primary/10 text-primary border border-primary/30 cursor-default"
+                  : "bg-secondary text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground"
+              }`}
+            >
+              {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : isActive ? <CheckCircle2 className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+              {title}
+            </button>
+          );
+        })}
+      </div>
+
       {objectives.length === 0 ? (
-        <p className="text-xs text-muted-foreground text-center py-4">Aucun objectif défini.</p>
+        <div className="text-center py-5 px-4 rounded-xl bg-secondary/30 border border-dashed border-border">
+          <Target className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
+          <p className="text-xs text-muted-foreground">Définissez vos objectifs pour que Scalyo adapte ses recommandations IA à vos priorités.</p>
+        </div>
       ) : (
         <div className="space-y-2">
           {objectives.map((o) => (
@@ -417,7 +480,7 @@ const NotesCard = ({ notes, onAdd, onDelete }: {
       </div>
 
       {notes.length === 0 ? (
-        <p className="text-xs text-muted-foreground text-center py-2">Aucune note enregistrée.</p>
+        <p className="text-xs text-muted-foreground text-center py-3">Ajoutez des notes internes pour garder une trace de vos observations et décisions.</p>
       ) : (
         <div className="space-y-2 max-h-64 overflow-y-auto">
           {notes.map((n) => (
@@ -517,6 +580,18 @@ const CompanyProfileTab = ({ companyData, aiResults }: CompanyProfileTabProps) =
 
   return (
     <div className="space-y-6">
+      {/* Explanation banner */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-2xl border border-primary/20 bg-primary/5 p-4 flex items-start gap-3"
+      >
+        <Building2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+        <p className="text-sm text-foreground">
+          Votre fiche entreprise permet à Scalyo de <span className="font-semibold">personnaliser vos analyses, recommandations et rapports PDF</span> selon votre profil.
+        </p>
+      </motion.div>
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
