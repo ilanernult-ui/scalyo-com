@@ -274,11 +274,14 @@ const OnboardingWizard = ({ userId, onComplete, onDismiss }: OnboardingWizardPro
   const [saving, setSaving] = useState(false);
 
   const canProceed = () => {
-    if (currentStep === 0) return profileForm.company_name.trim().length > 0 && profileForm.sector.length > 0;
-    if (currentStep === 1) return selectedObjectives.length > 0;
-    if (currentStep === 2) return selectedConnectors.length > 0;
     if (currentStep === 3) return diagDone;
     return true;
+  };
+
+  const goToStep = (target: number) => {
+    if (target >= 0 && target < ONBOARDING_TOTAL_STEPS) {
+      setCurrentStep(target);
+    }
   };
 
   const toggleObjective = (id: string) => {
