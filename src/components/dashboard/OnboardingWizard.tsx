@@ -274,11 +274,14 @@ const OnboardingWizard = ({ userId, onComplete, onDismiss }: OnboardingWizardPro
   const [saving, setSaving] = useState(false);
 
   const canProceed = () => {
-    if (currentStep === 0) return profileForm.company_name.trim().length > 0 && profileForm.sector.length > 0;
-    if (currentStep === 1) return selectedObjectives.length > 0;
-    if (currentStep === 2) return selectedConnectors.length > 0;
     if (currentStep === 3) return diagDone;
     return true;
+  };
+
+  const goToStep = (target: number) => {
+    if (target >= 0 && target < ONBOARDING_TOTAL_STEPS) {
+      setCurrentStep(target);
+    }
   };
 
   const toggleObjective = (id: string) => {
@@ -363,7 +366,7 @@ const OnboardingWizard = ({ userId, onComplete, onDismiss }: OnboardingWizardPro
           {/* Step dots + labels */}
           <div className="flex items-center justify-between mb-3">
             {STEP_META.map((s, i) => (
-              <div key={i} className="flex flex-col items-center gap-1">
+              <button key={i} onClick={() => goToStep(i)} className="flex flex-col items-center gap-1 cursor-pointer">
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
                   i < currentStep ? "bg-primary text-primary-foreground"
                     : i === currentStep ? "bg-primary/15 text-primary border-2 border-primary"
@@ -374,7 +377,7 @@ const OnboardingWizard = ({ userId, onComplete, onDismiss }: OnboardingWizardPro
                 <span className={`text-[9px] font-medium ${i === currentStep ? "text-primary" : "text-muted-foreground"}`}>
                   {s.label}
                 </span>
-              </div>
+              </button>
             ))}
           </div>
           <StepIndicator current={currentStep} total={ONBOARDING_TOTAL_STEPS} />
