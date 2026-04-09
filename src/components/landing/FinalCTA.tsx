@@ -24,7 +24,7 @@ const FinalCTA = () => {
             Rejoignez +200 entreprises qui utilisent Scalyo pour prendre de meilleures décisions, plus vite.
           </p>
           <Button size="lg" onClick={() => navigate(user ? "/tarifs" : "/auth")}>
-            Essayer <ArrowRight className="ml-1 h-5 w-5" />
+            Voir les offres <ArrowRight className="ml-1 h-5 w-5" />
           </Button>
         </motion.div>
       </div>
