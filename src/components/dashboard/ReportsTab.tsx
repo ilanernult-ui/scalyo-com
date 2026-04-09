@@ -158,7 +158,7 @@ const ReportCard = ({ report, onEmailSend }: { report: Report; onEmailSend: (id:
           {/* Actions */}
           {isReady && (
             <div className="flex items-center gap-2 mt-3">
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5">
+              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={() => downloadReportPdf(report)}>
                 <Download className="h-3 w-3" /> Télécharger PDF
               </Button>
               {!report.email_sent ? (
