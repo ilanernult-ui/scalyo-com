@@ -1,89 +1,18 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FileText, Download, Mail, CheckCircle2, Loader2,
-  Calendar, BarChart3, Activity, Sparkles, X, Eye
+  Calendar, BarChart3, Activity, Sparkles
 } from "lucide-react";
-import { jsPDF } from "jspdf";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
 import { useReports, type Report, type ReportType } from "@/hooks/useReports";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { analytics } from "@/lib/analytics";
+import { usePDFGeneration } from "@/components/pdf/usePDFGeneration";
 
-// ─── PDF generation ───────────────────────────────────────────────
-const buildReportPdf = (report: Report): jsPDF => {
-  const doc = new jsPDF({ unit: "mm", format: "a4" });
-  const w = doc.internal.pageSize.getWidth();
-  const margin = 20;
-  let y = 25;
-
-  doc.setFillColor(15, 17, 23);
-  doc.rect(0, 0, w, 40, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(22);
-  doc.text("Scalyo", margin, y);
-  doc.setFontSize(10);
-  doc.text("Rapport automatique", w - margin, y, { align: "right" });
-
-  y = 55;
-  doc.setTextColor(30, 30, 30);
-  doc.setFontSize(16);
-  doc.text(report.title, margin, y);
-
-  if (report.period_label) {
-    y += 10;
-    doc.setFontSize(11);
-    doc.setTextColor(100, 100, 100);
-    doc.text(report.period_label, margin, y);
-  }
-
-  y += 8;
-  doc.setDrawColor(220, 220, 220);
-  doc.line(margin, y, w - margin, y);
-
-  if (report.summary) {
-    y += 12;
-    doc.setFontSize(12);
-    doc.setTextColor(30, 30, 30);
-    doc.text("Resume", margin, y);
-    y += 8;
-    doc.setFontSize(10);
-    doc.setTextColor(60, 60, 60);
-    const lines = doc.splitTextToSize(report.summary, w - margin * 2);
-    doc.text(lines, margin, y);
-  }
-
-  y += 20;
-  doc.setFontSize(9);
-  doc.setTextColor(150, 150, 150);
-  doc.text(`Genere le ${new Date(report.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}`, margin, y);
-
-  const footerY = doc.internal.pageSize.getHeight() - 15;
-  doc.setDrawColor(220, 220, 220);
-  doc.line(margin, footerY - 5, w - margin, footerY - 5);
-  doc.setFontSize(8);
-  doc.setTextColor(150, 150, 150);
-  doc.text("Scalyo - Votre copilote business IA", margin, footerY);
-  doc.text("scalyo.com", w - margin, footerY, { align: "right" });
-
-  return doc;
-};
-
-const getReportBlobUrl = (report: Report): string => {
-  const doc = buildReportPdf(report);
-  const blob = doc.output("blob");
-  return URL.createObjectURL(blob);
-};
-
-const downloadReportPdf = (report: Report) => {
-  const doc = buildReportPdf(report);
-  const dateStr = new Date(report.created_at).toISOString().slice(0, 10);
-  doc.save(`rapport-${report.type}-${dateStr}.pdf`);
-};
-
-// ─── Report type config ───────────────────────────────────────────
 const REPORT_TYPES: {
   type: ReportType;
   label: string;
@@ -118,8 +47,27 @@ const REPORT_TYPES: {
   },
 ];
 
-// ─── Report Card ──────────────────────────────────────────────────
-const ReportCard = ({ report, onEmailSend, onPreview }: { report: Report; onEmailSend: (id: string) => void; onPreview: (report: Report) => void }) => {
+function getPeriodLabel(type: ReportType): string {
+  if (type === "weekly") {
+    const d = new Date();
+    const monday = new Date(d.setDate(d.getDate() - d.getDay() + 1));
+    return `Semaine du ${monday.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}`;
+  }
+  if (type === "monthly") {
+    return new Date().toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+  }
+  return `Diagnostic du ${new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}`;
+}
+
+const ReportCard = ({
+  report,
+  onDownload,
+  onEmailSend,
+}: {
+  report: Report;
+  onDownload: (r: Report) => void;
+  onEmailSend: (id: string) => void;
+}) => {
   const isReady = report.status === "ready";
   const isGenerating = report.status === "generating";
   const conf = REPORT_TYPES.find((t) => t.type === report.type);
@@ -159,11 +107,11 @@ const ReportCard = ({ report, onEmailSend, onPreview }: { report: Report; onEmai
 
           {isReady && (
             <div className="flex items-center gap-2 mt-3">
-              <Button variant="default" size="sm" className="h-7 text-xs gap-1.5" onClick={() => onPreview(report)}>
-                <Eye className="h-3 w-3" /> Voir le PDF
-              </Button>
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={() => downloadReportPdf(report)}>
-                <Download className="h-3 w-3" /> Télécharger
+              <Button
+                variant="outline" size="sm" className="h-7 text-xs gap-1.5"
+                onClick={() => onDownload(report)}
+              >
+                <Download className="h-3 w-3" /> Télécharger PDF
               </Button>
               {!report.email_sent ? (
                 <Button
@@ -185,73 +133,141 @@ const ReportCard = ({ report, onEmailSend, onPreview }: { report: Report; onEmai
   );
 };
 
-// ─── Generate Card ────────────────────────────────────────────────
-const GenerateCard = ({ type, generatingType, onGenerate }: {
+const GenerateCard = ({ type, generating, onGenerate }: {
   type: typeof REPORT_TYPES[number];
-  generatingType: ReportType | null;
+  generating: boolean;
   onGenerate: (t: ReportType) => void;
-}) => {
-  const isThis = generatingType === type.type;
-  return (
-    <div className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-3">
-      <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${type.accentCls}`}>
-        <type.icon className="h-5 w-5" />
-      </div>
-      <div>
-        <p className="text-sm font-semibold text-foreground">{type.label}</p>
-        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{type.description}</p>
-      </div>
-      <div className="flex items-center justify-between mt-auto pt-1">
-        <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-          <Calendar className="h-3 w-3" /> {type.frequency}
-        </span>
-        <Button
-          size="sm" variant="outline" className="h-7 text-xs gap-1.5"
-          onClick={() => onGenerate(type.type)}
-          disabled={generatingType !== null}
-        >
-          {isThis ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-          Générer
-        </Button>
-      </div>
+}) => (
+  <div className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-3">
+    <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${type.accentCls}`}>
+      <type.icon className="h-5 w-5" />
     </div>
-  );
-};
+    <div>
+      <p className="text-sm font-semibold text-foreground">{type.label}</p>
+      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{type.description}</p>
+    </div>
+    <div className="flex items-center justify-between mt-auto pt-1">
+      <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+        <Calendar className="h-3 w-3" /> {type.frequency}
+      </span>
+      <Button
+        size="sm" variant="outline" className="h-7 text-xs gap-1.5"
+        onClick={() => onGenerate(type.type)}
+        disabled={generating}
+      >
+        {generating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+        Générer
+      </Button>
+    </div>
+  </div>
+);
 
-// ─── Main Component ───────────────────────────────────────────────
 const ReportsTab = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { reports, loading, generatingType, generateReport, markEmailSent } = useReports(user?.id);
+  const { reports, loading, generating, generateReport, markEmailSent } = useReports(user?.id);
+  const { generatingPdf, generatePdfBlob } = usePDFGeneration();
   const [typeFilter, setTypeFilter] = useState<ReportType | "all">("all");
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [previewTitle, setPreviewTitle] = useState("");
+  const [latestPdf, setLatestPdf] = useState<{ blobUrl: string; fileName: string } | null>(null);
 
-  const companyName = "Votre entreprise";
+  const [profile, setProfile] = useState<{ company_name: string; sector: string } | null>(null);
+  const [companyData, setCompanyData] = useState<Record<string, unknown> | null>(null);
 
-  const handlePreview = useCallback((report: Report) => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    const url = getReportBlobUrl(report);
-    setPreviewUrl(url);
-    setPreviewTitle(report.title);
-  }, [previewUrl]);
+  useEffect(() => {
+    if (!user?.id) return;
+    const db = supabase as any;
+    db.from("profiles").select("company_name, sector").eq("id", user.id).single()
+      .then(({ data }: any) => { if (data) setProfile(data); });
+    db.from("company_data").select("*").eq("user_id", user.id).maybeSingle()
+      .then(({ data }: any) => { if (data) setCompanyData(data); });
+  }, [user?.id]);
 
-  const closePreview = useCallback(() => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(null);
-    setPreviewTitle("");
-  }, [previewUrl]);
+  const openLoadingPopup = () => {
+    const popup = window.open("about:blank", "_blank", "noopener");
+    if (popup) {
+      popup.document.title = "Scalyo — génération du rapport";
+      popup.document.body.style.margin = "0";
+      popup.document.body.style.fontFamily = "system-ui, sans-serif";
+      popup.document.body.style.display = "flex";
+      popup.document.body.style.alignItems = "center";
+      popup.document.body.style.justifyContent = "center";
+      popup.document.body.style.height = "100vh";
+      popup.document.body.style.background = "#F8FAFC";
+      popup.document.body.innerHTML = "<div style='padding:24px;text-align:center;color:#0A1628;font-size:16px;font-weight:600;'>Génération du rapport en cours…</div>";
+    }
+    return popup;
+  };
+
+  const openBlobInTab = (blobUrl: string, fileName: string, popup: Window | null) => {
+    if (popup && !popup.closed) {
+      popup.location.href = blobUrl;
+      return;
+    }
+
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = fileName;
+    link.target = "_blank";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
+
+  const buildPdfPayload = () => {
+    const monthlyRevenue = typeof companyData?.current_month_revenue === "number"
+      ? companyData.current_month_revenue
+      : Number(companyData?.current_month_revenue ?? NaN);
+    const clientsCount = typeof companyData?.active_clients === "number"
+      ? companyData.active_clients
+      : Number(companyData?.active_clients ?? NaN);
+
+    return {
+      companyName: profile?.company_name ?? "Démo Commerce SAS",
+      sector: profile?.sector ?? "E-commerce",
+      monthlyRevenue: Number.isFinite(monthlyRevenue) ? monthlyRevenue : 48500,
+      clientsCount: Number.isFinite(clientsCount) ? clientsCount : 1247,
+      industry: profile?.sector ?? "E-commerce",
+      generatedAt: new Date().toLocaleDateString("fr-FR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }),
+    };
+  };
+
+  const handleDownload = async (report: Report) => {
+    const popup = openLoadingPopup();
+
+    try {
+      const { blobUrl, fileName } = await generatePdfBlob(report.type, buildPdfPayload());
+      openBlobInTab(blobUrl, fileName, popup);
+      setLatestPdf({ blobUrl, fileName });
+    } catch (error) {
+      popup?.close();
+      toast({ title: "Erreur lors de la génération du PDF", description: "Impossible de générer le rapport." });
+    }
+  };
 
   const handleGenerate = async (type: ReportType) => {
-    const report = await generateReport(type, companyName);
-    if (report) {
-      handlePreview(report);
+    const companyName = profile?.company_name ?? "Démo Commerce SAS";
+    const popup = openLoadingPopup();
+
+    try {
+      const { blobUrl, fileName } = await generatePdfBlob(type, buildPdfPayload());
+      openBlobInTab(blobUrl, fileName, popup);
+      setLatestPdf({ blobUrl, fileName });
+
+      await generateReport(type, companyName);
+      analytics.track("report_generated", { report_type: type });
+
+      toast({
+        title: "Rapport PDF généré !",
+        description: "Le rapport est ouvert dans un nouvel onglet et est prêt au téléchargement.",
+      });
+    } catch (error) {
+      popup?.close();
+      toast({ title: "Erreur lors de la génération du PDF", description: "Impossible de générer le rapport." });
     }
-    analytics.track("report_generated", { report_type: type });
-    toast({
-      title: "Rapport généré !",
-      description: "Votre rapport PDF est affiché ci-dessous.",
-    });
   };
 
   const handleEmailSend = async (id: string) => {
@@ -272,7 +288,6 @@ const ReportsTab = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h2 className="text-xl font-semibold text-foreground tracking-tight">Rapports PDF</h2>
         <p className="text-sm text-muted-foreground mt-0.5">
@@ -280,30 +295,39 @@ const ReportsTab = () => {
         </p>
       </div>
 
-      {/* Generate section */}
       <div>
         <p className="text-sm font-medium text-foreground mb-3">Générer un rapport</p>
         <div className="grid sm:grid-cols-3 gap-3">
           {REPORT_TYPES.map((t) => (
-            <GenerateCard key={t.type} type={t} generatingType={generatingType} onGenerate={handleGenerate} />
+            <GenerateCard key={t.type} type={t} generating={generating || generatingPdf} onGenerate={handleGenerate} />
           ))}
         </div>
-      </div>
 
-      {/* PDF Preview */}
-      {previewUrl && (
-        <div className="rounded-2xl border border-border bg-card overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <p className="text-sm font-semibold text-foreground truncate">{previewTitle}</p>
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={closePreview}>
-              <X className="h-4 w-4" />
+        {latestPdf && (
+          <div className="mt-4 rounded-2xl border border-border bg-card p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-foreground">Rapport prêt</p>
+              <p className="text-xs text-muted-foreground">Le rapport s'est ouvert dans un nouvel onglet. Vous pouvez aussi le télécharger directement.</p>
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="h-9 text-xs"
+              onClick={() => {
+                const link = document.createElement("a");
+                link.href = latestPdf.blobUrl;
+                link.download = latestPdf.fileName;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+              }}
+            >
+              Télécharger le PDF
             </Button>
           </div>
-          <iframe src={previewUrl} className="w-full h-[600px] border-0" title="Aperçu du rapport PDF" />
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* History */}
       {reports.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-3">
@@ -328,7 +352,12 @@ const ReportsTab = () => {
           <div className="space-y-2">
             <AnimatePresence mode="popLayout">
               {filtered.map((report) => (
-                <ReportCard key={report.id} report={report} onEmailSend={handleEmailSend} onPreview={handlePreview} />
+                <ReportCard
+                  key={report.id}
+                  report={report}
+                  onDownload={handleDownload}
+                  onEmailSend={handleEmailSend}
+                />
               ))}
             </AnimatePresence>
             {filtered.length === 0 && (
@@ -349,7 +378,6 @@ const ReportsTab = () => {
         </div>
       )}
 
-      {/* Auto-send info */}
       <div className="rounded-2xl bg-secondary/50 border border-border p-4">
         <p className="text-xs font-medium text-foreground mb-1">Envoi automatique par email</p>
         <p className="text-xs text-muted-foreground">
