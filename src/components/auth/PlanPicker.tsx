@@ -6,29 +6,29 @@ const plans = [
     id: "datadiag" as PlanType,
     name: "DataDiag",
     price: "79",
-    tagline: "Diagnostic & visibilité",
+    tagline: "Diagnostic business complet en 48h",
     icon: Activity,
     accent: "hsl(211, 100%, 45%)",
-    features: ["Analyse données financières", "Rapport de diagnostic mensuel", "Détection automatique des anomalies", "Dashboard KPIs essentiel"],
+    features: ["Score Business 360°", "Détection des pertes d'argent & temps", "Top 5 actions à fort impact", "Dashboard KPIs + rapport IA mensuel"],
   },
   {
     id: "growthpilot" as PlanType,
     name: "GrowthPilot",
     price: "189",
-    tagline: "Croissance & recommandations IA",
+    tagline: "Co-pilote IA · +15% croissance · +10h/sem",
     icon: Rocket,
     accent: "hsl(142, 69%, 49%)",
     popular: true,
-    features: ["Tout DataDiag inclus", "Plan d'action IA personnalisé", "Analyse ventes et conversion", "Recommandations priorisées par ROI"],
+    features: ["Tout DataDiag inclus", "Plan d'action priorisé par ROI", "Quick wins chiffrés en €", "Automatisations (+10h/sem)"],
   },
   {
     id: "loyaltyloop" as PlanType,
     name: "LoyaltyLoop",
     price: "349",
-    tagline: "Fidélisation & performance totale",
+    tagline: "Transformation complète · +25% croissance",
     icon: Heart,
     accent: "hsl(262, 60%, 55%)",
-    features: ["Tout GrowthPilot inclus", "Prédiction et analyse du churn", "Stratégies de rétention automatisées", "Account manager dédié"],
+    features: ["Tout GrowthPilot inclus", "Radar Churn & rétention", "Analyse 360° clients & croissance", "Recommandations hebdomadaires"],
   },
 ];
 
@@ -86,6 +86,9 @@ const PlanPicker = ({ selected, onSelect }: PlanPickerProps) => (
         );
       })}
     </div>
+    <p className="text-[11px] text-muted-foreground text-center pt-1">
+      Fiche entreprise · Connexion données · Assistant IA · Export PDF — inclus sur tous les plans
+    </p>
   </div>
 );
 
