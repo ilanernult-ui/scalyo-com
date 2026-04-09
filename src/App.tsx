@@ -26,6 +26,12 @@ import { usePageTracking } from "./hooks/usePageTracking.ts";
 
 const queryClient = new QueryClient();
 
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+};
+
 const RouterWithTracking = ({ children }: { children: React.ReactNode }) => {
   usePageTracking();
   return <>{children}</>;
