@@ -23,6 +23,9 @@ export const STRIPE_PLANS: Record<PlanType, {
       "Estimation « vous perdez X€/mois »",
       "Dashboard KPIs en temps réel",
       "Rapport IA mensuel",
+      "Fiche entreprise personnalisée",
+      "Connexion de vos données (CSV, Excel, API)",
+      "Assistant IA Scalyo",
     ],
   },
   growthpilot: {
@@ -51,13 +54,13 @@ export const STRIPE_PLANS: Record<PlanType, {
     accent: "hsl(262, 60%, 55%)",
     features: [
       "Tout GrowthPilot inclus",
-      "Optimisation continue automatique chaque semaine",
-      "Nouvelles recommandations hebdomadaires",
-      "Suivi des résultats & ROI en temps réel",
+      "Radar Churn & stratégies de rétention client",
       "Automatisations avancées prêtes à déployer",
       "Analyse 360° : clients + croissance + rentabilité",
-      "Prédiction du churn & stratégies de rétention",
-      "Intégrations CRM avancées · Utilisateurs illimités",
+      "Optimisation continue & recommandations hebdomadaires",
+      "Suivi ROI cumulé en temps réel",
+      "Intégrations CRM avancées",
+      "Utilisateurs illimités",
     ],
   },
 };
