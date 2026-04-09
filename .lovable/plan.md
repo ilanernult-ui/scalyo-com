@@ -1,30 +1,29 @@
 
 
-## Plan : Intégrer les nouveaux dashboards premium et remettre le chat en bas
+## Probleme
 
-### Probleme
-1. Les onglets DataDiag, GrowthPilot et LoyaltyLoop dans le dashboard affichent toujours les anciens composants simples (DataDiagTab, GrowthPilotTab, LoyaltyLoopTab) au lieu des nouveaux dashboards premium construits (DataDiagDashboard, GrowthPilotDashboard, LoyaltyLoopDashboard)
-2. Le chat IA est positionné à droite (`xl:flex-row`) au lieu d'en bas comme avant
+Le bouton "Telecharger PDF" dans ReportsTab n'a aucun `onClick` handler — il ne fait rien quand on clique. De plus, aucun PDF reel n'est genere : le hook `useReports` simule juste un delai de 2.2s puis met le statut a "ready" sans creer de fichier.
 
-### Modifications
+## Solution
 
-**`src/pages/Dashboard.tsx`**
+Generer un vrai PDF cote client avec **jsPDF** quand l'utilisateur clique sur "Telecharger PDF". Le PDF contiendra les infos du rapport (titre, periode, resume, date) avec le branding Scalyo.
 
-1. **Importer les nouveaux dashboards** : `DataDiagDashboard`, `GrowthPilotDashboard`, `LoyaltyLoopDashboard`
+## Fichiers a modifier
 
-2. **Remplacer le contenu des onglets** dans `renderTab()` :
-   - `case "datadiag"` → afficher `<DataDiagDashboard />` (au lieu de `<DataDiagTab />`)
-   - `case "growthpilot"` → afficher `<GrowthPilotDashboard />` (au lieu de `<GrowthPilotTab />`)
-   - `case "loyaltyloop"` → afficher `<LoyaltyLoopDashboard />` (au lieu de `<LoyaltyLoopTab />`)
-   - Garder la logique `EmptyStateOverlay` + `LockedTabOverlay` qui entoure le contenu (connexion données + verrouillage plan)
+### 1. `src/components/dashboard/ReportsTab.tsx`
+- Importer `jsPDF` depuis `jspdf`
+- Creer une fonction `downloadReportPdf(report: Report)` qui :
+  - Cree un document A4 avec jsPDF
+  - Ajoute le logo/titre "Scalyo", le type de rapport, la periode, le resume
+  - Ajoute la date de generation et un footer
+  - Declenche le telechargement du fichier PDF
+- Ajouter `onClick={() => downloadReportPdf(report)}` sur le bouton "Telecharger PDF" dans ReportCard
 
-3. **Remettre le chat en bas** : Changer le layout de `flex-col xl:flex-row` à `flex-col` uniquement, et retirer le `xl:w-auto` du conteneur chat. Le chat s'affichera toujours sous le contenu principal, sur toute la largeur.
+### 2. Installation
+- Ajouter la dependance `jspdf` au projet
 
-4. **Adaptation des dashboards premium** : Les dashboards premium (DataDiagDashboard, GrowthPilotDashboard, LoyaltyLoopDashboard) ont chacun leur propre sidebar interne. Quand ils sont intégrés dans le dashboard principal (qui a déjà une sidebar), il faut masquer leur sidebar interne pour éviter un doublon. On ajoutera une prop `embedded={true}` à chaque dashboard pour cacher leur sidebar et utiliser seulement le contenu principal.
-
-### Fichiers modifiés
-- `src/pages/Dashboard.tsx` — layout chat + imports dashboards
-- `src/components/dashboard/datadiag/DataDiagDashboard.tsx` — ajouter prop `embedded` pour masquer sidebar
-- `src/components/dashboard/growthpilot/GrowthPilotDashboard.tsx` — idem
-- `src/components/dashboard/loyaltyloop/LoyaltyLoopDashboard.tsx` — idem
+### Details techniques
+- Pas besoin de html2canvas car le contenu est genere programmatiquement (texte uniquement)
+- Le PDF sera en francais avec gestion des accents via la police Helvetica integree
+- Nom du fichier : `rapport-{type}-{date}.pdf`
 
