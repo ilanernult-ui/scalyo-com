@@ -99,7 +99,6 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
     setStep(1);
     setSelectedType(null);
     setSelectedPeriod(null);
-    setSelectedFocus(null);
     setCustomPeriod("");
     setReportCard(null);
   }, [welcomeMessage]);
@@ -125,7 +124,6 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
     setStep(1);
     setSelectedType(null);
     setSelectedPeriod(null);
-    setSelectedFocus(null);
     setCustomPeriod("");
     setReportCard(null);
     setCopyState("📋 Copier le résumé");
@@ -134,7 +132,6 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
   const handleTypeSelect = (type: ReportType) => {
     setSelectedType(type);
     setSelectedPeriod(null);
-    setSelectedFocus(null);
     setStep(2);
     appendMessage({ role: "user", content: reportTypeLabels[type] });
     appendMessage({ role: "assistant", content: reportTypeResponses[type] });
