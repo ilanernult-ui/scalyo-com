@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { pdf } from "@react-pdf/renderer";
+import { saveAs } from "file-saver";
 import type { ReportType } from "@/hooks/useReports";
 import DataDiagPDF from "./DataDiagPDF";
 import GrowthPilotPDF from "./GrowthPilotPDF";
@@ -12,11 +13,6 @@ export interface PdfGenerationData {
   clientsCount?: number;
   industry?: string;
   generatedAt?: string;
-}
-
-export interface PdfGenerationResult {
-  blobUrl: string;
-  fileName: string;
 }
 
 const DEFAULTS = {
@@ -33,7 +29,7 @@ const PLAN_SLUG: Record<ReportType, string> = {
   weekly: "loyaltyloop",
 };
 
-function normalizeData(data: PdfGenerationData): Required<PdfGenerationData> {
+function normalizeData(data: PdfGenerationData) {
   return {
     companyName: data.companyName ?? DEFAULTS.companyName,
     sector: data.sector ?? DEFAULTS.sector,
@@ -65,8 +61,8 @@ function buildDocument(type: ReportType, data: PdfGenerationData) {
 export function usePDFGeneration() {
   const [generatingPdf, setGeneratingPdf] = useState(false);
 
-  const generatePdfBlob = useCallback(
-    async (type: ReportType, data: PdfGenerationData): Promise<PdfGenerationResult> => {
+  const generatePdf = useCallback(
+    async (type: ReportType, data: PdfGenerationData): Promise<string> => {
       setGeneratingPdf(true);
       try {
         const document = buildDocument(type, data);
@@ -77,8 +73,8 @@ export function usePDFGeneration() {
           throw new Error("Impossible de générer le PDF.");
         }
 
-        const blobUrl = URL.createObjectURL(blob);
-        return { blobUrl, fileName };
+        saveAs(blob, fileName);
+        return fileName;
       } finally {
         setGeneratingPdf(false);
       }
@@ -86,5 +82,5 @@ export function usePDFGeneration() {
     []
   );
 
-  return { generatingPdf, generatePdfBlob };
+  return { generatingPdf, generatePdf };
 }
