@@ -10,171 +10,191 @@ interface LoyaltyLoopPDFProps {
 }
 
 const styles = StyleSheet.create({
-  page: {
-    fontFamily: "Helvetica",
-    fontSize: 10,
-    color: "#FFFFFF",
-    padding: 24,
-    backgroundColor: "#0C0A1E",
-  },
   cover: {
     flex: 1,
-    justifyContent: "space-between",
-    padding: 24,
-    backgroundColor: "#1A1535",
+    padding: 40,
+    backgroundColor: "#0C0A1E",
   },
   coverLabel: {
-    fontSize: 12,
-    color: "#FFD700",
+    fontSize: 10,
+    color: "#FFFFFF",
+    letterSpacing: 1.5,
     fontWeight: "bold",
-    marginBottom: 8,
   },
   coverTitle: {
     fontSize: 28,
-    color: "#FFFFFF",
     fontWeight: "bold",
-    letterSpacing: 1,
+    color: "#FFFFFF",
+    lineHeight: 1.1,
   },
   coverSubtitle: {
     fontSize: 11,
     color: "#D8C3FF",
     marginTop: 12,
-    lineHeight: 1.5,
+    lineHeight: 1.4,
   },
-  coverMeta: {
-    marginTop: 24,
+  coverFooterLine: {
+    width: 120,
+    height: 3,
+    backgroundColor: "#FFD700",
+    marginTop: 20,
   },
-  coverMetaText: {
-    fontSize: 10,
+  coverFooterText: {
+    fontSize: 9,
     color: "#C6C0DB",
-    marginBottom: 4,
+    marginTop: 8,
+  },
+  page: {
+    flex: 1,
+    padding: 30,
+    backgroundColor: "#FFFFFF",
+    color: "#1A1A1A",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  headerTitle: {
+    fontSize: 11,
+    fontWeight: "bold",
+    color: "#333333",
+  },
+  headerSubtitle: {
+    fontSize: 8,
+    color: "#555555",
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: "bold",
     color: "#FFD700",
     marginBottom: 8,
   },
   paragraph: {
-    fontSize: 10,
-    lineHeight: 1.6,
-    color: "#E7E3F7",
+    fontSize: 8,
+    lineHeight: 1.4,
+    color: "#333333",
     marginBottom: 8,
   },
-  metricGrid: {
+  metricRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 8,
-    marginTop: 8,
+    gap: 6,
+    marginBottom: 10,
   },
   metricCard: {
     flex: 1,
+    minWidth: 110,
     padding: 12,
-    borderRadius: 10,
-    backgroundColor: "#161238",
+    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+    borderLeftWidth: 4,
+    borderLeftColor: "#FFD700",
   },
   metricLabel: {
     fontSize: 8,
-    color: "#C6C0DB",
-    marginBottom: 6,
+    fontWeight: "bold",
+    color: "#333333",
+    marginBottom: 4,
   },
   metricValue: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#FFD700",
   },
   table: {
     width: "100%",
     borderWidth: 0.5,
-    borderColor: "#312E54",
-    borderRadius: 8,
+    borderColor: "#E0E0E0",
+    borderRadius: 6,
     overflow: "hidden",
+    marginBottom: 10,
   },
   tableHeader: {
     flexDirection: "row",
     backgroundColor: "#1A1535",
-    paddingVertical: 8,
-    paddingHorizontal: 10,
+    padding: 6,
   },
   tableHeaderText: {
-    color: "#FFFFFF",
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "bold",
+    color: "#FFFFFF",
   },
   tableRow: {
     flexDirection: "row",
+    padding: 6,
     borderBottomWidth: 0.5,
-    borderColor: "#312E54",
-    paddingVertical: 8,
-    paddingHorizontal: 10,
+    borderColor: "#E0E0E0",
   },
   tableCell: {
-    flex: 1,
+    fontSize: 8,
+    color: "#1A1A1A",
+  },
+  highlightBox: {
+    padding: 10,
+    borderRadius: 12,
+    backgroundColor: "rgba(155,89,182,0.1)",
+    borderLeftWidth: 4,
+    borderLeftColor: "#9B59B6",
+    marginBottom: 10,
+  },
+  highlightTitle: {
     fontSize: 9,
-    color: "#E7E3F7",
-  },
-  bulletList: {
-    marginTop: 6,
-    paddingLeft: 10,
-  },
-  bulletItem: {
-    flexDirection: "row",
+    fontWeight: "bold",
+    color: "#4A235A",
     marginBottom: 4,
   },
-  bulletDot: {
-    width: 4,
-    height: 4,
-    backgroundColor: "#FFD700",
-    borderRadius: 2,
-    marginTop: 7,
-    marginRight: 8,
+  highlightText: {
+    fontSize: 8,
+    color: "#4A235A",
+    lineHeight: 1.4,
   },
-  bulletText: {
+  actionBox: {
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: "rgba(0,255,136,0.12)",
+    borderLeftWidth: 4,
+    borderLeftColor: "#00FF88",
+    marginBottom: 8,
+  },
+  actionTitle: {
     fontSize: 9,
-    color: "#E7E3F7",
-    lineHeight: 1.5,
+    fontWeight: "bold",
+    color: "#1A1A1A",
+    marginBottom: 4,
+  },
+  actionText: {
+    fontSize: 8,
+    color: "#333333",
+    lineHeight: 1.4,
   },
   footer: {
     position: "absolute",
-    bottom: 24,
-    left: 24,
-    right: 24,
-    fontSize: 8,
-    color: "#B8AEDC",
+    bottom: 30,
+    left: 30,
+    right: 30,
     flexDirection: "row",
     justifyContent: "space-between",
+    fontSize: 7,
+    color: "#555555",
   },
 });
 
-const cohortRows = [
-  ["Cohorte A", "82 %", "76 %", "69 %"],
-  ["Cohorte B", "78 %", "70 %", "62 %"],
-  ["Cohorte C", "65 %", "58 %", "51 %"],
+const clientCohorts = [
+  ["Jan 2026", "143", "91 %", "78 %", "68 %", "12 400 €"],
+  ["Fév 2026", "167", "93 %", "81 %", "—", "14 200 €"],
+  ["Mar 2026", "201", "94 %", "—", "—", "16 800 €"],
 ];
 
-const segmentation = [
-  ["VIP", "124", "26 800 €"],
-  ["Réguliers", "530", "11 450 €"],
-  ["À risque", "298", "6 200 €"],
-  ["Perdus", "95", "2 100 €"],
+const riskRows = [
+  ["Clients 30-60j sans achat", "34", "78 %", "4 200 €", "Email réactivation"],
+  ["Acheteurs 1 fois seulement", "29", "65 %", "2 900 €", "Offre fidélité J+7"],
+  ["Panier moyen en baisse", "24", "71 %", "3 600 €", "Programme points"],
 ];
 
-const campaigns = [
-  ["Retention Premium", "Actif", "720", "-12 % churn"],
-  ["Offre Reactivation", "En test", "325", "-8 % churn"],
-  ["Programme VIP", "Planifié", "410", "-15 % churn"],
-];
-
-const predictive = [
-  ["Clients à risque détectés", "52"],
-  ["Revenu protégé estimé", "18 400 €"],
-];
-
-const roadmap = [
-  "Renforcer le programme VIP et le tracker de churn.",
-  "Segmenter les parcours à risque et automatiser les relances.",
-  "Mesurer l’impact des campagnes sur J30/J60/J90.",
-  "Déployer les recommandations IA pour renforcer la rétention.",
+const roadmapRows = [
+  ["Phase 1 (Mai)", "Activation programme fidélité", "Réduire churn à 3.5%"],
+  ["Phase 2 (Juin)", "Déploiement segmentation avancée", "NPS > 65"],
+  ["Phase 3 (Juil)", "Automatisation campagnes rétention", "Croissance +22%"],
 ];
 
 export default function LoyaltyLoopPDF({ companyName, sector, monthlyRevenue, clientsCount, industry, generatedAt }: LoyaltyLoopPDFProps) {
@@ -182,123 +202,103 @@ export default function LoyaltyLoopPDF({ companyName, sector, monthlyRevenue, cl
     <Document>
       <Page size="A4" style={styles.cover}>
         <View>
-          <Text style={styles.coverLabel}>Rapport de Transformation Business</Text>
-          <Text style={styles.coverTitle}>LoyaltyLoop — Analyse stratégique</Text>
-          <Text style={styles.coverSubtitle}>
-            Une étude complète des leviers de fidélisation, de la rétention et du churn pour transformer votre base client.
-          </Text>
+          <Text style={styles.coverLabel}>SCALYO LoyaltyLoop</Text>
         </View>
 
-        <View style={styles.coverMeta}>
-          <Text style={styles.coverMetaText}>Entreprise : {companyName}</Text>
-          <Text style={styles.coverMetaText}>Secteur : {sector}</Text>
-          <Text style={styles.coverMetaText}>CA mensuel : {monthlyRevenue.toLocaleString("fr-FR")} €</Text>
-          <Text style={styles.coverMetaText}>Clients : {clientsCount}</Text>
-          <Text style={styles.coverMetaText}>Date : {generatedAt}</Text>
+        <View style={{ marginTop: 120 }}>
+          <Text style={styles.coverTitle}>Rapport de Transformation Business</Text>
+          <Text style={styles.coverSubtitle}>Analyse stratégique · Confidentiel · Avril 2026</Text>
+        </View>
+
+        <View>
+          <View style={styles.coverFooterLine} />
+          <Text style={styles.coverFooterText}>Ne pas diffuser</Text>
         </View>
       </Page>
 
       <Page size="A4" style={styles.page}>
-        <Text style={styles.sectionTitle}>Indicateurs de transformation</Text>
-        <View style={styles.metricGrid}>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.headerTitle}>LoyaltyLoop</Text>
+            <Text style={styles.headerSubtitle}>Vue d'ensemble — Transformation en cours</Text>
+          </View>
+          <Text style={styles.headerSubtitle}>{generatedAt}</Text>
+        </View>
+
+        <View style={styles.metricRow}>
           <View style={styles.metricCard}>
             <Text style={styles.metricLabel}>Croissance réalisée</Text>
-            <Text style={styles.metricValue}>+27 %</Text>
-          </View>
-          <View style={styles.metricCard}>
-            <Text style={styles.metricLabel}>Objectif croissance</Text>
-            <Text style={styles.metricValue}>+25 %</Text>
+            <Text style={styles.metricValue}>+18 %</Text>
           </View>
           <View style={styles.metricCard}>
             <Text style={styles.metricLabel}>Churn actuel</Text>
-            <Text style={styles.metricValue}>-38 %</Text>
+            <Text style={styles.metricValue}>4.2 %</Text>
           </View>
           <View style={styles.metricCard}>
-            <Text style={styles.metricLabel}>Objectif churn</Text>
-            <Text style={styles.metricValue}>-40 %</Text>
+            <Text style={styles.metricLabel}>NPS Score</Text>
+            <Text style={styles.metricValue}>62</Text>
           </View>
         </View>
-        <Text style={[styles.paragraph, { marginTop: 12 }]}>Le programme LoyaltyLoop montre déjà une amélioration sensible de la fidélité client et des revenus protégés, avec des chutes de churn significatives sur les derniers mois.</Text>
-      </Page>
 
-      <Page size="A4" style={styles.page}>
-        <Text style={styles.sectionTitle}>Analyse de la rétention client</Text>
-        <View style={[styles.table, { marginBottom: 12 }]}> 
+        <Text style={styles.paragraph}>Votre transformation est à 72 % de l'objectif 6 mois. Le programme démontre des progrès significatifs sur la fidélisation et la protection des revenus.</Text>
+
+        <Text style={styles.sectionTitle}>Analyse de la rétention par cohorte</Text>
+        <View style={styles.table}>
           <View style={styles.tableHeader}>
-            <Text style={[styles.tableCell, { flex: 1.5 }]}>Cohorte</Text>
-            <Text style={styles.tableCell}>Taux J30</Text>
-            <Text style={styles.tableCell}>Taux J60</Text>
-            <Text style={styles.tableCell}>Taux J90</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1.4 }]}>Cohorte</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1 }]}>Clients</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1 }]}>J30</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1 }]}>J60</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1 }]}>Revenu</Text>
           </View>
-          {cohortRows.map((row, index) => (
-            <View style={styles.tableRow} key={index}>
-              <Text style={[styles.tableCell, { flex: 1.5 }]}>{row[0]}</Text>
-              <Text style={styles.tableCell}>{row[1]}</Text>
-              <Text style={styles.tableCell}>{row[2]}</Text>
-              <Text style={styles.tableCell}>{row[3]}</Text>
+          {clientCohorts.map((row, index) => (
+            <View key={index} style={[styles.tableRow, { backgroundColor: index % 2 === 0 ? "#FFFFFF" : "#F5F5F5" }]}> 
+              <Text style={[styles.tableCell, { flex: 1.4 }]}>{row[0]}</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>{row[1]}</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>{row[2]}</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>{row[3]}</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>{row[5]}</Text>
             </View>
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>Segmentation clients</Text>
-        <View style={[styles.table, { marginBottom: 12 }]}> 
-          <View style={styles.tableHeader}>
-            <Text style={[styles.tableCell, { flex: 1.5 }]}>Segment</Text>
-            <Text style={styles.tableCell}>Effectifs</Text>
-            <Text style={styles.tableCell}>CA associé</Text>
-          </View>
-          {segmentation.map((row, index) => (
-            <View style={styles.tableRow} key={index}>
-              <Text style={[styles.tableCell, { flex: 1.5 }]}>{row[0]}</Text>
-              <Text style={styles.tableCell}>{row[1]}</Text>
-              <Text style={styles.tableCell}>{row[2]}</Text>
-            </View>
-          ))}
+        <Text style={styles.sectionTitle}>Détection prédictive — Ce mois</Text>
+        <View style={styles.highlightBox}>
+          <Text style={styles.highlightTitle}>87 clients identifiés à risque de churn ce mois</Text>
+          <Text style={styles.highlightText}>Ces segments représentent un revenu critique à protéger avec des actions ciblées.</Text>
         </View>
-      </Page>
 
-      <Page size="A4" style={styles.page}>
-        <Text style={styles.sectionTitle}>Campagnes de fidélisation actives</Text>
-        <View style={[styles.table, { marginBottom: 12 }]}> 
+        <View style={styles.table}>
           <View style={styles.tableHeader}>
-            <Text style={[styles.tableCell, { flex: 1.5 }]}>Nom</Text>
-            <Text style={styles.tableCell}>Statut</Text>
-            <Text style={styles.tableCell}>Clients touchés</Text>
-            <Text style={styles.tableCell}>Impact churn</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1.5 }]}>Segment</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1 }]}>Clients</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1 }]}>Score risque</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1 }]}>Revenu</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1 }]}>Action</Text>
           </View>
-          {campaigns.map((row, index) => (
-            <View style={styles.tableRow} key={index}>
+          {riskRows.map((row, index) => (
+            <View key={index} style={[styles.tableRow, { backgroundColor: index % 2 === 0 ? "#FFFFFF" : "#F5F5F5" }]}> 
               <Text style={[styles.tableCell, { flex: 1.5 }]}>{row[0]}</Text>
-              <Text style={styles.tableCell}>{row[1]}</Text>
-              <Text style={styles.tableCell}>{row[2]}</Text>
-              <Text style={styles.tableCell}>{row[3]}</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>{row[1]}</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>{row[2]}</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>{row[3]}</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>{row[4]}</Text>
             </View>
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>Analyse prédictive IA</Text>
-        {predictive.map((row, index) => (
-          <View style={styles.bulletItem} key={index}>
-            <View style={styles.bulletDot} />
-            <Text style={styles.bulletText}>{row[0]} : {row[1]}</Text>
+        <Text style={styles.sectionTitle}>Plan de transformation — Q2 2026</Text>
+        {roadmapRows.map((row, index) => (
+          <View key={index} style={styles.actionBox}>
+            <Text style={styles.actionTitle}>{row[0]} — {row[1]}</Text>
+            <Text style={styles.actionText}>{row[2]}</Text>
           </View>
         ))}
-      </Page>
 
-      <Page size="A4" style={styles.page}>
-        <Text style={styles.sectionTitle}>Feuille de route transformation sur 90 jours</Text>
-        <View style={styles.bulletList}>
-          {roadmap.map((item, index) => (
-            <View style={styles.bulletItem} key={index}>
-              <View style={styles.bulletDot} />
-              <Text style={styles.bulletText}>{index + 1}. {item}</Text>
-            </View>
-          ))}
-        </View>
         <Text
           style={styles.footer}
           render={({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) =>
-            `Page ${pageNumber} / ${totalPages} • Rapport LoyaltyLoop Confidentiel — Scalyo IA — Ne pas diffuser`
+            `Page ${pageNumber} / ${totalPages} • ${generatedAt}`
           }
           fixed
         />

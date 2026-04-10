@@ -166,9 +166,8 @@ const ReportsTab = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { reports, loading, generating, generateReport, markEmailSent } = useReports(user?.id);
-  const { generatingPdf, generatePdfBlob } = usePDFGeneration();
+  const { generatingPdf, generatePdf } = usePDFGeneration();
   const [typeFilter, setTypeFilter] = useState<ReportType | "all">("all");
-  const [latestPdf, setLatestPdf] = useState<{ blobUrl: string; fileName: string } | null>(null);
 
   const [profile, setProfile] = useState<{ company_name: string; sector: string } | null>(null);
   const [companyData, setCompanyData] = useState<Record<string, unknown> | null>(null);
@@ -181,37 +180,6 @@ const ReportsTab = () => {
     db.from("company_data").select("*").eq("user_id", user.id).maybeSingle()
       .then(({ data }: any) => { if (data) setCompanyData(data); });
   }, [user?.id]);
-
-  const openLoadingPopup = () => {
-    const popup = window.open("about:blank", "_blank", "noopener");
-    if (popup) {
-      popup.document.title = "Scalyo — génération du rapport";
-      popup.document.body.style.margin = "0";
-      popup.document.body.style.fontFamily = "system-ui, sans-serif";
-      popup.document.body.style.display = "flex";
-      popup.document.body.style.alignItems = "center";
-      popup.document.body.style.justifyContent = "center";
-      popup.document.body.style.height = "100vh";
-      popup.document.body.style.background = "#F8FAFC";
-      popup.document.body.innerHTML = "<div style='padding:24px;text-align:center;color:#0A1628;font-size:16px;font-weight:600;'>Génération du rapport en cours…</div>";
-    }
-    return popup;
-  };
-
-  const openBlobInTab = (blobUrl: string, fileName: string, popup: Window | null) => {
-    if (popup && !popup.closed) {
-      popup.location.href = blobUrl;
-      return;
-    }
-
-    const link = document.createElement("a");
-    link.href = blobUrl;
-    link.download = fileName;
-    link.target = "_blank";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  };
 
   const buildPdfPayload = () => {
     const monthlyRevenue = typeof companyData?.current_month_revenue === "number"
@@ -236,36 +204,24 @@ const ReportsTab = () => {
   };
 
   const handleDownload = async (report: Report) => {
-    const popup = openLoadingPopup();
-
     try {
-      const { blobUrl, fileName } = await generatePdfBlob(report.type, buildPdfPayload());
-      openBlobInTab(blobUrl, fileName, popup);
-      setLatestPdf({ blobUrl, fileName });
+      await generatePdf(report.type, buildPdfPayload());
+      toast({ title: "Téléchargement démarré", description: "Le PDF est en cours de téléchargement." });
     } catch (error) {
-      popup?.close();
       toast({ title: "Erreur lors de la génération du PDF", description: "Impossible de générer le rapport." });
     }
   };
 
   const handleGenerate = async (type: ReportType) => {
     const companyName = profile?.company_name ?? "Démo Commerce SAS";
-    const popup = openLoadingPopup();
 
     try {
-      const { blobUrl, fileName } = await generatePdfBlob(type, buildPdfPayload());
-      openBlobInTab(blobUrl, fileName, popup);
-      setLatestPdf({ blobUrl, fileName });
-
+      await generatePdf(type, buildPdfPayload());
       await generateReport(type, companyName);
       analytics.track("report_generated", { report_type: type });
 
-      toast({
-        title: "Rapport PDF généré !",
-        description: "Le rapport est ouvert dans un nouvel onglet et est prêt au téléchargement.",
-      });
+      toast({ title: "Rapport généré", description: "Le téléchargement du PDF a été lancé sans ouvrir de nouvel onglet." });
     } catch (error) {
-      popup?.close();
       toast({ title: "Erreur lors de la génération du PDF", description: "Impossible de générer le rapport." });
     }
   };
@@ -303,29 +259,6 @@ const ReportsTab = () => {
           ))}
         </div>
 
-        {latestPdf && (
-          <div className="mt-4 rounded-2xl border border-border bg-card p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-foreground">Rapport prêt</p>
-              <p className="text-xs text-muted-foreground">Le rapport s'est ouvert dans un nouvel onglet. Vous pouvez aussi le télécharger directement.</p>
-            </div>
-            <Button
-              variant="secondary"
-              size="sm"
-              className="h-9 text-xs"
-              onClick={() => {
-                const link = document.createElement("a");
-                link.href = latestPdf.blobUrl;
-                link.download = latestPdf.fileName;
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-              }}
-            >
-              Télécharger le PDF
-            </Button>
-          </div>
-        )}
       </div>
 
       {reports.length > 0 && (
