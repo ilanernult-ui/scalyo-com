@@ -290,6 +290,19 @@ const ReportsTab = () => {
         </div>
       </div>
 
+      {/* PDF Preview */}
+      {previewUrl && (
+        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <p className="text-sm font-semibold text-foreground truncate">{previewTitle}</p>
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={closePreview}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <iframe src={previewUrl} className="w-full h-[600px] border-0" title="Aperçu du rapport PDF" />
+        </div>
+      )}
+
       {/* History */}
       {reports.length > 0 && (
         <div>
@@ -315,7 +328,7 @@ const ReportsTab = () => {
           <div className="space-y-2">
             <AnimatePresence mode="popLayout">
               {filtered.map((report) => (
-                <ReportCard key={report.id} report={report} onEmailSend={handleEmailSend} />
+                <ReportCard key={report.id} report={report} onEmailSend={handleEmailSend} onPreview={handlePreview} />
               ))}
             </AnimatePresence>
             {filtered.length === 0 && (
