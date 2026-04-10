@@ -1,8 +1,62 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, Sparkles } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect, useMemo } from "react";
+import { Send, Download, Clipboard, RotateCcw, Sparkles } from "lucide-react";
+import { usePDFGeneration } from "@/components/pdf/usePDFGeneration";
 import type { PlanType } from "@/contexts/AuthContext";
-import ReactMarkdown from "react-markdown";
+import type { ReportType } from "@/hooks/useReports";
+
+const reportTypeLabels: Record<ReportType, string> = {
+  weekly: "Rapport Hebdomadaire",
+  monthly: "Rapport Mensuel",
+  diagnostic: "Diagnostic Complet",
+};
+
+const reportTypeResponses: Record<ReportType, string> = {
+  weekly: "Parfait ! KPIs de la semaine, actions IA appliquées et recommandations prioritaires. Sur quelle période ?",
+  monthly: "Excellent choix ! Vue complète du mois : CA, churn, score business, top actions. Sur quelle période ?",
+  diagnostic: "Je prépare une analyse 360° de votre business. Benchmarks sectoriels, pertes détectées, plan d'optimisation. Sur quelle période ?",
+};
+
+const periodOptions = ["Cette semaine", "Ce mois", "Ce trimestre", "Personnalisé"] as const;
+const focusOptions = [
+  "💰 Performance financière",
+  "👥 Rétention clients",
+  "📉 Réduction churn",
+  "🚀 Croissance CA",
+  "📦 Tout inclure",
+] as const;
+
+type FocusOption = (typeof focusOptions)[number];
+type PeriodOption = (typeof periodOptions)[number] | string;
+
+const planConfig: Record<PlanType, {
+  accent: string;
+  buttonAccent: string;
+  welcome: string;
+  focusList: FocusOption[];
+  headerColor: string;
+}> = {
+  datadiag: {
+    accent: "#00D4FF",
+    buttonAccent: "#00D4FF",
+    welcome: "En tant que client DataDiag, je peux générer votre diagnostic business 48h.",
+    focusList: ["💰 Performance financière", "📦 Tout inclure"],
+    headerColor: "#0A1628",
+  },
+  growthpilot: {
+    accent: "#00FF88",
+    buttonAccent: "#00FF88",
+    welcome: "En tant que client GrowthPilot, je suis votre co-pilote pour atteindre +15% de croissance.",
+    focusList: [...focusOptions],
+    headerColor: "#0D1117",
+  },
+  loyaltyloop: {
+    accent: "#FFD700",
+    buttonAccent: "#FFD700",
+    welcome: "En tant que client LoyaltyLoop, j'ai accès à l'analyse complète rétention et prédiction churn.",
+    focusList: [...focusOptions],
+    headerColor: "#0C0A1E",
+  },
+};
 
 interface Message {
   role: "user" | "assistant";
@@ -15,240 +69,359 @@ interface AIChatPanelProps {
   plan: PlanType;
 }
 
-const planSuggestions: Record<PlanType, { emoji: string; label: string; prompt: string }[]> = {
-  datadiag: [
-    { emoji: "📊", label: "Score Business", prompt: "Calcule mon Score Business 360° et donne-moi un diagnostic complet de ma rentabilité, efficacité et croissance." },
-    { emoji: "💸", label: "Pertes d'argent", prompt: "Détecte toutes mes pertes d'argent et estime combien je perds par mois." },
-    { emoji: "⚡", label: "Actions prioritaires", prompt: "Donne-moi le Top 5 des actions rapides à impact immédiat pour mon entreprise." },
-    { emoji: "📉", label: "Estimation pertes", prompt: "Estime précisément combien je perds en € chaque mois et sur quels postes." },
-  ],
-  growthpilot: [
-    { emoji: "🎯", label: "Plan croissance ROI", prompt: "Génère-moi un plan d'action de croissance priorisé par ROI avec les gains estimés en €." },
-    { emoji: "⚡", label: "Quick wins", prompt: "Identifie mes quick wins immédiats avec les gains estimés en € et en temps." },
-    { emoji: "🤖", label: "Automatisations", prompt: "Quelles automatisations me feraient gagner +10h/semaine ? Donne-moi le détail." },
-    { emoji: "📈", label: "Tunnel conversion", prompt: "Analyse mon tunnel de conversion et donne-moi les optimisations prioritaires." },
-  ],
-  loyaltyloop: [
-    { emoji: "🔮", label: "Prédiction churn", prompt: "Prédis mon taux de churn et identifie les clients à risque avec des stratégies de rétention." },
-    { emoji: "🏆", label: "Stratégie rétention", prompt: "Crée-moi une stratégie de rétention complète avec calendrier et ROI attendu." },
-    { emoji: "🔄", label: "Optimisation 360°", prompt: "Lance une analyse 360° complète : clients + croissance + rentabilité avec plan d'action." },
-    { emoji: "💎", label: "Stratégie VIP", prompt: "Analyse mes clients VIP et propose une stratégie pour maximiser leur valeur." },
-  ],
-};
-
-const planBadges: Record<PlanType, { label: string; color: string }> = {
-  datadiag: { label: "DataDiag", color: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
-  growthpilot: { label: "GrowthPilot", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" },
-  loyaltyloop: { label: "LoyaltyLoop", color: "bg-purple-500/10 text-purple-600 border-purple-500/20" },
-};
-
-const planWelcome: Record<PlanType, string> = {
-  datadiag: "Je suis votre expert en **diagnostic financier**. Je peux calculer votre Score Business 360°, détecter vos pertes d'argent et identifier les actions prioritaires. 🎯",
-  growthpilot: "Je suis votre **co-pilote de croissance**. Diagnostic complet, plans d'action ROI, quick wins chiffrés et automatisations — je vous guide pas-à-pas vers +15% de croissance. 🚀",
-  loyaltyloop: "Je suis votre **consultant en transformation business**. Diagnostic, croissance, fidélisation, prédiction churn — j'ai accès à l'analyse complète 360° pour transformer votre entreprise. 💎",
-};
-
-const TypingIndicator = () => (
-  <div className="flex gap-1 items-center px-3.5 py-2.5 bg-secondary border border-border rounded-xl rounded-bl-sm w-fit">
-    {[0, 1, 2].map((i) => (
-      <div
-        key={i}
-        className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce"
-        style={{ animationDelay: `${i * 150}ms`, animationDuration: "0.9s" }}
-      />
-    ))}
-  </div>
-);
-
 const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
+  const { generatePdf } = usePDFGeneration();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(true);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [step, setStep] = useState(1);
+  const [selectedType, setSelectedType] = useState<ReportType | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodOption | null>(null);
+  const [customPeriod, setCustomPeriod] = useState("");
+  const [reportCard, setReportCard] = useState<null | {
+    type: ReportType;
+    period: string;
+    focus: string;
+    date: string;
+    metrics: string[];
+    planColor: string;
+  }>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [copyState, setCopyState] = useState("📋 Copier le résumé");
 
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, []);
+  const config = planConfig[plan] || planConfig.datadiag;
 
-  useEffect(() => { scrollToBottom(); }, [messages, loading, scrollToBottom]);
+  const welcomeMessage = useMemo(() => {
+    return `Bonjour 👋 Je suis votre expert en rapports business Scalyo.\nJe génère des rapports PDF professionnels et détaillés à partir de vos données réelles. ${config.welcome} Quel rapport voulez-vous générer ?`;
+  }, [config.welcome]);
 
-  const suggestions = planSuggestions[plan] || planSuggestions.datadiag;
-  const badge = planBadges[plan] || planBadges.datadiag;
-  const welcome = planWelcome[plan] || planWelcome.datadiag;
+  useEffect(() => {
+    setMessages([{ role: "assistant", content: welcomeMessage }]);
+    setStep(1);
+    setSelectedType(null);
+    setSelectedPeriod(null);
+    setSelectedFocus(null);
+    setCustomPeriod("");
+    setReportCard(null);
+  }, [welcomeMessage]);
 
-  const sendMessage = async (text: string) => {
-    if (!text.trim() || loading) return;
-    setError(false);
-    setShowSuggestions(false);
+  const appendMessage = (message: Message) => setMessages((prev) => [...prev, message]);
 
-    const userMsg: Message = { role: "user", content: text.trim() };
-    const newMessages = [...messages, userMsg];
-    setMessages(newMessages);
+  const makeReportCard = (type: ReportType, period: string, focus: string) => {
+    const now = new Date();
+    const date = now.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+    const time = now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    const metrics = [
+      `CA période : 48 500 € (+12%)`,
+      `Clients actifs : 1 247`,
+      `Score performance : 84/100`,
+      `Heures économisées : 8.5h`,
+      `Actions IA appliquées : 3`,
+    ];
+    return { type, period, focus, date: `${date} à ${time}`, metrics, planColor: config.headerColor };
+  };
+
+  const startNewReport = () => {
+    setMessages([{ role: "assistant", content: welcomeMessage }]);
+    setStep(1);
+    setSelectedType(null);
+    setSelectedPeriod(null);
+    setSelectedFocus(null);
+    setCustomPeriod("");
+    setReportCard(null);
+    setCopyState("📋 Copier le résumé");
+  };
+
+  const handleTypeSelect = (type: ReportType) => {
+    setSelectedType(type);
+    setSelectedPeriod(null);
+    setSelectedFocus(null);
+    setStep(2);
+    appendMessage({ role: "user", content: reportTypeLabels[type] });
+    appendMessage({ role: "assistant", content: reportTypeResponses[type] });
+  };
+
+  const handlePeriodSelect = (period: PeriodOption) => {
+    if (period === "Personnalisé") {
+      setSelectedPeriod(period);
+      setCustomPeriod("");
+      setStep(2);
+      appendMessage({ role: "user", content: "Personnalisé" });
+      appendMessage({ role: "assistant", content: "Indiquez la période souhaitée (ex: janvier 2026)." });
+      return;
+    }
+
+    setSelectedPeriod(period);
+    setStep(3);
+    appendMessage({ role: "user", content: period });
+    appendMessage({ role: "assistant", content: "Très bien. Quel focus souhaitez-vous ?" });
+  };
+
+  const handleCustomPeriodSubmit = () => {
+    if (!customPeriod.trim()) return;
+    const period = customPeriod.trim();
+    setSelectedPeriod(period);
+    setStep(3);
+    appendMessage({ role: "user", content: period });
+    appendMessage({ role: "assistant", content: "Parfait. Quel focus souhaitez-vous ?" });
+  };
+
+  const handleFocusSelect = (focus: FocusOption) => {
+    if (!selectedType || !selectedPeriod) return;
+    appendMessage({ role: "user", content: focus });
+    setStep(4);
+    appendMessage({ role: "assistant", content: "⏳ Analyse de vos données en cours... Génération du rapport PDF" });
+    setIsGenerating(true);
+
+    setTimeout(() => {
+      const card = makeReportCard(selectedType, String(selectedPeriod === "Personnalisé" ? customPeriod : selectedPeriod), focus);
+      setReportCard(card);
+      setIsGenerating(false);
+    }, 2000);
+  };
+
+  const handleFreeText = (text: string) => {
+    const normalized = text.toLowerCase();
+    appendMessage({ role: "user", content: text });
+
+    if (/rapport mensuel|mensuel/.test(normalized)) {
+      handleTypeSelect("monthly");
+      return;
+    }
+    if (/diagnostic|analyse complète/.test(normalized)) {
+      handleTypeSelect("diagnostic");
+      return;
+    }
+    if (/churn|rétention/.test(normalized)) {
+      setSelectedType("monthly");
+      setStep(2);
+      appendMessage({ role: "assistant", content: "Je recommande Rapport Mensuel avec focus Rétention clients. Sur quelle période ?" });
+      return;
+    }
+    if (/croissance|ca|chiffre d'affaires/.test(normalized)) {
+      setSelectedType("monthly");
+      setStep(2);
+      appendMessage({ role: "assistant", content: "Je recommande Rapport Mensuel avec focus Croissance CA. Sur quelle période ?" });
+      return;
+    }
+    if (/génère|créer/.test(normalized)) {
+      if (selectedType) {
+        setStep(2);
+        appendMessage({ role: "assistant", content: "Quel est la période souhaitée ?" });
+      } else {
+        appendMessage({ role: "assistant", content: "Quel type de rapport souhaitez-vous ? Hebdomadaire, Mensuel ou Diagnostic ?" });
+      }
+      return;
+    }
+    if (/semaine/.test(normalized) && selectedType) {
+      handlePeriodSelect("Cette semaine");
+      return;
+    }
+    if (/(tout|complet)/.test(normalized) && selectedType && selectedPeriod) {
+      handleFocusSelect("📦 Tout inclure");
+      return;
+    }
+
+    appendMessage({
+      role: "assistant",
+      content: "En tant qu'expert business, je vous recommande un rapport adapté. Précisez si vous souhaitez un rapport hebdomadaire, mensuel ou un diagnostic complet.",
+    });
+  };
+
+  const handleSubmit = async () => {
+    if (!input.trim()) return;
+
+    if (step === 1 || step === 2 || step === 3) {
+      handleFreeText(input.trim());
+      setInput("");
+      return;
+    }
+
     setInput("");
-    setLoading(true);
-
-    if (textareaRef.current) textareaRef.current.style.height = "auto";
-
-    try {
-      const { data, error: fnError } = await supabase.functions.invoke("scalyo-chat", {
-        body: {
-          messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
-          activeTab,
-          plan,
-        },
-      });
-
-      if (fnError) throw fnError;
-      const aiText = data?.text || "Désolé, je n'ai pas pu générer une réponse.";
-      setMessages((prev) => [...prev, { role: "assistant", content: aiText }]);
-    } catch (err) {
-      console.error("Chat error:", err);
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage(input);
-    }
+  const handleDownload = async () => {
+    if (!reportCard || !selectedType || !selectedPeriod) return;
+    const fileName = `scalyo-${selectedType}-${String(selectedPeriod).replace(/\s+/g, "-").toLowerCase()}.pdf`;
+    await generatePdf(selectedType, {
+      companyName: "Démo Commerce SAS",
+      sector: plan,
+      generatedAt: new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }),
+    }, fileName);
   };
 
-  const autoResize = (el: HTMLTextAreaElement) => {
-    el.style.height = "auto";
-    el.style.height = Math.min(el.scrollHeight, 80) + "px";
+  const handleCopySummary = async () => {
+    if (!reportCard) return;
+    const text = reportCard.metrics.join("\n");
+    await navigator.clipboard.writeText(text);
+    setCopyState("✅ Copié !");
+    setTimeout(() => setCopyState("📋 Copier le résumé"), 2000);
   };
-
-  const formatTime = () =>
-    new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <div className="w-full xl:w-[360px] bg-card border border-border rounded-2xl flex flex-col shrink-0 overflow-hidden h-fit max-h-[calc(100vh-100px)]">
-      {/* Header */}
-      <div className="px-5 py-4 border-b border-border flex items-center gap-3">
-        <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground text-base">
-          <Sparkles className="h-4 w-4" />
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold text-foreground">Assistant Scalyo IA</p>
-            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full border ${badge.color}`}>
-              {badge.label}
-            </span>
+    <div className="w-full xl:w-[420px] bg-card border border-border rounded-2xl flex flex-col overflow-hidden h-fit max-h-[calc(100vh-100px)]">
+      <div className="px-5 py-4 border-b border-border">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-[18px] bg-gradient-to-br from-black to-slate-900 flex items-center justify-center text-primary-foreground">
+            <Sparkles className="h-5 w-5" />
           </div>
-          <p className="text-[11px] text-success flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-success" />
-            En ligne – analyse vos données
-          </p>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-foreground">Assistant Scalyo IA</p>
+            <p className="text-xs text-muted-foreground mt-1">Expert en rapports business et PDF.</p>
+          </div>
+          <div className="flex flex-col items-end gap-1 text-right">
+            <span className="text-xs text-muted-foreground">{activeTab || "Dashboard"}</span>
+            <span className="rounded-full bg-slate-950 px-2 py-1 text-[11px] uppercase tracking-[0.12em] text-white">{userInitials || "NF"}</span>
+          </div>
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3 min-h-[300px] max-h-[450px] scrollbar-thin">
-        {/* Welcome message */}
-        <div className="flex gap-2 items-end">
-          <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center text-xs shrink-0">
-            <Sparkles className="h-3 w-3" />
-          </div>
-          <div>
-            <div className="max-w-[80%] px-3.5 py-2.5 rounded-xl rounded-bl-sm bg-secondary border border-border text-[13px] leading-relaxed text-foreground">
-              <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0">
-                <ReactMarkdown>{`Bonjour 👋 ${welcome}\n\nPar quoi souhaitez-vous commencer ?`}</ReactMarkdown>
-              </div>
-            </div>
-            <p className="text-[10px] text-muted-foreground mt-1">maintenant</p>
-          </div>
-        </div>
-
-        {messages.map((msg, i) => (
-          <div key={i} className={`flex gap-2 items-end ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs shrink-0 ${
-              msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary"
-            }`}>
-              {msg.role === "user" ? userInitials : <Sparkles className="h-3 w-3" />}
-            </div>
-            <div>
-              <div className={`max-w-[80%] px-3.5 py-2.5 rounded-xl text-[13px] leading-relaxed ${
-                msg.role === "user"
-                  ? "bg-primary text-primary-foreground rounded-br-sm"
-                  : "bg-secondary border border-border text-foreground rounded-bl-sm"
-              }`}>
-                {msg.role === "assistant" ? (
-                  <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0 [&>ul]:m-0 [&>ol]:m-0 [&>h2]:text-sm [&>h2]:mt-2 [&>h2]:mb-1 [&>h3]:text-sm [&>h3]:mt-2 [&>h3]:mb-1">
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
-                  </div>
-                ) : (
-                  <span className="whitespace-pre-wrap">{msg.content}</span>
-                )}
-              </div>
-              <p className={`text-[10px] text-muted-foreground mt-1 ${msg.role === "user" ? "text-right" : ""}`}>
-                {formatTime()}
-              </p>
-            </div>
+      <div className="px-5 py-4 space-y-4">
+        {messages.map((message, index) => (
+          <div key={index} className={`rounded-2xl p-4 ${message.role === "assistant" ? "bg-white border border-border text-foreground" : "bg-primary text-primary-foreground"}`}>
+            <p className="text-sm leading-6 whitespace-pre-wrap">{message.content}</p>
           </div>
         ))}
 
-        {loading && (
-          <div className="flex gap-2 items-end">
-            <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center text-xs shrink-0">
-              <Sparkles className="h-3 w-3" />
-            </div>
-            <TypingIndicator />
+        {step === 1 && (
+          <div className="flex flex-wrap gap-2">
+            {(Object.keys(reportTypeLabels) as ReportType[]).map((type) => (
+              <button
+                key={type}
+                onClick={() => handleTypeSelect(type)}
+                className="rounded-full border px-4 py-2 text-sm font-medium bg-white text-slate-900 transition hover:bg-opacity-90"
+                style={{ borderColor: config.buttonAccent }}
+              >
+                {reportTypeLabels[type]}
+              </button>
+            ))}
           </div>
         )}
 
-        <div ref={messagesEndRef} />
-      </div>
+        {step === 2 && (
+          <div className="flex flex-wrap gap-2">
+            {periodOptions.map((option) => (
+              <button
+                key={option}
+                onClick={() => handlePeriodSelect(option)}
+                className="rounded-full border px-4 py-2 text-sm font-medium bg-white text-slate-900 transition hover:bg-opacity-90"
+                style={{ borderColor: config.buttonAccent }}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        )}
 
-      {/* Suggestions */}
-      {showSuggestions && (
-        <div className="px-4 pb-3 flex gap-1.5 flex-wrap">
-          {suggestions.map((s) => (
+        {step === 2 && selectedPeriod === "Personnalisé" && (
+          <div className="flex flex-col gap-2">
+            <input
+              className="w-full rounded-2xl border border-border px-4 py-2 text-sm bg-background text-foreground"
+              placeholder="Indiquez la période souhaitée (ex: janvier 2026)"
+              value={customPeriod}
+              onChange={(e) => setCustomPeriod(e.target.value)}
+            />
             <button
-              key={s.label}
-              onClick={() => sendMessage(s.prompt)}
-              className="px-2.5 py-1 border border-primary/30 rounded-full text-[11px] font-medium text-primary bg-primary/5 hover:bg-primary hover:text-primary-foreground transition-colors"
+              onClick={handleCustomPeriodSubmit}
+              className="rounded-full bg-slate-900 text-white px-4 py-2 text-sm font-medium"
+              style={{ backgroundColor: config.buttonAccent }}
             >
-              {s.emoji} {s.label}
+              Confirmer la période
             </button>
-          ))}
-        </div>
-      )}
+          </div>
+        )}
 
-      {/* Error */}
-      {error && (
-        <div className="bg-destructive/10 text-destructive text-xs px-4 py-2 border-t border-destructive/20">
-          ⚠️ Erreur de connexion à l'IA. Réessayez.
-        </div>
-      )}
+        {step === 3 && selectedType && selectedPeriod && (
+          <div className="flex flex-wrap gap-2">
+            {config.focusList.map((option) => (
+              <button
+                key={option}
+                onClick={() => handleFocusSelect(option)}
+                className="rounded-full border px-4 py-2 text-sm font-medium bg-white text-slate-900 transition hover:bg-opacity-90"
+                style={{ borderColor: config.buttonAccent }}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        )}
 
-      {/* Input */}
-      <div className="px-4 py-3 border-t border-border flex gap-2 items-end">
-        <textarea
-          ref={textareaRef}
-          className="flex-1 border border-border rounded-[10px] px-3 py-2 text-[13px] font-sans resize-none outline-none bg-secondary text-foreground placeholder:text-muted-foreground focus:border-primary focus:bg-card transition-colors leading-relaxed"
-          placeholder="Posez une question sur vos données…"
-          rows={1}
-          value={input}
-          onChange={(e) => {
-            setInput(e.target.value);
-            autoResize(e.target);
-          }}
-          onKeyDown={handleKeyDown}
-          style={{ maxHeight: 80 }}
-        />
-        <button
-          onClick={() => sendMessage(input)}
-          disabled={loading || !input.trim()}
-          className="w-9 h-9 rounded-[9px] bg-primary border-none cursor-pointer flex items-center justify-center transition-colors shrink-0 hover:bg-primary/90 disabled:bg-muted disabled:cursor-not-allowed"
-        >
-          <Send className="h-4 w-4 text-primary-foreground" />
-        </button>
+        {isGenerating && (
+          <div className="rounded-2xl border border-border bg-white p-4 text-sm text-foreground">
+            <div className="flex items-center gap-2">
+              <div className="h-2.5 w-2.5 rounded-full bg-primary animate-pulse" />
+              <span>Analyse de vos données en cours... Génération du rapport PDF</span>
+            </div>
+          </div>
+        )}
+
+        {reportCard && (
+          <div className="rounded-3xl border border-border bg-white shadow-sm p-5 space-y-4">
+            <div className="rounded-2xl px-4 py-3" style={{ backgroundColor: reportCard.planColor, color: "#FFFFFF" }}>
+              <p className="text-sm font-semibold">📄 {reportTypeLabels[reportCard.type]} — {reportCard.period}</p>
+              <p className="text-xs opacity-80 mt-1">Généré le {reportCard.date}</p>
+            </div>
+            <div className="space-y-3">
+              <div className="rounded-2xl bg-slate-100 p-3 text-sm text-slate-700">
+                <p className="font-medium">Focus choisi :</p>
+                <p>{reportCard.focus}</p>
+              </div>
+              <div className="border-t border-border pt-4 space-y-2">
+                {reportCard.metrics.map((metric, index) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <span className="mt-[2px] text-slate-500">•</span>
+                    <p className="text-sm leading-6 text-slate-900">{metric}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={handleDownload}
+                className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium bg-white text-slate-900"
+                style={{ borderColor: config.buttonAccent }}
+              >
+                <Download className="h-4 w-4" /> ⬇️ Télécharger le PDF
+              </button>
+              <button
+                onClick={handleCopySummary}
+                className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium bg-white text-slate-900"
+                style={{ borderColor: config.buttonAccent }}
+              >
+                <Clipboard className="h-4 w-4" /> {copyState}
+              </button>
+              <button
+                onClick={startNewReport}
+                className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium bg-white text-slate-900"
+                style={{ borderColor: config.buttonAccent }}
+              >
+                <RotateCcw className="h-4 w-4" /> 🔄 Nouveau rapport
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 mt-4">
+          <input
+            className="flex-1 rounded-2xl border border-border px-4 py-2 text-sm bg-background text-foreground outline-none"
+            placeholder="Tapez votre demande..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                handleSubmit();
+              }
+            }}
+          />
+          <button
+            onClick={handleSubmit}
+            disabled={!input.trim()}
+            className="inline-flex h-11 items-center justify-center rounded-2xl bg-slate-900 px-4 text-white transition hover:bg-slate-800 disabled:opacity-50"
+            style={{ backgroundColor: config.buttonAccent }}
+          >
+            <Send className="h-4 w-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

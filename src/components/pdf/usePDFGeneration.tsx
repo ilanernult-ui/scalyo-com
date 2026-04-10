@@ -62,19 +62,19 @@ export function usePDFGeneration() {
   const [generatingPdf, setGeneratingPdf] = useState(false);
 
   const generatePdf = useCallback(
-    async (type: ReportType, data: PdfGenerationData): Promise<string> => {
+    async (type: ReportType, data: PdfGenerationData, fileName?: string): Promise<string> => {
       setGeneratingPdf(true);
       try {
         const document = buildDocument(type, data);
         const blob = await pdf(document).toBlob();
-        const fileName = `scalyo-${PLAN_SLUG[type]}-rapport-${new Date().toISOString().slice(0, 7)}.pdf`;
+        const generatedName = fileName ?? `scalyo-${PLAN_SLUG[type]}-rapport-${new Date().toISOString().slice(0, 7)}.pdf`;
 
         if (!blob) {
           throw new Error("Impossible de générer le PDF.");
         }
 
-        saveAs(blob, fileName);
-        return fileName;
+        saveAs(blob, generatedName);
+        return generatedName;
       } finally {
         setGeneratingPdf(false);
       }
