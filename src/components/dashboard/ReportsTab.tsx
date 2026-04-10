@@ -182,50 +182,56 @@ const ReportCard = ({ report, onEmailSend }: { report: Report; onEmailSend: (id:
 };
 
 // ─── Generate Card ────────────────────────────────────────────────
-const GenerateCard = ({ type, generating, onGenerate }: {
+const GenerateCard = ({ type, generatingType, onGenerate }: {
   type: typeof REPORT_TYPES[number];
-  generating: boolean;
+  generatingType: ReportType | null;
   onGenerate: (t: ReportType) => void;
-}) => (
-  <div className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-3">
-    <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${type.accentCls}`}>
-      <type.icon className="h-5 w-5" />
+}) => {
+  const isThis = generatingType === type.type;
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-3">
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${type.accentCls}`}>
+        <type.icon className="h-5 w-5" />
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-foreground">{type.label}</p>
+        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{type.description}</p>
+      </div>
+      <div className="flex items-center justify-between mt-auto pt-1">
+        <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+          <Calendar className="h-3 w-3" /> {type.frequency}
+        </span>
+        <Button
+          size="sm" variant="outline" className="h-7 text-xs gap-1.5"
+          onClick={() => onGenerate(type.type)}
+          disabled={generatingType !== null}
+        >
+          {isThis ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+          Générer
+        </Button>
+      </div>
     </div>
-    <div>
-      <p className="text-sm font-semibold text-foreground">{type.label}</p>
-      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{type.description}</p>
-    </div>
-    <div className="flex items-center justify-between mt-auto pt-1">
-      <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-        <Calendar className="h-3 w-3" /> {type.frequency}
-      </span>
-      <Button
-        size="sm" variant="outline" className="h-7 text-xs gap-1.5"
-        onClick={() => onGenerate(type.type)}
-        disabled={generating}
-      >
-        {generating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-        Générer
-      </Button>
-    </div>
-  </div>
-);
+  );
+};
 
 // ─── Main Component ───────────────────────────────────────────────
 const ReportsTab = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { reports, loading, generating, generateReport, markEmailSent } = useReports(user?.id);
+  const { reports, loading, generatingType, generateReport, markEmailSent } = useReports(user?.id);
   const [typeFilter, setTypeFilter] = useState<ReportType | "all">("all");
 
   const companyName = "Votre entreprise"; // could be pulled from companyData
 
   const handleGenerate = async (type: ReportType) => {
-    await generateReport(type, companyName);
+    const report = await generateReport(type, companyName);
+    if (report) {
+      downloadReportPdf(report);
+    }
     analytics.track("report_generated", { report_type: type });
     toast({
       title: "Rapport généré !",
-      description: "Votre rapport PDF est prêt à être téléchargé.",
+      description: "Votre rapport PDF a été téléchargé.",
     });
   };
 
