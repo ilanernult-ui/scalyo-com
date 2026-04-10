@@ -1,5 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Send } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import { saveAs } from "file-saver";
+import { useToast } from "@/hooks/use-toast";
+import { useOpenAI, type OpenAIMessage } from "@/hooks/useOpenAI";
+import type { PlanType } from "@/contexts/AuthContext";
 
 type AssistantContext = "dashboard" | "datadiag" | "growthpilot" | "loyaltyloop";
 
@@ -16,39 +21,29 @@ interface AssistantChatProps {
   welcomeMessage: string;
   quickButtons: QuickButton[];
   userInitials?: string;
+  plan: PlanType;
 }
 
 interface Message {
+  id: string;
   role: "assistant" | "user";
   content: string;
+  isLoading?: boolean;
 }
 
-const assistantResponses: Record<AssistantContext, Record<string, string>> = {
-  dashboard: {
-    "📊 Analyser mes données": "Je peux vous donner un aperçu global de vos KPIs, vos marges et vos leviers de croissance.",
-    "💡 Recommandations": "Je vous propose des actions prioritaires pour améliorer votre performance et réduire les frictions opérationnelles.",
-    "📈 Voir ma progression": "Je compare votre activité récente aux objectifs et je repère les tendances les plus importantes.",
-  },
-  datadiag: {
-    "🔍 Détecter mes pertes": "Je scanne votre business pour identifier les pertes cachées et les points de fuite les plus coûteux.",
-    "💊 Santé financière": "J’analyse votre rentabilité, trésorerie et cash flow pour définir un score santé business clair.",
-    "⚡ Actions prioritaires": "Je vous propose un plan d’actions sur 30 jours pour corriger les principaux dysfonctionnements.",
-  },
-  growthpilot: {
-    "🚀 Accélérer ma croissance": "Je vous indique les leviers les plus efficaces pour booster votre CA rapidement.",
-    "⏱️ Gagner du temps": "Je vous montre comment gagner du temps grâce à l’automatisation et une meilleure organisation des process.",
-    "📊 Mes performances": "Je vous donne une synthèse des indicateurs clés pour suivre votre performance semaine après semaine.",
-  },
-  loyaltyloop: {
-    "❤️ Clients à risque": "Je liste vos clients les plus fragiles pour vous aider à prioriser vos actions de rétention.",
-    "📉 Réduire mon churn": "Je vous propose des scénarios concrets pour diminuer votre churn et stabiliser votre revenue.",
-    "⭐ Clients VIP": "Je segmente vos clients VIP et je recommande des actions de fidélisation sur mesure.",
-  },
-};
+interface StoredChat {
+  messages: Message[];
+  lastUpdated: number;
+}
 
-const defaultResponses: Record<string, string> = {
-  hello: "Je suis prêt à vous aider. Choisissez un bouton ou posez-moi une question.",
-};
+const STORAGE_PREFIX = "scalyo-chat-";
+
+const createMessageId = () =>
+  typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+    ? crypto.randomUUID()
+    : `msg-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+const getStorageKey = (context: AssistantContext) => `${STORAGE_PREFIX}${context}`;
 
 const AssistantChat = ({
   context,
@@ -58,68 +53,295 @@ const AssistantChat = ({
   welcomeMessage,
   quickButtons,
   userInitials = "IA",
+  plan,
 }: AssistantChatProps) => {
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: welcomeMessage },
+    { id: createMessageId(), role: "assistant", content: welcomeMessage },
   ]);
   const [input, setInput] = useState("");
+  const [showQuickButtons, setShowQuickButtons] = useState(true);
+  const [isReady, setIsReady] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [copiedIds, setCopiedIds] = useState<Record<string, boolean>>({});
+  const latestMessagesRef = useRef<Message[]>(messages);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const { toast } = useToast();
+  const { isLoading, sendChat } = useOpenAI();
 
-  const responseMap = useMemo(() => assistantResponses[context], [context]);
+  useEffect(() => {
+    latestMessagesRef.current = messages;
+  }, [messages]);
 
-  const appendMessage = (message: Message) => setMessages((prev) => [...prev, message]);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const key = getStorageKey(context);
+    const raw = window.localStorage.getItem(key);
 
-  const handleQuickAction = (action: string) => {
-    appendMessage({ role: "user", content: action });
-    const reply = responseMap[action] ?? defaultResponses.hello;
-    appendMessage({ role: "assistant", content: reply });
+    if (!raw) {
+      setMessages([{ id: createMessageId(), role: "assistant", content: welcomeMessage }]);
+      setIsReady(true);
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as StoredChat;
+      const expired = !parsed.lastUpdated || Date.now() - parsed.lastUpdated > 24 * 60 * 60 * 1000;
+      if (expired || !Array.isArray(parsed.messages) || parsed.messages.length === 0) {
+        window.localStorage.removeItem(key);
+        setMessages([{ id: createMessageId(), role: "assistant", content: welcomeMessage }]);
+      } else {
+        setMessages(
+          parsed.messages.map((message) => ({
+            ...message,
+            id: message.id ?? createMessageId(),
+            isLoading: false,
+          })),
+        );
+      }
+    } catch {
+      setMessages([{ id: createMessageId(), role: "assistant", content: welcomeMessage }]);
+    }
+
+    setIsReady(true);
+  }, [context, welcomeMessage]);
+
+  useEffect(() => {
+    if (!isReady || typeof window === "undefined") return;
+    window.localStorage.setItem(getStorageKey(context), JSON.stringify({ messages, lastUpdated: Date.now() }));
+  }, [messages, context, isReady]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const getFallbackResponse = (context: AssistantContext) => {
+    switch (context) {
+      case "dashboard":
+        return "Je suis en train d'analyser vos données. Voici ce que je vois : votre CA de 72 000€ est solide. Souhaitez-vous un focus sur un indicateur spécifique ?";
+      case "datadiag":
+        return "D'après vos données, j'identifie 3 axes d'amélioration prioritaires. Voulez-vous que je détaille les pertes détectées ?";
+      case "growthpilot":
+        return "Vos métriques de croissance montrent une progression de +12%. Voici mes recommandations pour atteindre +15%...";
+      case "loyaltyloop":
+        return "Je détecte 3 clients à risque de churn ce mois. Voulez-vous voir les détails et les actions recommandées ?";
+      default:
+        return "Je n'ai pas pu accéder à l'IA pour le moment. Voulez-vous réessayer ?";
+    }
   };
 
-  const handleSubmit = () => {
+  const resetConversation = () => {
+    const nextMessages = [{ id: createMessageId(), role: "assistant", content: welcomeMessage }];
+    setMessages(nextMessages);
+    setCopiedIds({});
+    setShowQuickButtons(true);
+
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(getStorageKey(context));
+    }
+  };
+
+  const replaceLoadingMessage = (id: string, content: string) => {
+    setMessages((prev) =>
+      prev.map((message) => (message.id === id ? { ...message, content, isLoading: false } : message)),
+    );
+  };
+
+  const shouldShowDownload = (content: string) => /\|/.test(content) || /\b(tableau|rapport|données)\b/i.test(content);
+
+  const handleCopyMessage = async (messageId: string, messageContent: string) => {
+    try {
+      await navigator.clipboard.writeText(messageContent);
+      setCopiedIds((prev) => ({ ...prev, [messageId]: true }));
+      setTimeout(() => setCopiedIds((prev) => ({ ...prev, [messageId]: false })), 2000);
+    } catch {
+      toast({ title: "Copie impossible", description: "Impossible de copier le message." });
+    }
+  };
+
+  const handleDownloadMessage = (content: string) => {
+    const extension = content.includes("|") ? "csv" : "txt";
+    const fileName = `scalyo-export-${new Date().toISOString().slice(0, 10)}.${extension}`;
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    saveAs(blob, fileName);
+  };
+
+  const sendMessage = async (content: string) => {
+    const trimmed = content.trim();
+    if (!trimmed) return;
+
+    const resetCommand = /^(reset|effacer|nouvelle conversation)$/i.test(trimmed);
+    if (resetCommand) {
+      resetConversation();
+      return;
+    }
+
+    const userMessage: Message = { id: createMessageId(), role: "user", content: trimmed };
+    const loadingMessage: Message = { id: createMessageId(), role: "assistant", content: "...", isLoading: true };
+    setMessages((prev) => [...prev, userMessage, loadingMessage]);
+
+    const nextMessages: OpenAIMessage[] = [
+      ...latestMessagesRef.current.map(({ id, isLoading, ...rest }) => rest),
+      { role: "user", content: trimmed },
+    ];
+
+    try {
+      const assistantResponse = await sendChat(nextMessages, context, plan);
+      replaceLoadingMessage(loadingMessage.id, assistantResponse);
+    } catch (error: unknown) {
+      const fallbackResponse = getFallbackResponse(context);
+      replaceLoadingMessage(loadingMessage.id, fallbackResponse);
+      if (error instanceof Error) {
+        toast({ title: "Assistant indisponible", description: fallbackResponse, variant: "destructive" });
+      }
+    }
+  };
+
+  const handleQuickAction = async (action: string) => {
+    if (isLoading) return;
+    setShowQuickButtons(false);
+    await sendMessage(action);
+  };
+
+  const handleSubmit = async () => {
     const trimmed = input.trim();
     if (!trimmed) return;
-    appendMessage({ role: "user", content: trimmed });
-    const reply = responseMap[trimmed] ?? "Je vous écoute. Dites-moi ce que vous souhaitez explorer.";
-    appendMessage({ role: "assistant", content: reply });
+
     setInput("");
+    if (trimmed.toLowerCase() === "menu") {
+      setShowQuickButtons(true);
+    } else {
+      setShowQuickButtons(false);
+    }
+
+    await sendMessage(trimmed);
   };
 
+  const contextLabel = useMemo(() => context, [context]);
+
   return (
-    <div className="w-full xl:w-[420px] bg-card border border-border rounded-2xl flex flex-col overflow-hidden h-fit max-h-[calc(100vh-100px)]">
-      <div className="px-5 py-4 border-b border-border">
+    <div
+      className={`w-full xl:w-[420px] flex flex-col overflow-hidden ${
+        isFullscreen
+          ? "fixed inset-0 z-50 h-full w-full max-h-none rounded-none bg-white shadow-2xl"
+          : "bg-card border border-border rounded-2xl h-fit max-h-[calc(100vh-100px)]"
+      }`}
+    >
+      <div className="px-5 py-4 border-b border-border flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-[18px]" style={{ backgroundColor: accentColor }}>
             <div className="h-full w-full flex items-center justify-center text-white text-base font-semibold">{userInitials}</div>
           </div>
-          <div className="flex-1">
+          <div>
             <p className="text-sm font-semibold text-foreground">{name}</p>
             <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
           </div>
-          <div className="rounded-full bg-slate-950 px-2 py-1 text-[11px] uppercase tracking-[0.12em] text-white">{context}</div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {!isFullscreen ? (
+            <button
+              type="button"
+              onClick={() => setIsFullscreen(true)}
+              className="rounded-full border border-border bg-white px-2 py-1 text-xs text-foreground"
+            >
+              ⤢
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsFullscreen(false)}
+              className="rounded-full border border-border bg-white px-2 py-1 text-xs text-foreground"
+            >
+              ✕
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={resetConversation}
+            className="rounded-full border border-border bg-slate-100 px-3 py-1 text-xs text-slate-700"
+          >
+            🗑️ Nouvelle conversation
+          </button>
         </div>
       </div>
 
-      <div className="px-5 py-4 space-y-4">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`rounded-2xl p-4 ${message.role === "assistant" ? "bg-white border border-border text-foreground" : "bg-primary text-primary-foreground"}`}
-          >
-            <p className="text-sm leading-6 whitespace-pre-wrap">{message.content}</p>
-          </div>
-        ))}
+      <div className="px-5 py-4 flex flex-col flex-1 min-h-0 overflow-hidden gap-4">
+        <div className="space-y-4 overflow-y-auto flex-1 min-h-0">
+          {messages.map((message) => (
+            <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div
+                className={`max-w-[80%] p-4 text-sm leading-6 whitespace-pre-wrap ${
+                  message.role === "assistant"
+                    ? "bg-slate-100 text-slate-900 rounded-[18px_18px_18px_4px]"
+                    : "text-white rounded-[18px_18px_4px_18px]"
+                }`}
+                style={message.role === "user" ? { backgroundColor: accentColor } : undefined}
+              >
+                {message.isLoading ? (
+                  <div className="flex items-center gap-2">
+                    {[0, 1, 2].map((delay) => (
+                      <span
+                        key={delay}
+                        className="h-2.5 w-2.5 rounded-full bg-slate-500 animate-pulse"
+                        style={{ animationDelay: `${delay * 150}ms` }}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <ReactMarkdown
+                    components={{
+                      p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+                      h2: ({ node, ...props }) => <p className="text-[15px] font-semibold mb-2" {...props} />,
+                      strong: ({ node, ...props }) => <strong className="font-semibold" {...props} />,
+                      ul: ({ node, ...props }) => <ul className="list-disc pl-5 space-y-1 mb-2" {...props} />,
+                      li: ({ node, ...props }) => <li className="ml-4 list-disc" {...props} />,
+                    }}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                )}
 
-        <div className="flex flex-wrap gap-2">
-          {quickButtons.map((button) => (
-            <button
-              key={button.label}
-              onClick={() => handleQuickAction(button.action)}
-              className="rounded-full border px-4 py-2 text-sm font-medium bg-white text-slate-900 transition hover:bg-opacity-90"
-              style={{ borderColor: accentColor }}
-            >
-              {button.label}
-            </button>
+                {!message.isLoading && message.role === "assistant" && (
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => void handleCopyMessage(message.id, message.content)}
+                      className="rounded-full border border-border bg-white px-3 py-1 text-slate-700 transition hover:bg-slate-50"
+                    >
+                      {copiedIds[message.id] ? "✅ Copié !" : "📋 Copier"}
+                    </button>
+                    {shouldShowDownload(message.content) && (
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadMessage(message.content)}
+                        className="rounded-full border border-border bg-white px-3 py-1 text-slate-700 transition hover:bg-slate-50"
+                      >
+                        ⬇️ Télécharger
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
           ))}
+          <div ref={bottomRef} />
         </div>
+
+        {showQuickButtons && (
+          <div className="flex flex-wrap gap-2">
+            {quickButtons.map((button) => (
+              <button
+                key={button.label}
+                onClick={() => void handleQuickAction(button.action)}
+                disabled={isLoading}
+                className="rounded-full border px-4 py-2 text-sm font-medium bg-white text-slate-900 transition hover:bg-opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                style={{ borderColor: accentColor }}
+              >
+                {button.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="flex items-center gap-2 mt-4">
           <input
@@ -130,13 +352,14 @@ const AssistantChat = ({
             onKeyDown={(event) => {
               if (event.key === "Enter" && !event.shiftKey) {
                 event.preventDefault();
-                handleSubmit();
+                void handleSubmit();
               }
             }}
+            disabled={isLoading}
           />
           <button
-            onClick={handleSubmit}
-            disabled={!input.trim()}
+            onClick={() => void handleSubmit()}
+            disabled={!input.trim() || isLoading}
             className="inline-flex h-11 items-center justify-center rounded-2xl bg-slate-900 px-4 text-white transition hover:bg-slate-800 disabled:opacity-50"
             style={{ backgroundColor: accentColor }}
           >

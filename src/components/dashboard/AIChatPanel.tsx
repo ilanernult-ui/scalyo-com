@@ -1,5 +1,9 @@
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Send, Download, Clipboard, RotateCcw, Sparkles } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import { saveAs } from "file-saver";
+import { useToast } from "@/hooks/use-toast";
+import { useOpenAI, type OpenAIMessage } from "@/hooks/useOpenAI";
 import { usePDFGeneration } from "@/components/pdf/usePDFGeneration";
 import type { PlanType } from "@/contexts/AuthContext";
 import type { ReportType } from "@/hooks/useReports";
@@ -8,12 +12,6 @@ const reportTypeLabels: Record<ReportType, string> = {
   weekly: "Rapport Hebdomadaire",
   monthly: "Rapport Mensuel",
   diagnostic: "Diagnostic Complet",
-};
-
-const reportTypeResponses: Record<ReportType, string> = {
-  weekly: "Parfait ! KPIs de la semaine, actions IA appliquées et recommandations prioritaires. Sur quelle période ?",
-  monthly: "Excellent choix ! Vue complète du mois : CA, churn, score business, top actions. Sur quelle période ?",
-  diagnostic: "Je prépare une analyse 360° de votre business. Benchmarks sectoriels, pertes détectées, plan d'optimisation. Sur quelle période ?",
 };
 
 const periodOptions = ["Cette semaine", "Ce mois", "Ce trimestre", "Personnalisé"] as const;
@@ -59,9 +57,25 @@ const planConfig: Record<PlanType, {
 };
 
 interface Message {
+  id: string;
   role: "user" | "assistant";
   content: string;
+  isLoading?: boolean;
 }
+
+interface StoredChat {
+  messages: Message[];
+  lastUpdated: number;
+}
+
+const STORAGE_PREFIX = "scalyo-chat-";
+
+const createMessageId = () =>
+  typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+    ? crypto.randomUUID()
+    : `msg-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+const getStorageKey = (tab: string) => `${STORAGE_PREFIX}${tab}`;
 
 interface AIChatPanelProps {
   activeTab: string;
@@ -71,7 +85,12 @@ interface AIChatPanelProps {
 
 const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
   const { generatePdf } = usePDFGeneration();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { toast } = useToast();
+  const { isLoading, sendChat } = useOpenAI();
+
+  const [messages, setMessages] = useState<Message[]>([
+    { id: createMessageId(), role: "assistant", content: "" },
+  ]);
   const [input, setInput] = useState("");
   const [step, setStep] = useState(1);
   const [selectedType, setSelectedType] = useState<ReportType | null>(null);
@@ -85,8 +104,12 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
     metrics: string[];
     planColor: string;
   }>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [copyState, setCopyState] = useState("📋 Copier le résumé");
+  const [copiedIds, setCopiedIds] = useState<Record<string, boolean>>({});
+  const [isReady, setIsReady] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const latestMessagesRef = useRef<Message[]>(messages);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const config = planConfig[plan] || planConfig.datadiag;
 
@@ -95,15 +118,122 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
   }, [config.welcome]);
 
   useEffect(() => {
-    setMessages([{ role: "assistant", content: welcomeMessage }]);
+    latestMessagesRef.current = messages;
+  }, [messages]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const key = getStorageKey(activeTab || "reports");
+    const raw = window.localStorage.getItem(key);
+
+    if (!raw) {
+      setMessages([{ id: createMessageId(), role: "assistant", content: welcomeMessage }]);
+      setStep(1);
+      setSelectedType(null);
+      setSelectedPeriod(null);
+      setCustomPeriod("");
+      setReportCard(null);
+      setCopyState("📋 Copier le résumé");
+      setIsReady(true);
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as StoredChat;
+      const expired = !parsed.lastUpdated || Date.now() - parsed.lastUpdated > 24 * 60 * 60 * 1000;
+      if (expired || !Array.isArray(parsed.messages) || parsed.messages.length === 0) {
+        window.localStorage.removeItem(key);
+        setMessages([{ id: createMessageId(), role: "assistant", content: welcomeMessage }]);
+      } else {
+        setMessages(
+          parsed.messages.map((message) => ({
+            ...message,
+            id: message.id ?? createMessageId(),
+            isLoading: false,
+          })),
+        );
+      }
+    } catch {
+      setMessages([{ id: createMessageId(), role: "assistant", content: welcomeMessage }]);
+    }
+
+    setIsReady(true);
+  }, [activeTab, welcomeMessage]);
+
+  useEffect(() => {
+    if (!isReady || typeof window === "undefined") return;
+    window.localStorage.setItem(getStorageKey(activeTab || "reports"), JSON.stringify({ messages, lastUpdated: Date.now() }));
+  }, [messages, activeTab, isReady]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const replaceLoadingMessage = (id: string, content: string) => {
+    setMessages((prev) =>
+      prev.map((message) => (message.id === id ? { ...message, content, isLoading: false } : message)),
+    );
+  };
+
+  const getStorageKeyForTab = () => getStorageKey(activeTab || "reports");
+
+  const resetConversation = () => {
+    setMessages([{ id: createMessageId(), role: "assistant", content: welcomeMessage }]);
     setStep(1);
     setSelectedType(null);
     setSelectedPeriod(null);
     setCustomPeriod("");
     setReportCard(null);
-  }, [welcomeMessage]);
+    setCopyState("📋 Copier le résumé");
+    setCopiedIds({});
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(getStorageKeyForTab());
+    }
+  };
 
-  const appendMessage = (message: Message) => setMessages((prev) => [...prev, message]);
+  const shouldShowDownload = (content: string) => /\|/.test(content) || /\b(tableau|rapport|données)\b/i.test(content);
+
+  const handleCopyMessage = async (messageId: string, messageContent: string) => {
+    try {
+      await navigator.clipboard.writeText(messageContent);
+      setCopiedIds((prev) => ({ ...prev, [messageId]: true }));
+      setTimeout(() => setCopiedIds((prev) => ({ ...prev, [messageId]: false })), 2000);
+    } catch {
+      toast({ title: "Copie impossible", description: "Impossible de copier le message." });
+    }
+  };
+
+  const handleDownloadMessage = (content: string) => {
+    const extension = content.includes("|") ? "csv" : "txt";
+    const fileName = `scalyo-export-${new Date().toISOString().slice(0, 10)}.${extension}`;
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    saveAs(blob, fileName);
+  };
+
+  const sendAiMessage = async (content: string) => {
+    const trimmed = content.trim();
+    if (!trimmed) return null;
+
+    const userMessage: Message = { id: createMessageId(), role: "user", content: trimmed };
+    const loadingMessage: Message = { id: createMessageId(), role: "assistant", content: "...", isLoading: true };
+    setMessages((prev) => [...prev, userMessage, loadingMessage]);
+
+    const nextMessages: OpenAIMessage[] = [
+      ...latestMessagesRef.current.map(({ id, isLoading, ...rest }) => rest),
+      { role: "user", content: trimmed },
+    ];
+
+    try {
+      const assistantReply = await sendChat(nextMessages, activeTab || "reports", plan);
+      replaceLoadingMessage(loadingMessage.id, assistantReply);
+      return assistantReply;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Erreur IA inconnue";
+      toast({ title: "Erreur IA", description: message, variant: "destructive" });
+      replaceLoadingMessage(loadingMessage.id, "Désolé, je n'ai pas pu obtenir de réponse de l'IA. Réessayez plus tard.");
+      return null;
+    }
+  };
 
   const makeReportCard = (type: ReportType, period: string, focus: string) => {
     const now = new Date();
@@ -120,131 +250,118 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
   };
 
   const startNewReport = () => {
-    setMessages([{ role: "assistant", content: welcomeMessage }]);
-    setStep(1);
-    setSelectedType(null);
-    setSelectedPeriod(null);
-    setCustomPeriod("");
-    setReportCard(null);
-    setCopyState("📋 Copier le résumé");
+    resetConversation();
   };
 
-  const handleTypeSelect = (type: ReportType) => {
+  const handleTypeSelect = async (type: ReportType) => {
     setSelectedType(type);
     setSelectedPeriod(null);
     setStep(2);
-    appendMessage({ role: "user", content: reportTypeLabels[type] });
-    appendMessage({ role: "assistant", content: reportTypeResponses[type] });
+    await sendAiMessage(reportTypeLabels[type]);
   };
 
-  const handlePeriodSelect = (period: PeriodOption) => {
-    if (period === "Personnalisé") {
-      setSelectedPeriod(period);
-      setCustomPeriod("");
-      setStep(2);
-      appendMessage({ role: "user", content: "Personnalisé" });
-      appendMessage({ role: "assistant", content: "Indiquez la période souhaitée (ex: janvier 2026)." });
-      return;
-    }
-
+  const handlePeriodSelect = async (period: PeriodOption) => {
     setSelectedPeriod(period);
-    setStep(3);
-    appendMessage({ role: "user", content: period });
-    appendMessage({ role: "assistant", content: "Très bien. Quel focus souhaitez-vous ?" });
+    setStep(period === "Personnalisé" ? 2 : 3);
+    await sendAiMessage(String(period));
   };
 
-  const handleCustomPeriodSubmit = () => {
+  const handleCustomPeriodSubmit = async () => {
     if (!customPeriod.trim()) return;
     const period = customPeriod.trim();
     setSelectedPeriod(period);
     setStep(3);
-    appendMessage({ role: "user", content: period });
-    appendMessage({ role: "assistant", content: "Parfait. Quel focus souhaitez-vous ?" });
+    await sendAiMessage(period);
   };
 
-  const handleFocusSelect = (focus: FocusOption) => {
+  const handleFocusSelect = async (focus: FocusOption) => {
     if (!selectedType || !selectedPeriod) return;
-    appendMessage({ role: "user", content: focus });
     setReportCard(null);
-    setIsGenerating(true);
-    appendMessage({ role: "assistant", content: "⏳ Analyse de vos données en cours... Génération du rapport PDF" });
+    setStep(4);
+
+    const response = await sendAiMessage(focus);
+    if (!response) return;
 
     const period = selectedPeriod === "Personnalisé" ? customPeriod : selectedPeriod;
     const card = makeReportCard(selectedType, String(period), focus);
     setReportCard(card);
-    setIsGenerating(false);
-    setStep(4);
-    appendMessage({ role: "assistant", content: "✅ Rapport prêt. Téléchargez-le ou copiez le résumé." });
+    setMessages((prev) => [...prev, { id: createMessageId(), role: "assistant", content: "✅ Rapport prêt. Téléchargez-le ou copiez le résumé." }]);
   };
 
-  const handleFreeText = (text: string) => {
+  const handleFreeText = async (text: string) => {
     const normalized = text.toLowerCase();
-    appendMessage({ role: "user", content: text });
+    if (/^(reset|effacer|nouvelle conversation)$/i.test(normalized)) {
+      resetConversation();
+      return;
+    }
 
     if (/rapport mensuel|mensuel/.test(normalized)) {
-      handleTypeSelect("monthly");
+      await handleTypeSelect("monthly");
       return;
     }
     if (/diagnostic|analyse complète/.test(normalized)) {
-      handleTypeSelect("diagnostic");
+      await handleTypeSelect("diagnostic");
       return;
     }
     if (/churn|rétention/.test(normalized)) {
       setSelectedType("monthly");
       setStep(2);
-      appendMessage({ role: "assistant", content: "Je recommande Rapport Mensuel avec focus Rétention clients. Sur quelle période ?" });
+      await sendAiMessage(text);
       return;
     }
     if (/croissance|ca|chiffre d'affaires/.test(normalized)) {
       setSelectedType("monthly");
       setStep(2);
-      appendMessage({ role: "assistant", content: "Je recommande Rapport Mensuel avec focus Croissance CA. Sur quelle période ?" });
+      await sendAiMessage(text);
       return;
     }
     if (/génère|créer/.test(normalized)) {
-      if (selectedType) {
-        setStep(2);
-        appendMessage({ role: "assistant", content: "Quel est la période souhaitée ?" });
-      } else {
-        appendMessage({ role: "assistant", content: "Quel type de rapport souhaitez-vous ? Hebdomadaire, Mensuel ou Diagnostic ?" });
-      }
+      await sendAiMessage(text);
       return;
     }
     if (/semaine/.test(normalized) && selectedType) {
-      handlePeriodSelect("Cette semaine");
+      await handlePeriodSelect("Cette semaine");
       return;
     }
     if (/(tout|complet)/.test(normalized) && selectedType && selectedPeriod) {
-      handleFocusSelect("📦 Tout inclure");
+      await handleFocusSelect("📦 Tout inclure");
       return;
     }
 
-    appendMessage({
-      role: "assistant",
-      content: "En tant qu'expert business, je vous recommande un rapport adapté. Précisez si vous souhaitez un rapport hebdomadaire, mensuel ou un diagnostic complet.",
-    });
+    await sendAiMessage(text);
   };
 
   const handleSubmit = async () => {
     if (!input.trim()) return;
 
-    if (step === 1 || step === 2 || step === 3) {
-      handleFreeText(input.trim());
-      setInput("");
+    const text = input.trim();
+    setInput("");
+
+    if (/^(reset|effacer|nouvelle conversation)$/i.test(text)) {
+      resetConversation();
       return;
     }
 
-    setInput("");
+    if (step === 1 || step === 2 || step === 3) {
+      await handleFreeText(text);
+      return;
+    }
+
+    await sendAiMessage(text);
   };
 
   const handleDownload = async () => {
     if (!reportCard || !selectedType || !selectedPeriod) return;
     const fileName = `scalyo-${selectedType}-${String(selectedPeriod).replace(/\s+/g, "-").toLowerCase()}.pdf`;
-    await generatePdf(selectedType, {
-      companyName: "Démo Commerce SAS",
-      sector: plan,
-      generatedAt: new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }),
-    }, fileName);
+    await generatePdf(
+      selectedType,
+      {
+        companyName: "Démo Commerce SAS",
+        sector: plan,
+        generatedAt: new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }),
+      },
+      fileName,
+    );
   };
 
   const handleCopySummary = async () => {
@@ -256,8 +373,14 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
   };
 
   return (
-    <div className="w-full xl:w-[420px] bg-card border border-border rounded-2xl flex flex-col overflow-hidden h-fit max-h-[calc(100vh-100px)]">
-      <div className="px-5 py-4 border-b border-border">
+    <div
+      className={`w-full xl:w-[420px] flex flex-col overflow-hidden ${
+        isFullscreen
+          ? "fixed inset-0 z-50 h-full w-full max-h-none rounded-none bg-white shadow-2xl"
+          : "bg-card border border-border rounded-2xl h-fit max-h-[calc(100vh-100px)]"
+      }`}
+    >
+      <div className="px-5 py-4 border-b border-border flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-[18px] bg-gradient-to-br from-black to-slate-900 flex items-center justify-center text-primary-foreground">
             <Sparkles className="h-5 w-5" />
@@ -266,27 +389,106 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
             <p className="text-sm font-semibold text-foreground">Assistant Scalyo IA</p>
             <p className="text-xs text-muted-foreground mt-1">Expert en rapports business et PDF.</p>
           </div>
-          <div className="flex flex-col items-end gap-1 text-right">
-            <span className="text-xs text-muted-foreground">{activeTab || "Dashboard"}</span>
-            <span className="rounded-full bg-slate-950 px-2 py-1 text-[11px] uppercase tracking-[0.12em] text-white">{userInitials || "NF"}</span>
-          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {!isFullscreen ? (
+            <button
+              type="button"
+              onClick={() => setIsFullscreen(true)}
+              className="rounded-full border border-border bg-white px-2 py-1 text-xs text-foreground"
+            >
+              ⤢
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsFullscreen(false)}
+              className="rounded-full border border-border bg-white px-2 py-1 text-xs text-foreground"
+            >
+              ✕
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={resetConversation}
+            className="rounded-full border border-border bg-slate-100 px-3 py-1 text-xs text-slate-700"
+          >
+            🗑️ Nouvelle conversation
+          </button>
         </div>
       </div>
 
-      <div className="px-5 py-4 space-y-4">
-        {messages.map((message, index) => (
-          <div key={index} className={`rounded-2xl p-4 ${message.role === "assistant" ? "bg-white border border-border text-foreground" : "bg-primary text-primary-foreground"}`}>
-            <p className="text-sm leading-6 whitespace-pre-wrap">{message.content}</p>
-          </div>
-        ))}
+      <div className="px-5 py-4 flex flex-col flex-1 min-h-0 overflow-hidden gap-4">
+        <div className="space-y-4 overflow-y-auto flex-1 min-h-0">
+          {messages.map((message) => (
+            <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div
+                className={`max-w-[80%] p-4 text-sm leading-6 whitespace-pre-wrap ${
+                  message.role === "assistant"
+                    ? "bg-slate-100 text-slate-900 rounded-[18px_18px_18px_4px]"
+                    : "text-white rounded-[18px_18px_4px_18px]"
+                }`}
+                style={message.role === "user" ? { backgroundColor: config.buttonAccent } : undefined}
+              >
+                {message.isLoading ? (
+                  <div className="flex items-center gap-2">
+                    {[0, 1, 2].map((delay) => (
+                      <span
+                        key={delay}
+                        className="h-2.5 w-2.5 rounded-full bg-slate-500 animate-pulse"
+                        style={{ animationDelay: `${delay * 150}ms` }}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <ReactMarkdown
+                    components={{
+                      p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+                      h2: ({ node, ...props }) => <p className="text-[15px] font-semibold mb-2" {...props} />,
+                      strong: ({ node, ...props }) => <strong className="font-semibold" {...props} />,
+                      ul: ({ node, ...props }) => <ul className="list-disc pl-5 space-y-1 mb-2" {...props} />,
+                      li: ({ node, ...props }) => <li className="ml-4 list-disc" {...props} />,
+                    }}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                )}
+
+                {!message.isLoading && message.role === "assistant" && (
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => void handleCopyMessage(message.id, message.content)}
+                      className="rounded-full border border-border bg-white px-3 py-1 text-slate-700 transition hover:bg-slate-50"
+                    >
+                      {copiedIds[message.id] ? "✅ Copié !" : "📋 Copier"}
+                    </button>
+                    {shouldShowDownload(message.content) && (
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadMessage(message.content)}
+                        className="rounded-full border border-border bg-white px-3 py-1 text-slate-700 transition hover:bg-slate-50"
+                      >
+                        ⬇️ Télécharger
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          <div ref={bottomRef} />
+        </div>
 
         {step === 1 && (
           <div className="flex flex-wrap gap-2">
             {(Object.keys(reportTypeLabels) as ReportType[]).map((type) => (
               <button
                 key={type}
-                onClick={() => handleTypeSelect(type)}
-                className="rounded-full border px-4 py-2 text-sm font-medium bg-white text-slate-900 transition hover:bg-opacity-90"
+                onClick={() => void handleTypeSelect(type)}
+                disabled={isLoading}
+                className="rounded-full border px-4 py-2 text-sm font-medium bg-white text-slate-900 transition hover:bg-opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 style={{ borderColor: config.buttonAccent }}
               >
                 {reportTypeLabels[type]}
@@ -300,8 +502,9 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
             {periodOptions.map((option) => (
               <button
                 key={option}
-                onClick={() => handlePeriodSelect(option)}
-                className="rounded-full border px-4 py-2 text-sm font-medium bg-white text-slate-900 transition hover:bg-opacity-90"
+                onClick={() => void handlePeriodSelect(option)}
+                disabled={isLoading}
+                className="rounded-full border px-4 py-2 text-sm font-medium bg-white text-slate-900 transition hover:bg-opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 style={{ borderColor: config.buttonAccent }}
               >
                 {option}
@@ -319,8 +522,9 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
               onChange={(e) => setCustomPeriod(e.target.value)}
             />
             <button
-              onClick={handleCustomPeriodSubmit}
-              className="rounded-full bg-slate-900 text-white px-4 py-2 text-sm font-medium"
+              onClick={() => void handleCustomPeriodSubmit()}
+              disabled={isLoading}
+              className="rounded-full bg-slate-900 text-white px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
               style={{ backgroundColor: config.buttonAccent }}
             >
               Confirmer la période
@@ -333,22 +537,14 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
             {config.focusList.map((option) => (
               <button
                 key={option}
-                onClick={() => handleFocusSelect(option)}
-                className="rounded-full border px-4 py-2 text-sm font-medium bg-white text-slate-900 transition hover:bg-opacity-90"
+                onClick={() => void handleFocusSelect(option)}
+                disabled={isLoading}
+                className="rounded-full border px-4 py-2 text-sm font-medium bg-white text-slate-900 transition hover:bg-opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 style={{ borderColor: config.buttonAccent }}
               >
                 {option}
               </button>
             ))}
-          </div>
-        )}
-
-        {isGenerating && (
-          <div className="rounded-2xl border border-border bg-white p-4 text-sm text-foreground">
-            <div className="flex items-center gap-2">
-              <div className="h-2.5 w-2.5 rounded-full bg-primary animate-pulse" />
-              <span>Analyse de vos données en cours... Génération du rapport PDF</span>
-            </div>
           </div>
         )}
 
