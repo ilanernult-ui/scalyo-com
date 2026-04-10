@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FileText, Download, Mail, CheckCircle2, Loader2,
-  Calendar, BarChart3, Activity, Sparkles
+  Calendar, BarChart3, Activity, Sparkles, X, Eye
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { Button } from "@/components/ui/button";
@@ -13,13 +13,12 @@ import { useToast } from "@/hooks/use-toast";
 import { analytics } from "@/lib/analytics";
 
 // ─── PDF generation ───────────────────────────────────────────────
-const downloadReportPdf = (report: Report) => {
+const buildReportPdf = (report: Report): jsPDF => {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const w = doc.internal.pageSize.getWidth();
   const margin = 20;
   let y = 25;
 
-  // Header bar
   doc.setFillColor(15, 17, 23);
   doc.rect(0, 0, w, 40, "F");
   doc.setTextColor(255, 255, 255);
@@ -28,13 +27,11 @@ const downloadReportPdf = (report: Report) => {
   doc.setFontSize(10);
   doc.text("Rapport automatique", w - margin, y, { align: "right" });
 
-  // Title
   y = 55;
   doc.setTextColor(30, 30, 30);
   doc.setFontSize(16);
   doc.text(report.title, margin, y);
 
-  // Period
   if (report.period_label) {
     y += 10;
     doc.setFontSize(11);
@@ -42,12 +39,10 @@ const downloadReportPdf = (report: Report) => {
     doc.text(report.period_label, margin, y);
   }
 
-  // Separator
   y += 8;
   doc.setDrawColor(220, 220, 220);
   doc.line(margin, y, w - margin, y);
 
-  // Summary
   if (report.summary) {
     y += 12;
     doc.setFontSize(12);
@@ -58,16 +53,13 @@ const downloadReportPdf = (report: Report) => {
     doc.setTextColor(60, 60, 60);
     const lines = doc.splitTextToSize(report.summary, w - margin * 2);
     doc.text(lines, margin, y);
-    y += lines.length * 6;
   }
 
-  // Generation date
-  y += 10;
+  y += 20;
   doc.setFontSize(9);
   doc.setTextColor(150, 150, 150);
   doc.text(`Genere le ${new Date(report.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}`, margin, y);
 
-  // Footer
   const footerY = doc.internal.pageSize.getHeight() - 15;
   doc.setDrawColor(220, 220, 220);
   doc.line(margin, footerY - 5, w - margin, footerY - 5);
@@ -76,6 +68,17 @@ const downloadReportPdf = (report: Report) => {
   doc.text("Scalyo - Votre copilote business IA", margin, footerY);
   doc.text("scalyo.com", w - margin, footerY, { align: "right" });
 
+  return doc;
+};
+
+const getReportBlobUrl = (report: Report): string => {
+  const doc = buildReportPdf(report);
+  const blob = doc.output("blob");
+  return URL.createObjectURL(blob);
+};
+
+const downloadReportPdf = (report: Report) => {
+  const doc = buildReportPdf(report);
   const dateStr = new Date(report.created_at).toISOString().slice(0, 10);
   doc.save(`rapport-${report.type}-${dateStr}.pdf`);
 };
@@ -116,7 +119,7 @@ const REPORT_TYPES: {
 ];
 
 // ─── Report Card ──────────────────────────────────────────────────
-const ReportCard = ({ report, onEmailSend }: { report: Report; onEmailSend: (id: string) => void }) => {
+const ReportCard = ({ report, onEmailSend, onPreview }: { report: Report; onEmailSend: (id: string) => void; onPreview: (report: Report) => void }) => {
   const isReady = report.status === "ready";
   const isGenerating = report.status === "generating";
   const conf = REPORT_TYPES.find((t) => t.type === report.type);
@@ -150,23 +153,24 @@ const ReportCard = ({ report, onEmailSend }: { report: Report; onEmailSend: (id:
             </div>
           </div>
 
-          {/* Summary */}
           {report.summary && (
             <p className="text-xs text-muted-foreground leading-relaxed mt-2">{report.summary}</p>
           )}
 
-          {/* Actions */}
           {isReady && (
             <div className="flex items-center gap-2 mt-3">
+              <Button variant="default" size="sm" className="h-7 text-xs gap-1.5" onClick={() => onPreview(report)}>
+                <Eye className="h-3 w-3" /> Voir le PDF
+              </Button>
               <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={() => downloadReportPdf(report)}>
-                <Download className="h-3 w-3" /> Télécharger PDF
+                <Download className="h-3 w-3" /> Télécharger
               </Button>
               {!report.email_sent ? (
                 <Button
                   variant="ghost" size="sm" className="h-7 text-xs gap-1.5"
                   onClick={() => onEmailSend(report.id)}
                 >
-                  <Mail className="h-3 w-3" /> Envoyer par email
+                  <Mail className="h-3 w-3" /> Email
                 </Button>
               ) : (
                 <span className="text-xs text-emerald-600 flex items-center gap-1">
@@ -220,18 +224,33 @@ const ReportsTab = () => {
   const { toast } = useToast();
   const { reports, loading, generatingType, generateReport, markEmailSent } = useReports(user?.id);
   const [typeFilter, setTypeFilter] = useState<ReportType | "all">("all");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewTitle, setPreviewTitle] = useState("");
 
-  const companyName = "Votre entreprise"; // could be pulled from companyData
+  const companyName = "Votre entreprise";
+
+  const handlePreview = useCallback((report: Report) => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    const url = getReportBlobUrl(report);
+    setPreviewUrl(url);
+    setPreviewTitle(report.title);
+  }, [previewUrl]);
+
+  const closePreview = useCallback(() => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setPreviewTitle("");
+  }, [previewUrl]);
 
   const handleGenerate = async (type: ReportType) => {
     const report = await generateReport(type, companyName);
     if (report) {
-      downloadReportPdf(report);
+      handlePreview(report);
     }
     analytics.track("report_generated", { report_type: type });
     toast({
       title: "Rapport généré !",
-      description: "Votre rapport PDF a été téléchargé.",
+      description: "Votre rapport PDF est affiché ci-dessous.",
     });
   };
 
@@ -271,6 +290,19 @@ const ReportsTab = () => {
         </div>
       </div>
 
+      {/* PDF Preview */}
+      {previewUrl && (
+        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <p className="text-sm font-semibold text-foreground truncate">{previewTitle}</p>
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={closePreview}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <iframe src={previewUrl} className="w-full h-[600px] border-0" title="Aperçu du rapport PDF" />
+        </div>
+      )}
+
       {/* History */}
       {reports.length > 0 && (
         <div>
@@ -296,7 +328,7 @@ const ReportsTab = () => {
           <div className="space-y-2">
             <AnimatePresence mode="popLayout">
               {filtered.map((report) => (
-                <ReportCard key={report.id} report={report} onEmailSend={handleEmailSend} />
+                <ReportCard key={report.id} report={report} onEmailSend={handleEmailSend} onPreview={handlePreview} />
               ))}
             </AnimatePresence>
             {filtered.length === 0 && (
