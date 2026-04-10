@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FileText, Download, Mail, CheckCircle2, Loader2,
-  Calendar, BarChart3, Activity, Sparkles
+  Calendar, BarChart3, Activity, Sparkles, X, Eye
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { Button } from "@/components/ui/button";
@@ -13,13 +13,12 @@ import { useToast } from "@/hooks/use-toast";
 import { analytics } from "@/lib/analytics";
 
 // ─── PDF generation ───────────────────────────────────────────────
-const downloadReportPdf = (report: Report) => {
+const buildReportPdf = (report: Report): jsPDF => {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const w = doc.internal.pageSize.getWidth();
   const margin = 20;
   let y = 25;
 
-  // Header bar
   doc.setFillColor(15, 17, 23);
   doc.rect(0, 0, w, 40, "F");
   doc.setTextColor(255, 255, 255);
@@ -28,13 +27,11 @@ const downloadReportPdf = (report: Report) => {
   doc.setFontSize(10);
   doc.text("Rapport automatique", w - margin, y, { align: "right" });
 
-  // Title
   y = 55;
   doc.setTextColor(30, 30, 30);
   doc.setFontSize(16);
   doc.text(report.title, margin, y);
 
-  // Period
   if (report.period_label) {
     y += 10;
     doc.setFontSize(11);
@@ -42,12 +39,10 @@ const downloadReportPdf = (report: Report) => {
     doc.text(report.period_label, margin, y);
   }
 
-  // Separator
   y += 8;
   doc.setDrawColor(220, 220, 220);
   doc.line(margin, y, w - margin, y);
 
-  // Summary
   if (report.summary) {
     y += 12;
     doc.setFontSize(12);
@@ -58,16 +53,13 @@ const downloadReportPdf = (report: Report) => {
     doc.setTextColor(60, 60, 60);
     const lines = doc.splitTextToSize(report.summary, w - margin * 2);
     doc.text(lines, margin, y);
-    y += lines.length * 6;
   }
 
-  // Generation date
-  y += 10;
+  y += 20;
   doc.setFontSize(9);
   doc.setTextColor(150, 150, 150);
   doc.text(`Genere le ${new Date(report.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}`, margin, y);
 
-  // Footer
   const footerY = doc.internal.pageSize.getHeight() - 15;
   doc.setDrawColor(220, 220, 220);
   doc.line(margin, footerY - 5, w - margin, footerY - 5);
@@ -76,6 +68,17 @@ const downloadReportPdf = (report: Report) => {
   doc.text("Scalyo - Votre copilote business IA", margin, footerY);
   doc.text("scalyo.com", w - margin, footerY, { align: "right" });
 
+  return doc;
+};
+
+const getReportBlobUrl = (report: Report): string => {
+  const doc = buildReportPdf(report);
+  const blob = doc.output("blob");
+  return URL.createObjectURL(blob);
+};
+
+const downloadReportPdf = (report: Report) => {
+  const doc = buildReportPdf(report);
   const dateStr = new Date(report.created_at).toISOString().slice(0, 10);
   doc.save(`rapport-${report.type}-${dateStr}.pdf`);
 };
