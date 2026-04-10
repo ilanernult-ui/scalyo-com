@@ -21,8 +21,8 @@ export interface Report {
 interface UseReportsReturn {
   reports: Report[];
   loading: boolean;
-  generating: boolean;
-  generateReport: (type: ReportType, companyName?: string) => Promise<void>;
+  generatingType: ReportType | null;
+  generateReport: (type: ReportType, companyName?: string) => Promise<Report | null>;
   markEmailSent: (id: string) => Promise<void>;
 }
 
@@ -47,7 +47,7 @@ const db = supabase as any;
 export function useReports(userId: string | undefined): UseReportsReturn {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
+  const [generatingType, setGeneratingType] = useState<ReportType | null>(null);
 
   const fetch = useCallback(async () => {
     if (!userId) return;
@@ -58,9 +58,9 @@ export function useReports(userId: string | undefined): UseReportsReturn {
 
   useEffect(() => { fetch(); }, [fetch]);
 
-  const generateReport = useCallback(async (type: ReportType, companyName = "Votre entreprise") => {
-    if (!userId) return;
-    setGenerating(true);
+  const generateReport = useCallback(async (type: ReportType, companyName = "Votre entreprise"): Promise<Report | null> => {
+    if (!userId) return null;
+    setGeneratingType(type);
     const { data: inserted } = await db.from("reports").insert({
       user_id: userId, type,
       title: `Rapport ${type === "weekly" ? "hebdomadaire" : type === "monthly" ? "mensuel" : "de diagnostic"} — ${companyName}`,
@@ -70,11 +70,12 @@ export function useReports(userId: string | undefined): UseReportsReturn {
 
     await new Promise((r) => setTimeout(r, 2200));
     const reportId = (inserted as Report | null)?.id;
-    if (!reportId) { setGenerating(false); return; }
+    if (!reportId) { setGeneratingType(null); return null; }
 
     const { data: updated } = await db.from("reports").update({ status: "ready", summary: SUMMARIES[type], updated_at: new Date().toISOString() }).eq("id", reportId).eq("user_id", userId).select().single();
     if (updated) setReports((prev: Report[]) => prev.map((r) => r.id === reportId ? updated as Report : r));
-    setGenerating(false);
+    setGeneratingType(null);
+    return (updated as Report) ?? null;
   }, [userId]);
 
   const markEmailSent = useCallback(async (id: string) => {
@@ -83,5 +84,5 @@ export function useReports(userId: string | undefined): UseReportsReturn {
     if (data) setReports((prev: Report[]) => prev.map((r) => r.id === id ? data as Report : r));
   }, [userId]);
 
-  return { reports, loading, generating, generateReport, markEmailSent };
+  return { reports, loading, generatingType, generateReport, markEmailSent };
 }
