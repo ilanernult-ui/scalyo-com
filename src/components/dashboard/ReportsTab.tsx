@@ -266,7 +266,7 @@ const ReportsTab = () => {
         <p className="text-sm font-medium text-foreground mb-3">Générer un rapport</p>
         <div className="grid sm:grid-cols-3 gap-3">
           {REPORT_TYPES.map((t) => (
-            <GenerateCard key={t.type} type={t} generating={generating} onGenerate={handleGenerate} />
+            <GenerateCard key={t.type} type={t} generatingType={generatingType} onGenerate={handleGenerate} />
           ))}
         </div>
       </div>
