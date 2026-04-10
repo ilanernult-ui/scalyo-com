@@ -119,7 +119,7 @@ const REPORT_TYPES: {
 ];
 
 // ─── Report Card ──────────────────────────────────────────────────
-const ReportCard = ({ report, onEmailSend }: { report: Report; onEmailSend: (id: string) => void }) => {
+const ReportCard = ({ report, onEmailSend, onPreview }: { report: Report; onEmailSend: (id: string) => void; onPreview: (report: Report) => void }) => {
   const isReady = report.status === "ready";
   const isGenerating = report.status === "generating";
   const conf = REPORT_TYPES.find((t) => t.type === report.type);
@@ -153,23 +153,24 @@ const ReportCard = ({ report, onEmailSend }: { report: Report; onEmailSend: (id:
             </div>
           </div>
 
-          {/* Summary */}
           {report.summary && (
             <p className="text-xs text-muted-foreground leading-relaxed mt-2">{report.summary}</p>
           )}
 
-          {/* Actions */}
           {isReady && (
             <div className="flex items-center gap-2 mt-3">
+              <Button variant="default" size="sm" className="h-7 text-xs gap-1.5" onClick={() => onPreview(report)}>
+                <Eye className="h-3 w-3" /> Voir le PDF
+              </Button>
               <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={() => downloadReportPdf(report)}>
-                <Download className="h-3 w-3" /> Télécharger PDF
+                <Download className="h-3 w-3" /> Télécharger
               </Button>
               {!report.email_sent ? (
                 <Button
                   variant="ghost" size="sm" className="h-7 text-xs gap-1.5"
                   onClick={() => onEmailSend(report.id)}
                 >
-                  <Mail className="h-3 w-3" /> Envoyer par email
+                  <Mail className="h-3 w-3" /> Email
                 </Button>
               ) : (
                 <span className="text-xs text-emerald-600 flex items-center gap-1">
@@ -223,18 +224,33 @@ const ReportsTab = () => {
   const { toast } = useToast();
   const { reports, loading, generatingType, generateReport, markEmailSent } = useReports(user?.id);
   const [typeFilter, setTypeFilter] = useState<ReportType | "all">("all");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewTitle, setPreviewTitle] = useState("");
 
-  const companyName = "Votre entreprise"; // could be pulled from companyData
+  const companyName = "Votre entreprise";
+
+  const handlePreview = useCallback((report: Report) => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    const url = getReportBlobUrl(report);
+    setPreviewUrl(url);
+    setPreviewTitle(report.title);
+  }, [previewUrl]);
+
+  const closePreview = useCallback(() => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setPreviewTitle("");
+  }, [previewUrl]);
 
   const handleGenerate = async (type: ReportType) => {
     const report = await generateReport(type, companyName);
     if (report) {
-      downloadReportPdf(report);
+      handlePreview(report);
     }
     analytics.track("report_generated", { report_type: type });
     toast({
       title: "Rapport généré !",
-      description: "Votre rapport PDF a été téléchargé.",
+      description: "Votre rapport PDF est affiché ci-dessous.",
     });
   };
 
