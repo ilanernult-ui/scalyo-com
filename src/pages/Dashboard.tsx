@@ -16,6 +16,7 @@ import LoyaltyLoopTab from "@/components/dashboard/LoyaltyLoopTab";
 import LockedTabOverlay from "@/components/dashboard/LockedTabOverlay";
 import ConnectDataWizard from "@/components/dashboard/ConnectDataWizard";
 import SettingsTab from "@/components/dashboard/SettingsTab";
+import AssistantChat from "@/components/dashboard/AssistantChat";
 import AIChatPanel from "@/components/dashboard/AIChatPanel";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import CompanyProfileTab from "@/components/company/CompanyProfileTab";
@@ -198,6 +199,78 @@ const Dashboard = () => {
     return tabContent;
   };
 
+  const renderAssistant = () => {
+    if (activeTab === "reports") {
+      return <AIChatPanel activeTab={activeTab} userInitials={initials} plan={userPlan} />;
+    }
+
+    const assistantConfig = {
+      dashboard: {
+        accentColor: "#7c3aed",
+        name: "Assistant Scalyo IA",
+        subtitle: "Votre assistant business personnel",
+        welcomeMessage:
+          "Bonjour 👋 Je suis votre assistant Scalyo. Je peux analyser vos données, générer des insights et vous aider à piloter votre business. Que souhaitez-vous explorer ?",
+        quickButtons: [
+          { label: "📊 Analyser mes données", action: "📊 Analyser mes données" },
+          { label: "💡 Recommandations", action: "💡 Recommandations" },
+          { label: "📈 Voir ma progression", action: "📈 Voir ma progression" },
+        ],
+      },
+      datadiag: {
+        accentColor: "#00D4FF",
+        name: "Expert Diagnostic DataDiag",
+        subtitle: "Analyse de santé business en 48h",
+        welcomeMessage:
+          "Bonjour 👋 Je suis votre expert en diagnostic business. Je détecte vos pertes cachées, analyse votre santé financière et identifie vos axes d'amélioration prioritaires.",
+        quickButtons: [
+          { label: "🔍 Détecter mes pertes", action: "🔍 Détecter mes pertes" },
+          { label: "💊 Santé financière", action: "💊 Santé financière" },
+          { label: "⚡ Actions prioritaires", action: "⚡ Actions prioritaires" },
+        ],
+      },
+      growthpilot: {
+        accentColor: "#00FF88",
+        name: "Co-pilote GrowthPilot IA",
+        subtitle: "Votre co-pilote vers +15% de croissance",
+        welcomeMessage:
+          "Bonjour 👋 Je suis votre co-pilote IA. Mon objectif : vous faire atteindre +15% de croissance et économiser +10h par semaine grâce à l'automatisation IA.",
+        quickButtons: [
+          { label: "🚀 Accélérer ma croissance", action: "🚀 Accélérer ma croissance" },
+          { label: "⏱️ Gagner du temps", action: "⏱️ Gagner du temps" },
+          { label: "📊 Mes performances", action: "📊 Mes performances" },
+        ],
+      },
+      loyaltyloop: {
+        accentColor: "#FFD700",
+        name: "Expert LoyaltyLoop IA",
+        subtitle: "Rétention clients & réduction churn",
+        welcomeMessage:
+          "Bonjour 👋 Je suis votre expert en fidélisation client. Je surveille votre churn, identifie vos clients à risque et optimise votre rétention pour atteindre -40% de churn.",
+        quickButtons: [
+          { label: "❤️ Clients à risque", action: "❤️ Clients à risque" },
+          { label: "📉 Réduire mon churn", action: "📉 Réduire mon churn" },
+          { label: "⭐ Clients VIP", action: "⭐ Clients VIP" },
+        ],
+      },
+    };
+
+    const context = (activeTab === "datadiag" || activeTab === "growthpilot" || activeTab === "loyaltyloop") ? activeTab : "dashboard";
+    const config = assistantConfig[context];
+
+    return (
+      <AssistantChat
+        context={context as any}
+        accentColor={config.accentColor}
+        name={config.name}
+        subtitle={config.subtitle}
+        welcomeMessage={config.welcomeMessage}
+        quickButtons={config.quickButtons}
+        userInitials={initials}
+      />
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background flex">
       {/* ── Sidebar ── */}
@@ -326,7 +399,7 @@ const Dashboard = () => {
             </div>
             {activeTab !== "settings" && (
               <div className="w-full xl:w-auto">
-                <AIChatPanel activeTab={activeTab} userInitials={initials} plan={userPlan} />
+                {renderAssistant()}
               </div>
             )}
           </div>

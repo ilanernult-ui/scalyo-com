@@ -165,15 +165,16 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
   const handleFocusSelect = (focus: FocusOption) => {
     if (!selectedType || !selectedPeriod) return;
     appendMessage({ role: "user", content: focus });
-    setStep(4);
-    appendMessage({ role: "assistant", content: "⏳ Analyse de vos données en cours... Génération du rapport PDF" });
+    setReportCard(null);
     setIsGenerating(true);
+    appendMessage({ role: "assistant", content: "⏳ Analyse de vos données en cours... Génération du rapport PDF" });
 
-    setTimeout(() => {
-      const card = makeReportCard(selectedType, String(selectedPeriod === "Personnalisé" ? customPeriod : selectedPeriod), focus);
-      setReportCard(card);
-      setIsGenerating(false);
-    }, 2000);
+    const period = selectedPeriod === "Personnalisé" ? customPeriod : selectedPeriod;
+    const card = makeReportCard(selectedType, String(period), focus);
+    setReportCard(card);
+    setIsGenerating(false);
+    setStep(4);
+    appendMessage({ role: "assistant", content: "✅ Rapport prêt. Téléchargez-le ou copiez le résumé." });
   };
 
   const handleFreeText = (text: string) => {
