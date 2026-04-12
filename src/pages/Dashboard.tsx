@@ -267,6 +267,7 @@ const Dashboard = () => {
         welcomeMessage={config.welcomeMessage}
         quickButtons={config.quickButtons}
         userInitials={initials}
+        plan={userPlan}
       />
     );
   };
@@ -398,7 +399,10 @@ const Dashboard = () => {
               {renderTab()}
             </div>
             {activeTab !== "settings" && (
-              <div className="w-full xl:w-auto">
+              <div
+                id={activeTab === "reports" ? "reports-chat" : undefined}
+                className={`w-full xl:w-auto ${activeTab === "reports" ? "xl:sticky xl:top-24 xl:self-start" : ""}`}
+              >
                 {renderAssistant()}
               </div>
             )}

@@ -130,7 +130,7 @@ const AssistantChat = ({
   };
 
   const resetConversation = () => {
-    const nextMessages = [{ id: createMessageId(), role: "assistant", content: welcomeMessage }];
+    const nextMessages: Message[] = [{ id: createMessageId(), role: "assistant", content: welcomeMessage }];
     setMessages(nextMessages);
     setCopiedIds({});
     setShowQuickButtons(true);
@@ -146,7 +146,68 @@ const AssistantChat = ({
     );
   };
 
+  const PLAN_STORAGE_KEY = "scalyo-action-plan";
+
+  type ActionPlanCategory = "DataDiag" | "GrowthPilot" | "LoyaltyLoop";
+
+  const getPlanName = (context: AssistantContext): ActionPlanCategory => {
+    switch (context) {
+      case "datadiag":
+        return "DataDiag";
+      case "growthpilot":
+        return "GrowthPilot";
+      case "loyaltyloop":
+        return "LoyaltyLoop";
+      default:
+        return "DataDiag";
+    }
+  };
+
+  const extractTitleFromAssistant = (content: string) => {
+    const lines = content.split("\n").map((line) => line.trim()).filter(Boolean);
+    if (lines.length === 0) return content.slice(0, 80);
+    const firstLine = lines[0];
+    return firstLine.length > 90 ? `${firstLine.slice(0, 90)}…` : firstLine;
+  };
+
+  const extractDescriptionFromAssistant = (content: string) => {
+    const lines = content.split("\n").map((line) => line.trim()).filter(Boolean);
+    if (lines.length <= 1) return content;
+    return lines.slice(1).join(" ").slice(0, 220);
+  };
+
+  const formatImpactLabel = (content: string) => {
+    const match = content.match(/([+\-]?[0-9]+(?:[\.,][0-9]+)?\s*(?:€|h|%))/i);
+    return match ? match[1] : "Impact estimé";
+  };
+
+  const detectImpactType = (content: string) => {
+    if (/\b(h|heure|heures)\b/i.test(content)) return "time" as const;
+    if (/€/i.test(content)) return "revenue" as const;
+    return "other" as const;
+  };
+
+  const extractFinancialValue = (content: string) => {
+    const match = content.match(/([0-9]+(?:[\.,][0-9]+)?)\s*€/);
+    if (!match) return 0;
+    return Number(match[1].replace(",", "."));
+  };
+
+  const extractHoursValue = (content: string) => {
+    const match = content.match(/([0-9]+(?:[\.,][0-9]+)?)\s*h/i);
+    if (!match) return 0;
+    return Number(match[1].replace(",", "."));
+  };
+
+  const extractGrowthValue = (content: string) => {
+    const match = content.match(/([+\-]?[0-9]+(?:[\.,][0-9]+)?)\s*%/);
+    if (!match) return 0;
+    return Number(match[1].replace(",", "."));
+  };
+
   const shouldShowDownload = (content: string) => /\|/.test(content) || /\b(tableau|rapport|données)\b/i.test(content);
+
+  const shouldShowAddToPlan = (content: string) => /\b(recommand|action|priorit|€)\b/i.test(content);
 
   const handleCopyMessage = async (messageId: string, messageContent: string) => {
     try {
@@ -163,6 +224,40 @@ const AssistantChat = ({
     const fileName = `scalyo-export-${new Date().toISOString().slice(0, 10)}.${extension}`;
     const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
     saveAs(blob, fileName);
+  };
+
+  const handleAddToPlan = (messageContent: string) => {
+    if (typeof window === "undefined") return;
+
+    const plan = getPlanName(context);
+    const title = extractTitleFromAssistant(messageContent);
+    const description = extractDescriptionFromAssistant(messageContent);
+    const impact_label = formatImpactLabel(messageContent);
+    const impact_type = detectImpactType(messageContent);
+
+    const newAction = {
+      id: createMessageId(),
+      title,
+      description,
+      priority: "P1" as const,
+      plan,
+      status: "pending" as const,
+      impact_label,
+      impact_type,
+      due: "Cette semaine",
+      created_at: new Date().toISOString(),
+      completed_at: null,
+      financial_value: extractFinancialValue(messageContent),
+      hours_value: extractHoursValue(messageContent),
+      growth_value: extractGrowthValue(messageContent),
+    };
+
+    const raw = window.localStorage.getItem(PLAN_STORAGE_KEY);
+    const existing = raw ? (JSON.parse(raw) as Array<Record<string, unknown>>) : [];
+    window.localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify([...existing, newAction]));
+    window.dispatchEvent(new Event("scalyo-action-plan-updated"));
+
+    toast({ title: "✅ Ajouté à votre plan d'action" });
   };
 
   const sendMessage = async (content: string) => {
@@ -310,6 +405,15 @@ const AssistantChat = ({
                     >
                       {copiedIds[message.id] ? "✅ Copié !" : "📋 Copier"}
                     </button>
+                    {shouldShowAddToPlan(message.content) && (
+                      <button
+                        type="button"
+                        onClick={() => handleAddToPlan(message.content)}
+                        className="rounded-full border border-border bg-emerald-50 px-3 py-1 text-emerald-700 transition hover:bg-emerald-100"
+                      >
+                        + Ajouter au plan d'action
+                      </button>
+                    )}
                     {shouldShowDownload(message.content) && (
                       <button
                         type="button"

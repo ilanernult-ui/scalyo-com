@@ -5,12 +5,64 @@ import {
   Target, MousePointerClick, ShoppingCart, Zap, FileText, Download,
   Clock, Badge as BadgeIcon
 } from "lucide-react";
+import { Bar } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, CategoryScale,
+  LinearScale, BarElement, PointElement, LineElement, Filler,
+  BarController, LineController, PieController, Legend } from "chart.js";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import EmptyStateOverlay from "./EmptyStateOverlay";
 import type { Json } from "@/integrations/supabase/types";
 
 const ACCENT = "hsl(142, 69%, 49%)";
+
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  Filler,
+  BarController,
+  LineController,
+  PieController,
+  Legend,
+);
+
+const GROWTH_PILOT_MONTHS = ["Nov", "Déc", "Jan", "Fév", "Mar", "Avr"] as const;
+const GROWTH_PILOT_REAL = [52000, 55000, 58000, 62000, 68000, 72000] as const;
+const GROWTH_PILOT_TARGET = [55000, 58000, 62000, 66000, 70000, 75000] as const;
+const GROWTH_PILOT_TREND = [51000, 54000, 56500, 61500, 67500, 71500] as const;
+
+const growthPilotBarOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      callbacks: {
+        label: (context: any) => `${context.dataset.label}: ${context.parsed.y.toLocaleString("fr-FR")} €`,
+      },
+    },
+  },
+  scales: {
+    x: {
+      grid: { display: false },
+    },
+    y: {
+      stacked: false,
+      beginAtZero: true,
+      grid: { display: false },
+      ticks: {
+        callback: (value: number | string) => {
+          const numericValue = Number(value);
+          return Number.isNaN(numericValue) ? String(value) : `${numericValue / 1000}k€`;
+        },
+      },
+    },
+  },
+};
 
 // ─── Sub-tab navigation ───────────────────────────────────────────
 type SubTab = "acquisition" | "revenue" | "produit";
@@ -358,23 +410,62 @@ const GrowthPilotTab = ({ onConnect, dataConnected, aiResults }: GrowthPilotTabP
       {subTab === "produit" && <ProduitDashboard aiData={aiData} />}
 
       <ReportCard aiData={aiData} />
+
+      <div
+        className="rounded-2xl border p-5 mt-6"
+        style={{ backgroundColor: "var(--color-background-primary)", borderColor: "var(--color-border-tertiary)" }}
+      >
+        <h3 className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-secondary)] mb-5">Performance</h3>
+        <div className="h-[320px]">
+          <Bar
+            data={{
+              labels: GROWTH_PILOT_MONTHS,
+              datasets: [
+                {
+                  type: "bar" as const,
+                  label: "CA réel",
+                  data: GROWTH_PILOT_REAL,
+                  backgroundColor: "#00FF88",
+                  borderRadius: 10,
+                },
+                {
+                  type: "bar" as const,
+                  label: "Objectif +15%",
+                  data: GROWTH_PILOT_TARGET,
+                  backgroundColor: "rgba(0,255,136,0.25)",
+                  borderRadius: 10,
+                },
+                {
+                  type: "line" as const,
+                  label: "Tendance",
+                  data: GROWTH_PILOT_TREND,
+                  borderColor: "#0D6E3A",
+                  borderWidth: 2,
+                  pointRadius: 3,
+                  fill: false,
+                  tension: 0.35,
+                },
+              ],
+            }}
+            options={growthPilotBarOptions}
+          />
+        </div>
+        <div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#00FF88]" /> CA réel
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full bg-[rgba(0,255,136,0.25)] border border-current" /> Objectif +15%
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#0D6E3A]" /> Tendance
+          </span>
+        </div>
+      </div>
     </div>
   );
 
-  if (dataConnected) return content;
-
-  return (
-    <EmptyStateOverlay
-      icon={Rocket}
-      serviceName="GrowthPilot"
-      description="Votre co-pilote IA : acquisition multi-canal, suivi MRR/ARR, analyse produit et NPS. Résultat moyen : +15% de croissance et +10h gagnées/semaine."
-      accentColor={ACCENT}
-      onConnect={onConnect}
-      buttonLabel="Connecter mes données"
-    >
-      {content}
-    </EmptyStateOverlay>
-  );
+  return content;
 };
 
 export default GrowthPilotTab;

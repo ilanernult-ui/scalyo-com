@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 
@@ -12,8 +12,12 @@ interface UseDashboardDataReturn {
 
 export function useDashboardData(userId: string | undefined): UseDashboardDataReturn {
   const [companyData, setCompanyData] = useState<Record<string, unknown> | null>(null);
-  const [dataConnected, setDataConnected] = useState(false);
   const [aiResults, setAiResults] = useState<Record<string, Json>>({});
+
+  const dataConnected = useMemo(
+    () => !!companyData || Object.keys(aiResults).length > 0,
+    [companyData, aiResults],
+  );
 
   const loadAiResults = useCallback(async () => {
     if (!userId) return;
@@ -37,7 +41,6 @@ export function useDashboardData(userId: string | undefined): UseDashboardDataRe
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
-          setDataConnected(true);
           setCompanyData(data as unknown as Record<string, unknown>);
         }
       });
@@ -45,7 +48,6 @@ export function useDashboardData(userId: string | undefined): UseDashboardDataRe
   }, [userId, loadAiResults]);
 
   const onWizardComplete = useCallback(() => {
-    setDataConnected(true);
     if (userId) {
       supabase
         .from("company_data")

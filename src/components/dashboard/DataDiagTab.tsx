@@ -5,13 +5,87 @@ import {
   TrendingUp, TrendingDown, Download, Clock, CheckCircle2,
   BarChart3, Info
 } from "lucide-react";
+import { Pie, Bar } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, CategoryScale,
+  LinearScale, BarElement, PointElement, LineElement, Filler,
+  BarController, LineController, PieController, Legend } from "chart.js";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import EmptyStateOverlay from "./EmptyStateOverlay";
 import { computeHealthScore } from "@/lib/healthScore";
 import type { Json } from "@/integrations/supabase/types";
 
 const ACCENT = "hsl(211, 100%, 45%)";
+
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  Filler,
+  BarController,
+  LineController,
+  PieController,
+  Legend,
+);
+
+const DATA_DIAG_LOSS_DISTRIBUTION = [
+  { label: "Abandon panier non relancé", value: 40 },
+  { label: "Stocks immobilisés", value: 22 },
+  { label: "Publicité sous-performante", value: 11 },
+  { label: "Autres pertes", value: 27 },
+] as const;
+
+const DATA_DIAG_TOP_LOSSES = [
+  { label: "Abandon panier", value: 3200 },
+  { label: "Stocks immobilisés", value: 1800 },
+  { label: "Pub sous-perf.", value: 890 },
+  { label: "Process manuels", value: 650 },
+  { label: "Frais bancaires", value: 420 },
+] as const;
+
+const dataDiagPieOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: { enabled: true },
+  },
+};
+
+const dataDiagBarOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  indexAxis: "y" as const,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      callbacks: {
+        label: (context: any) => `${context.parsed.x.toLocaleString("fr-FR")} €`,
+      },
+    },
+  },
+  scales: {
+    x: {
+      ticks: {
+        callback: (value: number | string) => `${Number(value) / 1000}k€`,
+      },
+      title: {
+        display: true,
+        text: "Euros",
+        color: "var(--color-text-secondary)",
+        font: { size: 12 },
+      },
+    },
+    y: {
+      ticks: {
+        color: "var(--color-text-secondary)",
+      },
+    },
+  },
+};
 
 // ─── Benchmarks by sector ─────────────────────────────────────────
 const BENCHMARKS: Record<string, { gross_margin: number; net_margin: number; retention: number }> = {
@@ -259,23 +333,63 @@ const DataDiagTab = ({ onConnect, dataConnected, aiResults, companyData }: DataD
         </div>
       </div>
       <ReportCard aiData={aiData} />
+
+      <div
+        className="rounded-2xl border p-5 mt-6"
+        style={{ backgroundColor: "var(--color-background-primary)", borderColor: "var(--color-border-tertiary)" }}
+      >
+        <h3 className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-secondary)] mb-5">Analyse visuelle</h3>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <p className="text-[12px] uppercase tracking-[0.24em] text-[var(--color-text-secondary)] mb-3">Répartition des pertes détectées</p>
+            <div className="h-[200px]">
+              <Pie
+                data={{
+                  labels: DATA_DIAG_LOSS_DISTRIBUTION.map((item) => item.label),
+                  datasets: [
+                    {
+                      data: DATA_DIAG_LOSS_DISTRIBUTION.map((item) => item.value),
+                      backgroundColor: ["#00D4FF", "#0891b2", "#164e63", "#ef4444"],
+                      borderWidth: 0,
+                    },
+                  ],
+                }}
+                options={dataDiagPieOptions}
+              />
+            </div>
+            <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+              {DATA_DIAG_LOSS_DISTRIBUTION.map((item) => (
+                <div key={item.label} className="flex items-center justify-between">
+                  <span>{item.label}</span>
+                  <span>{item.value}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <p className="text-[12px] uppercase tracking-[0.24em] text-[var(--color-text-secondary)] mb-3">Top pertes en €/mois</p>
+            <div className="h-[200px]">
+              <Bar
+                data={{
+                  labels: DATA_DIAG_TOP_LOSSES.map((item) => item.label),
+                  datasets: [
+                    {
+                      data: DATA_DIAG_TOP_LOSSES.map((item) => item.value),
+                      backgroundColor: ["#ef4444", "#f97316", "#0ea5e9", "#0891b2", "#00D4FF"],
+                    },
+                  ],
+                }}
+                options={dataDiagBarOptions}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 
-  if (dataConnected) return content;
-
-  return (
-    <EmptyStateOverlay
-      icon={Activity}
-      serviceName="DataDiag"
-      description="Diagnostic business complet : Score 360°, détection des pertes, comparaison secteur et 3 recommandations prioritaires."
-      accentColor={ACCENT}
-      onConnect={onConnect}
-      buttonLabel="Connecter mes données"
-    >
-      {content}
-    </EmptyStateOverlay>
-  );
+  return content;
 };
 
 export default DataDiagTab;

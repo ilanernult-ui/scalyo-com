@@ -203,6 +203,8 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
     }
   };
 
+  const appendMessage = (message: Message) => setMessages((prev) => [...prev, message]);
+
   const handleDownloadMessage = (content: string) => {
     const extension = content.includes("|") ? "csv" : "txt";
     const fileName = `scalyo-export-${new Date().toISOString().slice(0, 10)}.${extension}`;
@@ -240,11 +242,11 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
     const date = now.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
     const time = now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
     const metrics = [
-      `CA période : 48 500 € (+12%)`,
-      `Clients actifs : 1 247`,
+      `CA : 48 500€ (+12% vs mois dernier)`,
       `Score performance : 84/100`,
-      `Heures économisées : 8.5h`,
-      `Actions IA appliquées : 3`,
+      `Clients actifs : 1 247`,
+      `Churn : 4.2% (objectif <3%)`,
+      `3 recommandations IA générées`,
     ];
     return { type, period, focus, date: `${date} à ${time}`, metrics, planColor: config.headerColor };
   };
@@ -253,82 +255,72 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
     resetConversation();
   };
 
-  const handleTypeSelect = async (type: ReportType) => {
+  const handleTypeSelect = (type: ReportType) => {
     setSelectedType(type);
     setSelectedPeriod(null);
     setStep(2);
-    await sendAiMessage(reportTypeLabels[type]);
+    appendMessage({ id: createMessageId(), role: "user", content: reportTypeLabels[type] });
+    appendMessage({ id: createMessageId(), role: "assistant", content: "Parfait ! Sur quelle période ?" });
   };
 
-  const handlePeriodSelect = async (period: PeriodOption) => {
+  const handlePeriodSelect = (period: PeriodOption) => {
     setSelectedPeriod(period);
     setStep(period === "Personnalisé" ? 2 : 3);
-    await sendAiMessage(String(period));
+    appendMessage({ id: createMessageId(), role: "user", content: String(period) });
+    appendMessage({ id: createMessageId(), role: "assistant", content: "Quel sera le focus de ce rapport ?" });
   };
 
-  const handleCustomPeriodSubmit = async () => {
+  const handleCustomPeriodSubmit = () => {
     if (!customPeriod.trim()) return;
     const period = customPeriod.trim();
     setSelectedPeriod(period);
     setStep(3);
-    await sendAiMessage(period);
+    appendMessage({ id: createMessageId(), role: "user", content: period });
+    appendMessage({ id: createMessageId(), role: "assistant", content: "Quel sera le focus de ce rapport ?" });
   };
 
   const handleFocusSelect = async (focus: FocusOption) => {
     if (!selectedType || !selectedPeriod) return;
+    const period = selectedPeriod === "Personnalisé" ? customPeriod : selectedPeriod;
+    if (!period?.trim()) return;
+
     setReportCard(null);
     setStep(4);
 
-    const response = await sendAiMessage(focus);
-    if (!response) return;
+    appendMessage({ id: createMessageId(), role: "user", content: focus });
+    const loadingMessage: Message = {
+      id: createMessageId(),
+      role: "assistant",
+      content: "⏳ Génération de votre rapport PDF en cours...",
+      isLoading: true,
+    };
+    appendMessage(loadingMessage);
 
-    const period = selectedPeriod === "Personnalisé" ? customPeriod : selectedPeriod;
-    const card = makeReportCard(selectedType, String(period), focus);
-    setReportCard(card);
-    setMessages((prev) => [...prev, { id: createMessageId(), role: "assistant", content: "✅ Rapport prêt. Téléchargez-le ou copiez le résumé." }]);
-  };
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
-  const handleFreeText = async (text: string) => {
-    const normalized = text.toLowerCase();
-    if (/^(reset|effacer|nouvelle conversation)$/i.test(normalized)) {
-      resetConversation();
-      return;
-    }
+    try {
+      const fileName = `scalyo-${selectedType}-${String(period).replace(/\s+/g, "-").toLowerCase()}.pdf`;
+      await generatePdf(selectedType, {
+        companyName: "Démo Commerce SAS",
+        period: String(period),
+        focus,
+        ca: 48500,
+        growth: 12,
+        churn: 4.2,
+        nps: 62,
+        clients: 1247,
+        score: 84,
+        heures: 8.5,
+        date: new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }),
+      }, fileName);
 
-    if (/rapport mensuel|mensuel/.test(normalized)) {
-      await handleTypeSelect("monthly");
-      return;
+      replaceLoadingMessage(loadingMessage.id, "✅ Rapport prêt — vous pouvez le télécharger ou copier le résumé.");
+      setReportCard(makeReportCard(selectedType, String(period), focus));
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Erreur de génération PDF";
+      replaceLoadingMessage(loadingMessage.id, `❌ Échec de la génération : ${message}`);
+      toast({ title: "Erreur PDF", description: message, variant: "destructive" });
     }
-    if (/diagnostic|analyse complète/.test(normalized)) {
-      await handleTypeSelect("diagnostic");
-      return;
-    }
-    if (/churn|rétention/.test(normalized)) {
-      setSelectedType("monthly");
-      setStep(2);
-      await sendAiMessage(text);
-      return;
-    }
-    if (/croissance|ca|chiffre d'affaires/.test(normalized)) {
-      setSelectedType("monthly");
-      setStep(2);
-      await sendAiMessage(text);
-      return;
-    }
-    if (/génère|créer/.test(normalized)) {
-      await sendAiMessage(text);
-      return;
-    }
-    if (/semaine/.test(normalized) && selectedType) {
-      await handlePeriodSelect("Cette semaine");
-      return;
-    }
-    if (/(tout|complet)/.test(normalized) && selectedType && selectedPeriod) {
-      await handleFocusSelect("📦 Tout inclure");
-      return;
-    }
-
-    await sendAiMessage(text);
   };
 
   const handleSubmit = async () => {
@@ -342,23 +334,29 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
       return;
     }
 
-    if (step === 1 || step === 2 || step === 3) {
-      await handleFreeText(text);
-      return;
-    }
-
     await sendAiMessage(text);
   };
 
   const handleDownload = async () => {
     if (!reportCard || !selectedType || !selectedPeriod) return;
-    const fileName = `scalyo-${selectedType}-${String(selectedPeriod).replace(/\s+/g, "-").toLowerCase()}.pdf`;
+    const period = selectedPeriod === "Personnalisé" ? customPeriod : selectedPeriod;
+    if (!period?.trim()) return;
+    const fileName = `scalyo-${selectedType}-${String(period).replace(/\s+/g, "-").toLowerCase()}.pdf`;
+
     await generatePdf(
       selectedType,
       {
         companyName: "Démo Commerce SAS",
-        sector: plan,
-        generatedAt: new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }),
+        period: String(period),
+        focus: reportCard.focus,
+        ca: 48500,
+        growth: 12,
+        churn: 4.2,
+        nps: 62,
+        clients: 1247,
+        score: 84,
+        heures: 8.5,
+        date: reportCard.date,
       },
       fileName,
     );

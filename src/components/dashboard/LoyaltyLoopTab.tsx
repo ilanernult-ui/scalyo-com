@@ -4,13 +4,85 @@ import {
   Heart, ShieldCheck, TrendingDown, Users, AlertTriangle,
   Gift, Star, ArrowUpRight, FileText, Download, Clock, Zap
 } from "lucide-react";
+import { Pie, Line } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, CategoryScale,
+  LinearScale, BarElement, PointElement, LineElement, Filler,
+  BarController, LineController, PieController, Legend } from "chart.js";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import EmptyStateOverlay from "./EmptyStateOverlay";
 import type { Json } from "@/integrations/supabase/types";
 
 const ACCENT = "hsl(262, 60%, 55%)";
 const ACCENT_BG = "hsl(262, 60%, 55%, 0.12)";
+
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  Filler,
+  BarController,
+  LineController,
+  PieController,
+  Legend,
+);
+
+const LOYALTY_LOOP_SEGMENTS = [
+  { label: "Clients VIP fidèles", value: 62, count: 773 },
+  { label: "Clients réguliers", value: 24, count: 299 },
+  { label: "Clients à risque", value: 10, count: 125 },
+  { label: "Churn ce mois", value: 4, count: 48 },
+] as const;
+
+const LOYALTY_LOOP_CHURN_HISTORY = [
+  { month: "Nov", value: 5.8 },
+  { month: "Déc", value: 5.4 },
+  { month: "Jan", value: 5.0 },
+  { month: "Fév", value: 4.7 },
+  { month: "Mar", value: 4.5 },
+  { month: "Avr", value: 4.2 },
+] as const;
+
+const loyaltyLoopPieOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: { enabled: true },
+  },
+};
+
+const loyaltyLoopLineOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      callbacks: {
+        label: (context: any) => `${context.parsed.y}%`,
+      },
+    },
+  },
+  scales: {
+    x: {
+      grid: { display: false },
+      ticks: { color: "var(--color-text-secondary)" },
+    },
+    y: {
+      reverse: true,
+      grid: { display: false },
+      ticks: {
+        callback: (value: number | string) => `${value}%`,
+        color: "var(--color-text-secondary)",
+      },
+      min: 3,
+      max: 6,
+    },
+  },
+};
 
 // ─── Sub-tab navigation ───────────────────────────────────────────
 type SubTab = "retention" | "fidelisation";
@@ -349,23 +421,71 @@ const LoyaltyLoopTab = ({ onConnect, dataConnected, aiResults }: LoyaltyLoopTabP
       {subTab === "fidelisation" && <FidelisationDashboard aiData={aiData} />}
 
       <ReportCard aiData={aiData} />
+
+      <div
+        className="rounded-2xl border p-5 mt-6"
+        style={{ backgroundColor: "var(--color-background-primary)", borderColor: "var(--color-border-tertiary)" }}
+      >
+        <h3 className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-secondary)] mb-5">Analyse clients</h3>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <p className="text-[12px] uppercase tracking-[0.24em] text-[var(--color-text-secondary)] mb-3">Segmentation clients</p>
+            <div className="h-[200px]">
+              <Pie
+                data={{
+                  labels: LOYALTY_LOOP_SEGMENTS.map((item) => item.label),
+                  datasets: [
+                    {
+                      data: LOYALTY_LOOP_SEGMENTS.map((item) => item.value),
+                      backgroundColor: ["#FFD700", "#9B59B6", "#f97316", "#ef4444"],
+                      borderWidth: 0,
+                    },
+                  ],
+                }}
+                options={loyaltyLoopPieOptions}
+              />
+            </div>
+            <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+              {LOYALTY_LOOP_SEGMENTS.map((item) => (
+                <div key={item.label} className="flex items-center justify-between">
+                  <span>{item.label}</span>
+                  <span>{item.count} clients</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <p className="text-[12px] uppercase tracking-[0.24em] text-[var(--color-text-secondary)] mb-3">Évolution du churn — 6 mois</p>
+            <div className="h-[200px]">
+              <Line
+                data={{
+                  labels: LOYALTY_LOOP_CHURN_HISTORY.map((item) => item.month),
+                  datasets: [
+                    {
+                      label: "Churn",
+                      data: LOYALTY_LOOP_CHURN_HISTORY.map((item) => item.value),
+                      borderColor: "#FFD700",
+                      backgroundColor: "rgba(255,215,0,0.1)",
+                      fill: true,
+                      tension: 0.35,
+                      pointRadius: 3,
+                      pointBackgroundColor: "#FFD700",
+                    },
+                  ],
+                }}
+                options={loyaltyLoopLineOptions}
+              />
+            </div>
+            <div className="mt-3 rounded-xl border border-dashed border-red-500 bg-red-50/40 p-3 text-xs text-red-700">
+              Objectif : <strong>&lt;3%</strong>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 
-  if (dataConnected) return content;
-
-  return (
-    <EmptyStateOverlay
-      icon={Heart}
-      serviceName="LoyaltyLoop"
-      description="Prédiction du churn par segment, alertes clients à risque, programmes fidélité et opportunités upsell/cross-sell. Résultat moyen : +25% de croissance et -40% de churn."
-      accentColor={ACCENT}
-      onConnect={onConnect}
-      buttonLabel="Connecter mes données"
-    >
-      {content}
-    </EmptyStateOverlay>
-  );
+  return content;
 };
 
 export default LoyaltyLoopTab;
