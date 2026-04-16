@@ -30,10 +30,10 @@ ChartJS.register(
   Legend,
 );
 
-const GROWTH_PILOT_MONTHS = ["Nov", "Déc", "Jan", "Fév", "Mar", "Avr"] as const;
-const GROWTH_PILOT_REAL = [52000, 55000, 58000, 62000, 68000, 72000] as const;
-const GROWTH_PILOT_TARGET = [55000, 58000, 62000, 66000, 70000, 75000] as const;
-const GROWTH_PILOT_TREND = [51000, 54000, 56500, 61500, 67500, 71500] as const;
+const GROWTH_PILOT_MONTHS: string[] = ["Nov", "Déc", "Jan", "Fév", "Mar", "Avr"];
+const GROWTH_PILOT_REAL: number[] = [52000, 55000, 58000, 62000, 68000, 72000];
+const GROWTH_PILOT_TARGET: number[] = [55000, 58000, 62000, 66000, 70000, 75000];
+const GROWTH_PILOT_TREND: number[] = [51000, 54000, 56500, 61500, 67500, 71500];
 
 const growthPilotBarOptions = {
   responsive: true,

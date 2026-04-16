@@ -343,7 +343,7 @@ const RecommendationsTab = () => {
       const done = action.status !== "done";
       return {
         ...action,
-        status: done ? "done" : "pending",
+        status: (done ? "done" : "pending") as RecommendationStatus,
         completed_at: done ? new Date().toISOString() : null,
       };
     });
