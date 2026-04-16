@@ -222,10 +222,6 @@ const Pricing = () => {
                 >
                   Choisir ce plan{plan.popular && " →"}
                 </Button>
-                <p className="text-xs text-muted-foreground text-center mb-6">
-                  14 jours gratuits · aucune carte requise
-                </p>
-
                 <ul className="space-y-2.5">
                   {plan.features.map((f) => (
                     <li key={f.name} className="flex items-start gap-2.5 text-sm">
