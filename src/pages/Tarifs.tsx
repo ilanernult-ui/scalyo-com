@@ -264,11 +264,6 @@ const Tarifs = () => {
                     {loadingPlan === planId && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                     {btnState.label}
                   </Button>
-                  {!isLoggedIn && (
-                    <p className="text-xs text-muted-foreground text-center mb-6">
-                      14 jours gratuits · aucune carte requise
-                    </p>
-                  )}
 
                   <ul className="space-y-2.5 mt-4">
                     {plan.features.map((f) => (
