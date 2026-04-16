@@ -436,7 +436,7 @@ const GrowthPilotTab = ({ onConnect, dataConnected, aiResults }: GrowthPilotTabP
                   borderRadius: 10,
                 },
                 {
-                  type: "line" as const,
+                  type: "line",
                   label: "Tendance",
                   data: GROWTH_PILOT_TREND,
                   borderColor: "#0D6E3A",
@@ -444,7 +444,7 @@ const GrowthPilotTab = ({ onConnect, dataConnected, aiResults }: GrowthPilotTabP
                   pointRadius: 3,
                   fill: false,
                   tension: 0.35,
-                },
+                } as any,
               ],
             }}
             options={growthPilotBarOptions}
