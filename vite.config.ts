@@ -4,7 +4,7 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 if (typeof globalThis.CustomEvent === "undefined") {
-  const CustomEventShim = function (type: string, eventInitDict: CustomEventInit = {}) {
+  const CustomEventShim = function (type: string, eventInitDict: any = {}) {
     return {
       type,
       detail: eventInitDict.detail ?? null,
