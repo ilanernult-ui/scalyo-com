@@ -101,7 +101,11 @@ const Dashboard = () => {
 
   /* ── Scroll to top on tab change ── */
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    });
   }, [activeTab]);
 
   /* ── Checkout success ── */
