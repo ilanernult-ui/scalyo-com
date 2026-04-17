@@ -73,7 +73,7 @@ const Navbar = () => {
           ) : (
             <>
               <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/auth")}>Connexion</Button>
-              <Button size="sm" className="text-xs" onClick={() => navigate("/auth")}>
+              <Button size="sm" className="text-xs" onClick={() => navigate("/pricing")}>
                 Voir les offres
               </Button>
             </>

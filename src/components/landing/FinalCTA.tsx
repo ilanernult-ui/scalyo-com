@@ -23,7 +23,7 @@ const FinalCTA = () => {
           <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
             Rejoignez +200 entreprises qui utilisent Scalyo pour prendre de meilleures décisions, plus vite.
           </p>
-          <Button size="lg" onClick={() => navigate(user ? "/tarifs" : "/auth")}>
+          <Button size="lg" onClick={() => navigate(user ? "/tarifs" : "/pricing")}>
             Voir les offres <ArrowRight className="ml-1 h-5 w-5" />
           </Button>
         </motion.div>
