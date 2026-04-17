@@ -263,7 +263,7 @@ const ReportsTab = ({ companyData }: ReportsTabProps) => {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-slate-900">
-                          {reportTypeLabels[item.type].title} · {item.period}
+                          {reportTypeInfo[item.type].title} · {item.period}
                         </p>
                         <p className="text-sm text-slate-500">{item.date}</p>
                       </div>
