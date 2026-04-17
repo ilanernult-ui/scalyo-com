@@ -17,16 +17,15 @@ const plans = [
   {
     name: "DataDiag",
     monthly: 79,
-    tagline: "Diagnostic business complet en 48h",
+    tagline: "Analysez votre rentabilité en profondeur",
     features: [
-      { name: "Score Business 360° (Rentabilité · Efficacité · Croissance)", included: true },
-      { name: "Détection des pertes d'argent 💸 et de temps ⏳", included: true },
-      { name: "Top 5 actions rapides à impact immédiat", included: true },
-      { name: "Estimation « vous perdez X€/mois »", included: true },
+      { name: "Score Business 360°", included: true },
+      { name: "Identification des pertes financières cachées", included: true },
+      { name: "Top 5 actions à impact", included: true },
       { name: "Dashboard KPIs en temps réel", included: true },
       { name: "Rapport IA mensuel", included: true },
       { name: "Fiche entreprise personnalisée", included: true },
-      { name: "Connexion de vos données (CSV, Excel, API)", included: true },
+      { name: "Connexion CSV, Excel, API", included: true },
       { name: "Assistant IA Scalyo", included: true },
     ],
     excluded: [
@@ -35,21 +34,21 @@ const plans = [
       "Radar Churn & rétention",
     ],
     popular: false,
-    target: "Idéal pour savoir exactement où part votre argent",
+    target: "Pour comprendre votre rentabilité réelle",
   },
   {
     name: "GrowthPilot",
     monthly: 189,
-    tagline: "Co-pilote IA · +15% de croissance · +10h/semaine",
+    tagline: "Pilotez votre croissance avec l'IA",
     features: [
       { name: "Tout DataDiag inclus", included: true },
-      { name: "Plan d'action PRIORISÉ par ROI chaque semaine", included: true },
-      { name: "Quick wins immédiats avec gains estimés en €", included: true },
-      { name: "Automatisations recommandées (+10h gagnées/semaine)", included: true },
-      { name: "Analyse ventes & tunnel de conversion", included: true },
-      { name: "IA qui explique le COMMENT pas-à-pas", included: true },
+      { name: "Plan d'action priorisé par ROI", included: true },
+      { name: "Quick wins chiffrés en euros", included: true },
+      { name: "Automatisations métier recommandées", included: true },
+      { name: "Analyse du tunnel de conversion", included: true },
+      { name: "Recommandations IA pas-à-pas", included: true },
       { name: "Suivi d'impact en temps réel", included: true },
-      { name: "Support prioritaire < 4h", included: true },
+      { name: "Support prioritaire", included: true },
     ],
     excluded: [
       "Radar Churn & stratégies de rétention",
@@ -57,25 +56,25 @@ const plans = [
       "Analyse 360° clients",
     ],
     popular: true,
-    target: "+15% de croissance possible · +10h gagnées/semaine",
+    target: "Pour accélérer votre croissance",
   },
   {
     name: "LoyaltyLoop",
     monthly: 349,
-    tagline: "Transformation business complète · +25% de croissance",
+    tagline: "Optimisation complète de votre performance",
     features: [
       { name: "Tout GrowthPilot inclus", included: true },
-      { name: "Radar Churn & stratégies de rétention client", included: true },
-      { name: "Automatisations avancées prêtes à déployer", included: true },
-      { name: "Analyse 360° : clients + croissance + rentabilité", included: true },
-      { name: "Optimisation continue & recommandations hebdomadaires", included: true },
-      { name: "Suivi ROI cumulé en temps réel", included: true },
+      { name: "Radar Churn & rétention client", included: true },
+      { name: "Automatisations avancées", included: true },
+      { name: "Analyse 360° clients & rentabilité", included: true },
+      { name: "Recommandations hebdomadaires", included: true },
+      { name: "Suivi ROI cumulé", included: true },
       { name: "Intégrations CRM avancées", included: true },
       { name: "Utilisateurs illimités", included: true },
     ],
     excluded: [],
     popular: false,
-    target: "+25% de croissance · -40% de churn · +15h gagnées/semaine",
+    target: "Pour transformer durablement votre performance",
   },
 ];
 
@@ -85,9 +84,9 @@ const comparisonRows = [
   { feature: "Export rapport PDF", datadiag: "✓", growth: "✓", loyalty: "✓" },
   { feature: "Assistant IA Scalyo", datadiag: "✓", growth: "✓", loyalty: "✓" },
   { feature: "Score Business 360°", datadiag: "✓", growth: "✓", loyalty: "✓" },
-  { feature: "Détection pertes d'argent & temps", datadiag: "✓", growth: "✓", loyalty: "✓" },
+  { feature: "Détection pertes financières cachées", datadiag: "✓", growth: "✓", loyalty: "✓" },
   { feature: "Top 5 actions rapides", datadiag: "✓", growth: "✓", loyalty: "✓" },
-  { feature: "Estimation perte financière", datadiag: "✓", growth: "✓", loyalty: "✓" },
+  { feature: "Analyse de rentabilité", datadiag: "✓", growth: "✓", loyalty: "✓" },
   { feature: "Dashboard KPIs", datadiag: "Essentiel", growth: "Avancé", loyalty: "Complet 360°" },
   { feature: "Plan d'action priorisé par ROI", datadiag: "—", growth: "Hebdomadaire", loyalty: "Hebdomadaire" },
   { feature: "Quick wins avec gains en €", datadiag: "—", growth: "✓", loyalty: "✓" },
@@ -280,7 +279,7 @@ const Pricing = () => {
                     DataDiag
                   </th>
                   <th className="p-4 bg-[hsl(211,100%,97%)] text-primary font-semibold border-b border-primary/20 text-center">
-                    GrowthPilot ⭐
+                    GrowthPilot
                   </th>
                   <th className="p-4 bg-background text-foreground font-semibold border-b border-border text-center">
                     LoyaltyLoop
