@@ -99,6 +99,11 @@ const Dashboard = () => {
   const { companyData, dataConnected, aiResults, loadAiResults, onWizardComplete } = useDashboardData(user?.id);
   const { generatingAnalysis, generate } = useAiGeneration();
 
+  /* ── Scroll to top on tab change ── */
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [activeTab]);
+
   /* ── Checkout success ── */
   useEffect(() => {
     if (searchParams.get("checkout") === "success") {
