@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -87,6 +87,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [sendReportPrompt, setSendReportPrompt] = useState<((message: string) => Promise<string | null>) | null>(null);
 
   const userPlan = plan;
   const initials = user?.user_metadata?.full_name
@@ -101,11 +102,14 @@ const Dashboard = () => {
 
   /* ── Scroll to top on tab change ── */
   useEffect(() => {
-    requestAnimationFrame(() => {
-      window.scrollTo(0, 0);
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "instant" });
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
-    });
+      if (contentRef.current) {
+        contentRef.current.scrollTop = 0;
+      }
+    }, 0);
   }, [activeTab]);
 
   /* ── Checkout success ── */
@@ -117,7 +121,26 @@ const Dashboard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
+  const contentRef = useRef<HTMLDivElement | null>(null);
+
   const handleWizardComplete = onWizardComplete;
+
+  const logScrollableElements = () => {
+    if (typeof window === "undefined") return;
+    const candidates = Array.from(document.querySelectorAll<HTMLElement>(
+      '[class*="overflow-y-auto"], [class*="overflow-y-scroll"]'
+    ));
+    console.log("[Dashboard] scrollable candidates:", candidates.length);
+    candidates.forEach((el, index) => {
+      console.log(
+        `[Dashboard] scrollable #${index}:`,
+        el.tagName,
+        el.id ? `id=${el.id}` : null,
+        el.className,
+        { scrollTop: el.scrollTop, scrollHeight: el.scrollHeight, clientHeight: el.clientHeight }
+      );
+    });
+  };
 
   const handleGenerate = async () => {
     if (!user?.id) return;
@@ -164,7 +187,7 @@ const Dashboard = () => {
     if (activeTab === "reports") {
       return (
         <ErrorBoundary name="reports">
-          <ReportsTab />
+          <ReportsTab companyData={companyData} />
         </ErrorBoundary>
       );
     }
@@ -210,7 +233,7 @@ const Dashboard = () => {
 
   const renderAssistant = () => {
     if (activeTab === "reports") {
-      return <AIChatPanel activeTab={activeTab} userInitials={initials} plan={userPlan} />;
+      return <AIChatPanel activeTab={activeTab} userInitials={initials} plan={userPlan} onRegisterSendMessage={setSendReportPrompt} />;
     }
 
     const assistantConfig = {
@@ -315,11 +338,17 @@ const Dashboard = () => {
                     onClick={() => {
                       if (locked) {
                         analytics.track("upgrade_clicked", { from_tab: item.id, plan: userPlan });
+                        setTimeout(() => window.scrollTo({ top: 0, behavior: "instant" }), 0);
+                        const scrollContainer = document.getElementById("main-content");
+                        if (scrollContainer) scrollContainer.scrollTop = 0;
                         navigate("/tarifs");
                         return;
                       }
+                      logScrollableElements();
                       setActiveTab(item.id);
                       setSidebarOpen(false);
+                      document.getElementById("main-content")?.scrollTo({ top: 0, behavior: "instant" });
+                      if (contentRef.current) contentRef.current.scrollTop = 0;
                       analytics.track("tab_viewed", { tab: item.id, plan: userPlan });
                     }}
                     className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
@@ -374,7 +403,7 @@ const Dashboard = () => {
       )}
 
       {/* ── Main ── */}
-      <main className="flex-1 lg:ml-64">
+      <main id="main-content" ref={contentRef} className="flex-1 lg:ml-64 min-h-0 overflow-y-auto">
         {/* Header */}
         <header className="sticky top-0 z-20 bg-background/85 backdrop-blur-xl border-b border-border px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">

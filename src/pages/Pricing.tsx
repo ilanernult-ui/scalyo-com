@@ -217,7 +217,10 @@ const Pricing = () => {
                   className="w-full mb-2"
                   variant={plan.popular ? "default" : "outline"}
                   size="lg"
-                  onClick={() => navigate(user ? "/tarifs" : "/auth")}
+                  onClick={() => {
+                    setTimeout(() => window.scrollTo({ top: 0, behavior: "instant" }), 0);
+                    navigate(user ? "/tarifs" : "/auth");
+                  }}
                 >
                   Choisir ce plan{plan.popular && " →"}
                 </Button>

@@ -1,6 +1,12 @@
 import type { ReactNode } from "react";
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, Image, StyleSheet } from "@react-pdf/renderer";
 import type { ReportType } from "@/hooks/useReports";
+import scalyoLogo from "@/assets/scalyo-logo.png";
+
+interface PdfGenerationSection {
+  title: string;
+  content: string;
+}
 
 interface ReportData {
   companyName: string;
@@ -14,6 +20,7 @@ interface ReportData {
   score: number;
   heures: number;
   date: string;
+  reportSections?: PdfGenerationSection[];
 }
 
 interface UniversalReportPDFProps {
@@ -152,6 +159,11 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "#0F172A",
   },
+  logo: {
+    width: 80,
+    height: 80,
+    marginBottom: 16,
+  },
   footer: {
     marginTop: 20,
     paddingTop: 10,
@@ -250,11 +262,13 @@ export const UniversalReportPDF = ({ type, data }: UniversalReportPDFProps) => {
     "Lancer un programme de fidélité pour les clients VIP et réduire le churn.",
     "Automatiser le reporting financier pour accélérer les décisions stratégiques.",
   ];
+  const reportSections = data.reportSections?.length ? data.reportSections : null;
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.cover}>
+          <Image src={scalyoLogo} style={styles.logo} />
           <Text style={styles.coverTitle}>{reportTypeLabels[type]}</Text>
           <Text style={styles.coverSubtitle}>{data.companyName}</Text>
           <Text style={styles.coverPeriod}>{data.period}</Text>
@@ -286,20 +300,31 @@ export const UniversalReportPDF = ({ type, data }: UniversalReportPDFProps) => {
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.title}>{focusSection.title}</Text>
-          {focusSection.rows}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.title}>Recommandations prioritaires</Text>
-          {recommendations.map((recommendation, index) => (
-            <View key={recommendation} style={styles.recommendation}>
-              <Text style={styles.recommendationIndex}>{index + 1}. Priorité haute</Text>
-              <Text style={styles.recommendationText}>{recommendation}</Text>
+        {reportSections ? (
+          reportSections.map((section) => (
+            <View key={section.title} style={styles.section}>
+              <Text style={styles.title}>{section.title}</Text>
+              <Text>{section.content}</Text>
             </View>
-          ))}
-        </View>
+          ))
+        ) : (
+          <>
+            <View style={styles.section}>
+              <Text style={styles.title}>{focusSection.title}</Text>
+              {focusSection.rows}
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.title}>Recommandations prioritaires</Text>
+              {recommendations.map((recommendation, index) => (
+                <View key={recommendation} style={styles.recommendation}>
+                  <Text style={styles.recommendationIndex}>{index + 1}. Priorité haute</Text>
+                  <Text style={styles.recommendationText}>{recommendation}</Text>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
 
         <Text style={styles.footer}>Rapport confidentiel Scalyo — {data.date}</Text>
       </Page>

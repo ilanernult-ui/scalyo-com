@@ -72,6 +72,7 @@ const Tarifs = () => {
   const currentLevel = planHierarchy[currentPlan];
 
   const handleChoosePlan = async (targetPlan: PlanType) => {
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "instant" }), 0);
     if (!isLoggedIn) {
       navigate("/auth");
       return;

@@ -3,6 +3,11 @@ import { pdf } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
 import type { ReportType } from "@/hooks/useReports";
 
+export interface PdfGenerationSection {
+  title: string;
+  content: string;
+}
+
 export interface PdfGenerationData {
   companyName?: string;
   period?: string;
@@ -15,6 +20,7 @@ export interface PdfGenerationData {
   score?: number;
   heures?: number;
   date?: string;
+  reportSections?: PdfGenerationSection[];
 }
 
 const DEFAULTS = {
@@ -53,6 +59,7 @@ function normalizeData(data: PdfGenerationData) {
       month: "long",
       year: "numeric",
     }),
+    reportSections: data.reportSections ?? [],
   };
 }
 

@@ -87,7 +87,7 @@ const SettingsTab = () => {
           )}
 
           <div className="flex gap-3 pt-2">
-            <Button variant="outline" onClick={() => navigate("/tarifs")}>
+            <Button variant="outline" onClick={() => { setTimeout(() => window.scrollTo({ top: 0, behavior: "instant" }), 0); navigate("/tarifs"); }}>
               Changer de plan
             </Button>
             {planStatus === "active" && subscriptionEnd && (

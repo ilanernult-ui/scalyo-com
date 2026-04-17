@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Send, Download, Clipboard, RotateCcw, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { saveAs } from "file-saver";
@@ -81,9 +81,10 @@ interface AIChatPanelProps {
   activeTab: string;
   userInitials: string;
   plan: PlanType;
+  onRegisterSendMessage?: (sendMessage: (content: string) => Promise<string | null>) => void;
 }
 
-const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
+const AIChatPanel = ({ activeTab, userInitials, plan, onRegisterSendMessage }: AIChatPanelProps) => {
   const { generatePdf } = usePDFGeneration();
   const { toast } = useToast();
   const { isLoading, sendChat } = useOpenAI();
@@ -212,7 +213,7 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
     saveAs(blob, fileName);
   };
 
-  const sendAiMessage = async (content: string) => {
+  const sendAiMessage = useCallback(async (content: string) => {
     const trimmed = content.trim();
     if (!trimmed) return null;
 
@@ -235,7 +236,12 @@ const AIChatPanel = ({ activeTab, userInitials, plan }: AIChatPanelProps) => {
       replaceLoadingMessage(loadingMessage.id, "Désolé, je n'ai pas pu obtenir de réponse de l'IA. Réessayez plus tard.");
       return null;
     }
-  };
+  }, [activeTab, plan, sendChat, toast]);
+
+  useEffect(() => {
+    if (!onRegisterSendMessage) return;
+    onRegisterSendMessage(sendAiMessage);
+  }, [onRegisterSendMessage, sendAiMessage]);
 
   const makeReportCard = (type: ReportType, period: string, focus: string) => {
     const now = new Date();
