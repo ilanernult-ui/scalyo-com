@@ -84,9 +84,9 @@ const comparisonRows = [
   { feature: "Export rapport PDF", datadiag: "✓", growth: "✓", loyalty: "✓" },
   { feature: "Assistant IA Scalyo", datadiag: "✓", growth: "✓", loyalty: "✓" },
   { feature: "Score Business 360°", datadiag: "✓", growth: "✓", loyalty: "✓" },
-  { feature: "Détection pertes d'argent & temps", datadiag: "✓", growth: "✓", loyalty: "✓" },
+  { feature: "Détection pertes financières cachées", datadiag: "✓", growth: "✓", loyalty: "✓" },
   { feature: "Top 5 actions rapides", datadiag: "✓", growth: "✓", loyalty: "✓" },
-  { feature: "Estimation perte financière", datadiag: "✓", growth: "✓", loyalty: "✓" },
+  { feature: "Analyse de rentabilité", datadiag: "✓", growth: "✓", loyalty: "✓" },
   { feature: "Dashboard KPIs", datadiag: "Essentiel", growth: "Avancé", loyalty: "Complet 360°" },
   { feature: "Plan d'action priorisé par ROI", datadiag: "—", growth: "Hebdomadaire", loyalty: "Hebdomadaire" },
   { feature: "Quick wins avec gains en €", datadiag: "—", growth: "✓", loyalty: "✓" },
@@ -279,7 +279,7 @@ const Pricing = () => {
                     DataDiag
                   </th>
                   <th className="p-4 bg-[hsl(211,100%,97%)] text-primary font-semibold border-b border-primary/20 text-center">
-                    GrowthPilot ⭐
+                    GrowthPilot
                   </th>
                   <th className="p-4 bg-background text-foreground font-semibold border-b border-border text-center">
                     LoyaltyLoop
