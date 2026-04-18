@@ -43,9 +43,46 @@ const ConnectDialog = ({ def, onConnect, onClose }: {
 }) => {
   const [connecting, setConnecting] = useState(false);
 
+  const initiateGoogleOAuth = (connectorId: string) => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      console.error('❌ VITE_GOOGLE_CLIENT_ID n’est pas défini');
+      alert('Google OAuth client ID non défini. Vérifiez votre configuration d’environnement.');
+      return;
+    }
+
+    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    authUrl.searchParams.set('client_id', clientId);
+    authUrl.searchParams.set('redirect_uri', 'https://scalyo-com.vercel.app/auth/google/callback');
+    authUrl.searchParams.set('response_type', 'code');
+    authUrl.searchParams.set('scope', 'https://www.googleapis.com/auth/analytics.readonly');
+    authUrl.searchParams.set('access_type', 'offline');
+
+    console.log('🔄 Début initiation OAuth Google pour:', connectorId);
+    console.log('🔗 URL OAuth générée:', authUrl.toString());
+
+    try {
+      window.location.href = authUrl.toString();
+    } catch (error) {
+      console.error('❌ Erreur lors de la redirection:', error);
+      alert('Erreur lors de la redirection vers Google. Vérifiez la console pour plus de détails.');
+    }
+  };
+
   const handleConnect = async () => {
+    console.log('🎯 handleConnect appelé pour:', def.id, 'authType:', def.authType);
     setConnecting(true);
-    // Simulated OAuth / API key flow — replace with real OAuth redirect
+
+    if (def.authType === "oauth" && def.id === "google_analytics") {
+      console.log('🔐 Condition OAuth Google remplie, appel initiateGoogleOAuth');
+      // OAuth Google Analytics 4
+      initiateGoogleOAuth(def.id);
+      // Important: ne pas continuer l'exécution après la redirection
+      return;
+    }
+
+    console.log('📝 Fallback: simulation pour autres connecteurs');
+    // Simulation pour les autres connecteurs (temporaire)
     await new Promise((r) => setTimeout(r, 1200));
     await onConnect({});
     setConnecting(false);
@@ -96,6 +133,24 @@ const ConnectDialog = ({ def, onConnect, onClose }: {
               }
             </Button>
           </div>
+
+          {/* Debug button - temporaire */}
+          {def.id === "google_analytics" && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full mt-2 text-xs"
+              onClick={() => {
+                console.log('🧪 Test OAuth variables:');
+                console.log('- Client ID:', import.meta.env.VITE_GOOGLE_CLIENT_ID);
+                console.log('- Client Secret:', import.meta.env.VITE_GOOGLE_CLIENT_SECRET);
+                console.log('- Origin:', window.location.origin);
+                alert('Vérifiez la console pour les variables OAuth');
+              }}
+            >
+              🔍 Debug OAuth
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>

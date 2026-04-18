@@ -9,7 +9,8 @@ interface UseDataConnectorsReturn {
   updateConnector: (connectorId: ConnectorKey, updates: Partial<DataConnector>) => Promise<void>;
   disconnectConnector: (connectorId: ConnectorKey) => Promise<void>;
   setFrequency: (connectorId: ConnectorKey, frequency: SyncFrequency) => Promise<void>;
-  simulateSync: (connectorId: ConnectorKey) => Promise<void>;
+  syncConnector: (connectorId: ConnectorKey) => Promise<any>;
+  simulateSync: (connectorId: ConnectorKey) => Promise<any>; // Deprecated, use syncConnector
 }
 
 const db = supabase as any;
@@ -64,9 +65,50 @@ export function useDataConnectors(userId: string | undefined): UseDataConnectors
     await updateConnector(connectorId, { frequency });
   }, [updateConnector]);
 
-  const simulateSync = useCallback(async (connectorId: ConnectorKey) => {
-    await updateConnector(connectorId, { last_sync_at: new Date().toISOString(), status: "connected", sync_error: null });
-  }, [updateConnector]);
+  const syncConnector = useCallback(async (connectorId: ConnectorKey) => {
+    if (!userId) return;
 
-  return { connectors, loading, addConnector, updateConnector, disconnectConnector, setFrequency, simulateSync };
+    try {
+      // Pour Google Analytics, appeler la fonction Edge
+      if (connectorId === 'google_analytics') {
+        const { data, error } = await supabase.functions.invoke('google-analytics-sync', {
+          body: { userId, connectorId }
+        });
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        // La fonction Edge met déjà à jour le statut, mais on peut forcer une mise à jour locale
+        await updateConnector(connectorId, {
+          last_sync_at: new Date().toISOString(),
+          status: "connected",
+          sync_error: null
+        });
+
+        return data;
+      } else {
+        // Pour les autres connecteurs, simulation temporaire
+        await updateConnector(connectorId, {
+          last_sync_at: new Date().toISOString(),
+          status: "connected",
+          sync_error: null
+        });
+      }
+    } catch (error) {
+      console.error(`Erreur lors de la synchronisation ${connectorId}:`, error);
+      await updateConnector(connectorId, {
+        status: "error",
+        sync_error: error instanceof Error ? error.message : "Erreur inconnue"
+      });
+      throw error;
+    }
+  }, [userId, updateConnector]);
+
+  // Garder simulateSync pour la compatibilité, mais utiliser syncConnector
+  const simulateSync = useCallback(async (connectorId: ConnectorKey) => {
+    return syncConnector(connectorId);
+  }, [syncConnector]);
+
+  return { connectors, loading, addConnector, updateConnector, disconnectConnector, setFrequency, syncConnector, simulateSync };
 }

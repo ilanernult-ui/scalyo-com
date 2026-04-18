@@ -21,6 +21,7 @@ import NotFound from "./pages/NotFound.tsx";
 import DataDiagPage from "./pages/DataDiagPage.tsx";
 import GrowthPilotPage from "./pages/GrowthPilotPage.tsx";
 import LoyaltyLoopPage from "./pages/LoyaltyLoopPage.tsx";
+import GoogleAuthCallback from "./pages/GoogleAuthCallback.tsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.tsx";
 import { usePageTracking } from "./hooks/usePageTracking.ts";
 
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/index" element={<Navigate to="/" replace />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/google/callback" element={<ProtectedRoute><GoogleAuthCallback /></ProtectedRoute>} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/dashboard" element={<ProtectedRoute><ErrorBoundary name="dashboard"><Dashboard /></ErrorBoundary></ProtectedRoute>} />
