@@ -71,7 +71,6 @@ const ConnectDialog = ({ def, onConnect, onClose }: {
 
   const handleConnect = async () => {
     console.log('🎯 handleConnect appelé pour:', def.id, 'authType:', def.authType);
-    setConnecting(true);
 
     if (def.authType === "oauth" && def.id === "google_analytics") {
       console.log('🔐 Condition OAuth Google remplie, appel initiateGoogleOAuth');
@@ -81,6 +80,7 @@ const ConnectDialog = ({ def, onConnect, onClose }: {
       return;
     }
 
+    setConnecting(true);
     console.log('📝 Fallback: simulation pour autres connecteurs');
     // Simulation pour les autres connecteurs (temporaire)
     await new Promise((r) => setTimeout(r, 1200));
@@ -124,7 +124,7 @@ const ConnectDialog = ({ def, onConnect, onClose }: {
 
           <div className="flex gap-2 pt-1">
             <Button variant="outline" className="flex-1" onClick={onClose}>Annuler</Button>
-            <Button className="flex-1" onClick={handleConnect} disabled={connecting}>
+            <Button type="button" className="flex-1" onClick={(e) => { e.preventDefault(); handleConnect(); }} disabled={connecting}>
               {connecting
                 ? <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> Connexion…</>
                 : def.authType === "upload"
