@@ -141,6 +141,16 @@ const DashboardOverview = ({
         })}
       </div>
 
+      {/* Top 5 problèmes détectés */}
+      {dataConnected && problems.length > 0 && (
+        <TopProblemsCard problems={problems} onFix={() => onGenerate()} />
+      )}
+
+      {/* Pertes détectées */}
+      {dataConnected && losses.length > 0 && (
+        <LossesSection losses={losses} onGeneratePlan={onGenerate} generating={generatingAnalysis} />
+      )}
+
       {/* Data prompt */}
       {dataConnected && (
         <motion.div
