@@ -7,6 +7,10 @@ import {
 import { Button } from "@/components/ui/button";
 import type { PlanType } from "@/contexts/AuthContext";
 import type { Json } from "@/integrations/supabase/types";
+import SavingsWidget from "./SavingsWidget";
+import TopProblemsCard from "./TopProblemsCard";
+import LossesSection from "./LossesSection";
+import type { DetectedProblem, LossPoint, SavingsSummary } from "@/hooks/useDashboardEnrichment";
 
 interface DashboardOverviewProps {
   plan: PlanType;
@@ -15,6 +19,9 @@ interface DashboardOverviewProps {
   onConnect: () => void;
   onGenerate: () => void;
   generatingAnalysis: boolean;
+  problems?: DetectedProblem[];
+  losses?: LossPoint[];
+  savings?: SavingsSummary;
 }
 
 const planKpis: Record<PlanType, { label: string; key: string; icon: typeof DollarSign; format: (v: unknown) => string }[]> = {
@@ -73,13 +80,19 @@ const currentMonth = () => {
   return d.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
 };
 
-const DashboardOverview = ({ plan, dataConnected, companyData, onConnect, onGenerate, generatingAnalysis }: DashboardOverviewProps) => {
+const DashboardOverview = ({
+  plan, dataConnected, companyData, onConnect, onGenerate, generatingAnalysis,
+  problems = [], losses = [], savings = { thisMonth: 0, total: 0, recent: [] },
+}: DashboardOverviewProps) => {
   const [activeDataTab, setActiveDataTab] = useState(dataTabs[plan][0].id);
   const kpis = planKpis[plan];
   const tabs = dataTabs[plan];
 
   return (
     <div className="space-y-6">
+      {/* Économies réalisées */}
+      <SavingsWidget thisMonth={savings.thisMonth} total={savings.total} />
+
       {/* Header with actions */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
