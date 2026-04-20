@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
+const db = supabase as any;
+
 export interface GoogleTokens {
   access_token: string;
   refresh_token: string;
@@ -69,7 +71,7 @@ export const getValidGoogleTokens = async (
 ): Promise<GoogleTokens | null> => {
   try {
     // Récupérer les tokens depuis la base de données
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('data_connectors')
       .select('config')
       .eq('user_id', userId)
@@ -90,7 +92,7 @@ export const getValidGoogleTokens = async (
 
       if (newTokens) {
         // Sauvegarder les nouveaux tokens
-        await supabase
+        await db
           .from('data_connectors')
           .update({
             config: newTokens,

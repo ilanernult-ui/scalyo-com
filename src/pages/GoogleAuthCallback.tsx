@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+const db = supabase as any;
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -83,7 +84,7 @@ const GoogleAuthCallback = () => {
         }
 
         // Stocker les tokens dans la base de données
-        const { error: dbError } = await supabase
+        const { error: dbError } = await db
           .from('data_connectors')
           .upsert(
             {
