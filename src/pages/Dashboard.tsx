@@ -25,6 +25,8 @@ import RecommendationsTab from "@/components/dashboard/RecommendationsTab";
 import ReportsTab from "@/components/dashboard/ReportsTab";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useAiGeneration } from "@/hooks/useAiGeneration";
+import { useDashboardEnrichment } from "@/hooks/useDashboardEnrichment";
+import NotificationsBell from "@/components/dashboard/NotificationsBell";
 import { useToast } from "@/hooks/use-toast";
 import { analytics } from "@/lib/analytics";
 
@@ -99,6 +101,7 @@ const Dashboard = () => {
 
   const { companyData, dataConnected, aiResults, loadAiResults, onWizardComplete } = useDashboardData(user?.id);
   const { generatingAnalysis, generate } = useAiGeneration();
+  const { problems, losses, savings, notifications, unreadCount, markAllNotificationsRead } = useDashboardEnrichment(user?.id);
 
   /* ── Scroll to top on tab change ── */
   useEffect(() => {
