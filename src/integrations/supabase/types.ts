@@ -209,6 +209,123 @@ export type Database = {
         }
         Relationships: []
       }
+      detected_problems: {
+        Row: {
+          category: string | null
+          created_at: string
+          criticality: string
+          description: string
+          id: string
+          monthly_loss_eur: number | null
+          probable_cause: string | null
+          rank: number
+          resolved: boolean
+          title: string
+          trend: string | null
+          trend_delta_pct: number | null
+          updated_at: string
+          user_id: string
+          weekly_hours_lost: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          criticality?: string
+          description: string
+          id?: string
+          monthly_loss_eur?: number | null
+          probable_cause?: string | null
+          rank?: number
+          resolved?: boolean
+          title: string
+          trend?: string | null
+          trend_delta_pct?: number | null
+          updated_at?: string
+          user_id: string
+          weekly_hours_lost?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          criticality?: string
+          description?: string
+          id?: string
+          monthly_loss_eur?: number | null
+          probable_cause?: string | null
+          rank?: number
+          resolved?: boolean
+          title?: string
+          trend?: string | null
+          trend_delta_pct?: number | null
+          updated_at?: string
+          user_id?: string
+          weekly_hours_lost?: number | null
+        }
+        Relationships: []
+      }
+      loss_history: {
+        Row: {
+          amount_eur: number
+          category: string
+          created_at: string
+          explanation: string | null
+          id: string
+          period_month: string
+          user_id: string
+        }
+        Insert: {
+          amount_eur?: number
+          category: string
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          period_month: string
+          user_id: string
+        }
+        Update: {
+          amount_eur?: number
+          category?: string
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          period_month?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          link: string | null
+          message: string | null
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string | null
+          read?: boolean
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string | null
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -248,6 +365,39 @@ export type Database = {
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      savings_log: {
+        Row: {
+          amount_eur: number
+          created_at: string
+          description: string | null
+          id: string
+          occurred_at: string
+          source: string
+          source_ref: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_eur?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          occurred_at?: string
+          source: string
+          source_ref?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_eur?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          occurred_at?: string
+          source?: string
+          source_ref?: string | null
+          user_id?: string
         }
         Relationships: []
       }
