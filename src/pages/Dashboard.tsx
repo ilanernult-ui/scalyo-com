@@ -173,6 +173,9 @@ const Dashboard = () => {
           onConnect={handleConnect}
           onGenerate={handleGenerate}
           generatingAnalysis={generatingAnalysis}
+          problems={problems}
+          losses={losses}
+          savings={savings}
         />
       );
     }
@@ -417,10 +420,15 @@ const Dashboard = () => {
               {navItems.find((t) => t.id === activeTab)?.label ?? "Dashboard"}
             </h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground hidden sm:block">
               Plan {planLabels[userPlan]}
             </span>
+            <NotificationsBell
+              notifications={notifications}
+              unreadCount={unreadCount}
+              onMarkAllRead={markAllNotificationsRead}
+            />
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
               <span className="text-xs font-bold text-primary-foreground">{initials}</span>
             </div>
