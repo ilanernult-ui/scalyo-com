@@ -100,7 +100,7 @@ const LossesSection = ({ losses, onGeneratePlan, generating }: Props) => {
               <Tooltip
                 cursor={{ fill: "hsl(var(--secondary))" }}
                 contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }}
-                formatter={(v: number) => [`${v.toLocaleString("fr-FR")} €`, "Perte"]}
+                formatter={(v) => [`${Number(v).toLocaleString("fr-FR")} €`, "Perte"]}
               />
               <Bar dataKey="amount" radius={[8, 8, 0, 0]}>
                 {byCategory.map((d) => <Cell key={d.category} fill={d.color} />)}
@@ -146,7 +146,7 @@ const LossesSection = ({ losses, onGeneratePlan, generating }: Props) => {
                 <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
                 <Tooltip
                   contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }}
-                  formatter={(v: number) => [`${v.toLocaleString("fr-FR")} €`, "Perte"]}
+                  formatter={(v) => [`${Number(v).toLocaleString("fr-FR")} €`, "Perte"]}
                 />
                 <Line type="monotone" dataKey="amount" stroke="hsl(0,72%,55%)" strokeWidth={2.5} dot={{ r: 4, fill: "hsl(0,72%,55%)" }} />
               </LineChart>
