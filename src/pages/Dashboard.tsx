@@ -27,6 +27,7 @@ import ActionPlanTab from "@/components/dashboard/ActionPlanTab";
 import PerformanceTrackingTab from "@/components/dashboard/PerformanceTrackingTab";
 import SmartAlertsTab from "@/components/dashboard/SmartAlertsTab";
 import BenchmarksTab from "@/components/dashboard/BenchmarksTab";
+import ReportHistoryTab from "@/components/dashboard/ReportHistoryTab";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useAiGeneration } from "@/hooks/useAiGeneration";
 import { useDashboardEnrichment } from "@/hooks/useDashboardEnrichment";
@@ -59,6 +60,7 @@ const navGroups: NavGroup[] = [
       { id: "growthpilot", label: "GrowthPilot", icon: Rocket, minPlan: "growthpilot" },
       { id: "loyaltyloop", label: "LoyaltyLoop", icon: Heart, minPlan: "loyaltyloop" },
       { id: "reports", label: "Rapports PDF", icon: FileText, minPlan: "datadiag" },
+      { id: "reporthistory", label: "Historique des Rapports", icon: History, minPlan: "datadiag" },
     ],
   },
   {
@@ -240,6 +242,14 @@ const Dashboard = () => {
       return (
         <ErrorBoundary name="reports">
           <ReportsTab companyData={companyData} />
+        </ErrorBoundary>
+      );
+    }
+
+    if (activeTab === "reporthistory") {
+      return (
+        <ErrorBoundary name="reporthistory">
+          <ReportHistoryTab />
         </ErrorBoundary>
       );
     }
