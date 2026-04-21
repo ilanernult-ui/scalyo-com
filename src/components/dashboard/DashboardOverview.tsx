@@ -5,6 +5,7 @@ import {
   Zap, Database, ChevronRight, BarChart3, Wallet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AnimatedNumber from "@/components/ui/animated-number";
 import type { PlanType } from "@/contexts/AuthContext";
 import type { Json } from "@/integrations/supabase/types";
 import SavingsWidget from "./SavingsWidget";
