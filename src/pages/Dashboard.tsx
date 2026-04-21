@@ -449,6 +449,17 @@ const Dashboard = () => {
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="p-4 sm:p-6"
         >
+          {enrichmentError && (
+            <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex items-center justify-between gap-3 text-sm">
+              <span className="text-amber-900">{enrichmentError}</span>
+              <button
+                onClick={() => reloadEnrichment()}
+                className="text-xs font-semibold text-amber-900 underline underline-offset-2 hover:text-amber-700"
+              >
+                Recharger
+              </button>
+            </div>
+          )}
           <div className="flex flex-col xl:flex-row gap-5">
             <div className="flex-1 min-w-0">
               {renderTab()}
