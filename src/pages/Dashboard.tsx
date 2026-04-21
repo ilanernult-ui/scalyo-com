@@ -29,6 +29,7 @@ import SmartAlertsTab from "@/components/dashboard/SmartAlertsTab";
 import BenchmarksTab from "@/components/dashboard/BenchmarksTab";
 import ReportHistoryTab from "@/components/dashboard/ReportHistoryTab";
 import OnboardingTour from "@/components/dashboard/OnboardingTour";
+import ScalyoLoadingScreen from "@/components/ui/scalyo-loading-screen";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useAiGeneration } from "@/hooks/useAiGeneration";
 import { useDashboardEnrichment } from "@/hooks/useDashboardEnrichment";
@@ -92,7 +93,7 @@ const hasAccess = (userPlan: PlanType, requiredPlan: PlanType) =>
 const planLabels: Record<PlanType, string> = { datadiag: "DataDiag", growthpilot: "GrowthPilot", loyaltyloop: "LoyaltyLoop" };
 
 const Dashboard = () => {
-  const { plan, user, signOut, refreshSubscription, stripeSubscriptionId } = useAuth();
+  const { plan, user, signOut, refreshSubscription, stripeSubscriptionId, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
