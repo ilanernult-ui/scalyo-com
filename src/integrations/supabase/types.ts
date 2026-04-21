@@ -428,6 +428,48 @@ export type Database = {
         }
         Relationships: []
       }
+      report_history: {
+        Row: {
+          created_at: string
+          file_name: string | null
+          generated_at: string
+          id: string
+          metrics: Json | null
+          period_label: string | null
+          report_type: string
+          score: number | null
+          summary: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name?: string | null
+          generated_at?: string
+          id?: string
+          metrics?: Json | null
+          period_label?: string | null
+          report_type?: string
+          score?: number | null
+          summary?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string | null
+          generated_at?: string
+          id?: string
+          metrics?: Json | null
+          period_label?: string | null
+          report_type?: string
+          score?: number | null
+          summary?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       savings_log: {
         Row: {
           amount_eur: number
