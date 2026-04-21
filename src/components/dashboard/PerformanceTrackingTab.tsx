@@ -340,7 +340,7 @@ const PerformanceTrackingTab = ({ companyData }: Props) => {
                         borderRadius: "8px",
                         fontSize: "11px",
                       }}
-                      formatter={(v: number) => kpi.format(v)}
+                      formatter={(v: any) => kpi.format(Number(v))}
                     />
                     <Line
                       type="monotone"
