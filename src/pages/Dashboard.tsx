@@ -198,6 +198,14 @@ const Dashboard = () => {
       );
     }
 
+    if (activeTab === "actionplan") {
+      return (
+        <ErrorBoundary name="actionplan">
+          <ActionPlanTab />
+        </ErrorBoundary>
+      );
+    }
+
     if (activeTab === "reports") {
       return (
         <ErrorBoundary name="reports">
