@@ -89,6 +89,30 @@ export type Database = {
         }
         Relationships: []
       }
+      alert_preferences: {
+        Row: {
+          created_at: string
+          email_alerts_enabled: boolean
+          email_severity_min: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_alerts_enabled?: boolean
+          email_severity_min?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_alerts_enabled?: boolean
+          email_severity_min?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       company_data: {
         Row: {
           active_clients: number | null
@@ -433,6 +457,54 @@ export type Database = {
           occurred_at?: string
           source?: string
           source_ref?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      smart_alerts: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          id: string
+          impact_estimate: string | null
+          recommended_action: string | null
+          resolved_at: string | null
+          severity: string
+          status: string
+          title: string
+          triggered_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description: string
+          id?: string
+          impact_estimate?: string | null
+          recommended_action?: string | null
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          title: string
+          triggered_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          impact_estimate?: string | null
+          recommended_action?: string | null
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          title?: string
+          triggered_at?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
