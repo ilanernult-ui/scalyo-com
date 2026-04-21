@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      action_plan: {
+        Row: {
+          category: string
+          completed_at: string | null
+          created_at: string
+          delay: string
+          description: string | null
+          difficulty: string
+          id: string
+          impact_eur: number | null
+          impact_hours_weekly: number | null
+          position: number
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          completed_at?: string | null
+          created_at?: string
+          delay?: string
+          description?: string | null
+          difficulty?: string
+          id?: string
+          impact_eur?: number | null
+          impact_hours_weekly?: number | null
+          position?: number
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          completed_at?: string | null
+          created_at?: string
+          delay?: string
+          description?: string | null
+          difficulty?: string
+          id?: string
+          impact_eur?: number | null
+          impact_hours_weekly?: number | null
+          position?: number
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ai_results: {
         Row: {
           created_at: string
