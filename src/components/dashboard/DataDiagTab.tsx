@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { computeHealthScore } from "@/lib/healthScore";
 import type { Json } from "@/integrations/supabase/types";
 import TopProblemsCard from "@/components/dashboard/TopProblemsCard";
+import LossesAnalysis from "@/components/dashboard/datadiag/LossesAnalysis";
 import { useDashboardEnrichment } from "@/hooks/useDashboardEnrichment";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -339,58 +340,7 @@ const DataDiagTab = ({ onConnect, dataConnected, aiResults, companyData }: DataD
       </div>
       <ReportCard aiData={aiData} />
 
-      <div
-        className="rounded-2xl border p-5 mt-6"
-        style={{ backgroundColor: "var(--color-background-primary)", borderColor: "var(--color-border-tertiary)" }}
-      >
-        <h3 className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-secondary)] mb-5">Analyse visuelle</h3>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <div className="rounded-2xl border border-border bg-card p-4">
-            <p className="text-[12px] uppercase tracking-[0.24em] text-[var(--color-text-secondary)] mb-3">Répartition des pertes détectées</p>
-            <div className="h-[200px]">
-              <Pie
-                data={{
-                  labels: DATA_DIAG_LOSS_DISTRIBUTION.map((item) => item.label),
-                  datasets: [
-                    {
-                      data: DATA_DIAG_LOSS_DISTRIBUTION.map((item) => item.value),
-                      backgroundColor: ["#00D4FF", "#0891b2", "#164e63", "#ef4444"],
-                      borderWidth: 0,
-                    },
-                  ],
-                }}
-                options={dataDiagPieOptions}
-              />
-            </div>
-            <div className="mt-4 space-y-2 text-sm text-muted-foreground">
-              {DATA_DIAG_LOSS_DISTRIBUTION.map((item) => (
-                <div key={item.label} className="flex items-center justify-between">
-                  <span>{item.label}</span>
-                  <span>{item.value}%</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-border bg-card p-4">
-            <p className="text-[12px] uppercase tracking-[0.24em] text-[var(--color-text-secondary)] mb-3">Top pertes en €/mois</p>
-            <div className="h-[200px]">
-              <Bar
-                data={{
-                  labels: DATA_DIAG_TOP_LOSSES.map((item) => item.label),
-                  datasets: [
-                    {
-                      data: DATA_DIAG_TOP_LOSSES.map((item) => item.value),
-                      backgroundColor: ["#ef4444", "#f97316", "#0ea5e9", "#0891b2", "#00D4FF"],
-                    },
-                  ],
-                }}
-                options={dataDiagBarOptions}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+      <LossesAnalysis />
     </div>
   );
 
