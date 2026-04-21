@@ -177,7 +177,7 @@ const ReportHistoryTab = () => {
                 <YAxis domain={[0, 100]} stroke="#64748b" fontSize={12} />
                 <Tooltip
                   contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }}
-                  formatter={(v: number) => [`${v}/100`, "Score"]}
+                  formatter={(v) => [`${v}/100`, "Score"]}
                 />
                 <Line type="monotone" dataKey="score" stroke="#2563eb" strokeWidth={3} dot={{ r: 5, fill: "#2563eb" }} activeDot={{ r: 7 }} />
               </LineChart>
