@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Menu, LogOut, LayoutDashboard, Activity, Rocket, Heart,
-  Lock, Settings, ChevronRight, Building2, Plug2, Sparkles, FileText, KanbanSquare, LineChart, Bell, BarChart3, History
+  Lock, Settings, ChevronRight, Building2, Plug2, Sparkles, FileText, KanbanSquare, LineChart, Bell, BarChart3, History, Maximize2, Minimize2
 } from "lucide-react";
 import type { PlanType } from "@/contexts/AuthContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,6 +28,7 @@ import PerformanceTrackingTab from "@/components/dashboard/PerformanceTrackingTa
 import SmartAlertsTab from "@/components/dashboard/SmartAlertsTab";
 import BenchmarksTab from "@/components/dashboard/BenchmarksTab";
 import ReportHistoryTab from "@/components/dashboard/ReportHistoryTab";
+import OnboardingTour from "@/components/dashboard/OnboardingTour";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useAiGeneration } from "@/hooks/useAiGeneration";
 import { useDashboardEnrichment } from "@/hooks/useDashboardEnrichment";
@@ -99,6 +100,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [presentationMode, setPresentationMode] = useState(false);
   const [sendReportPrompt, setSendReportPrompt] = useState<((message: string) => Promise<string | null>) | null>(null);
 
   const userPlan = plan;
