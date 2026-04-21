@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Menu, LogOut, LayoutDashboard, Activity, Rocket, Heart,
-  Lock, Settings, ChevronRight, Building2, Plug2, Sparkles, FileText
+  Lock, Settings, ChevronRight, Building2, Plug2, Sparkles, FileText, KanbanSquare
 } from "lucide-react";
 import type { PlanType } from "@/contexts/AuthContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,6 +23,7 @@ import CompanyProfileTab from "@/components/company/CompanyProfileTab";
 import DataConnectorsTab from "@/components/connectors/DataConnectorsTab";
 import RecommendationsTab from "@/components/dashboard/RecommendationsTab";
 import ReportsTab from "@/components/dashboard/ReportsTab";
+import ActionPlanTab from "@/components/dashboard/ActionPlanTab";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useAiGeneration } from "@/hooks/useAiGeneration";
 import { useDashboardEnrichment } from "@/hooks/useDashboardEnrichment";
@@ -60,6 +61,7 @@ const navGroups: NavGroup[] = [
   {
     section: null,
     items: [
+      { id: "actionplan", label: "Plan d'action IA", icon: KanbanSquare, minPlan: "datadiag" },
       { id: "recommendations", label: "Recommandations IA", icon: Sparkles, minPlan: "datadiag" },
     ],
   },
@@ -192,6 +194,14 @@ const Dashboard = () => {
       return (
         <ErrorBoundary name="recommendations">
           <RecommendationsTab />
+        </ErrorBoundary>
+      );
+    }
+
+    if (activeTab === "actionplan") {
+      return (
+        <ErrorBoundary name="actionplan">
+          <ActionPlanTab />
         </ErrorBoundary>
       );
     }
