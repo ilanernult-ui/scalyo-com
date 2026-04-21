@@ -67,6 +67,7 @@ const navGroups: NavGroup[] = [
       { id: "actionplan", label: "Plan d'action IA", icon: KanbanSquare, minPlan: "datadiag" },
       { id: "performance", label: "Suivi de Performance", icon: LineChart, minPlan: "datadiag" },
       { id: "alerts", label: "Alertes Intelligentes", icon: Bell, minPlan: "datadiag" },
+      { id: "benchmarks", label: "Benchmarks Sectoriels", icon: BarChart3, minPlan: "datadiag" },
       { id: "recommendations", label: "Recommandations IA", icon: Sparkles, minPlan: "datadiag" },
     ],
   },
@@ -223,6 +224,14 @@ const Dashboard = () => {
       return (
         <ErrorBoundary name="alerts">
           <SmartAlertsTab />
+        </ErrorBoundary>
+      );
+    }
+
+    if (activeTab === "benchmarks") {
+      return (
+        <ErrorBoundary name="benchmarks">
+          <BenchmarksTab companyData={companyData} />
         </ErrorBoundary>
       );
     }
