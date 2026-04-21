@@ -101,7 +101,13 @@ const Dashboard = () => {
 
   const { companyData, dataConnected, aiResults, loadAiResults, onWizardComplete } = useDashboardData(user?.id);
   const { generatingAnalysis, generate } = useAiGeneration();
-  const { problems, losses, savings, notifications, unreadCount, markAllNotificationsRead } = useDashboardEnrichment(user?.id);
+  const { problems, losses, savings, notifications, unreadCount, error: enrichmentError, reload: reloadEnrichment, markAllNotificationsRead } = useDashboardEnrichment(user?.id);
+
+  useEffect(() => {
+    if (enrichmentError) {
+      console.warn("[Dashboard] enrichment error:", enrichmentError);
+    }
+  }, [enrichmentError]);
 
   /* ── Scroll to top on tab change ── */
   useEffect(() => {
@@ -443,6 +449,17 @@ const Dashboard = () => {
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="p-4 sm:p-6"
         >
+          {enrichmentError && (
+            <div className="mb-4 rounded-xl border border-border bg-muted px-4 py-3 flex items-center justify-between gap-3 text-sm">
+              <span className="text-foreground">{enrichmentError}</span>
+              <button
+                onClick={() => reloadEnrichment()}
+                className="text-xs font-semibold text-primary underline underline-offset-2 hover:text-primary/80"
+              >
+                Recharger
+              </button>
+            </div>
+          )}
           <div className="flex flex-col xl:flex-row gap-5">
             <div className="flex-1 min-w-0">
               {renderTab()}
