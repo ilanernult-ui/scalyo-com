@@ -5,6 +5,7 @@ import {
   Zap, Database, ChevronRight, BarChart3, Wallet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AnimatedNumber from "@/components/ui/animated-number";
 import type { PlanType } from "@/contexts/AuthContext";
 import type { Json } from "@/integrations/supabase/types";
 import SavingsWidget from "./SavingsWidget";
@@ -121,20 +122,35 @@ const DashboardOverview = ({
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {kpis.map((kpi, i) => {
           const val = companyData ? companyData[kpi.key] : undefined;
+          const numeric = typeof val === "number" ? val : Number(val);
+          const animatable = dataConnected && Number.isFinite(numeric) && numeric !== 0;
+          const formatted = dataConnected && companyData ? kpi.format(val) : "—";
+          const isCurrency = formatted.includes("€");
+          const isPercent = formatted.includes("%");
           return (
             <motion.div
               key={kpi.label}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-[var(--shadow-sm)]"
+              transition={{ delay: i * 0.05, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              whileHover={{ y: -2 }}
+              className="rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-[var(--shadow-sm)] transition-shadow hover:shadow-md"
             >
               <div className="flex items-center justify-between mb-2">
                 <p className="text-[11px] sm:text-xs text-muted-foreground">{kpi.label}</p>
                 <kpi.icon className="h-4 w-4 text-muted-foreground" />
               </div>
               <p className="text-lg sm:text-2xl font-bold text-foreground tracking-tight">
-                {dataConnected && companyData ? kpi.format(val) : "—"}
+                {animatable ? (
+                  <AnimatedNumber
+                    value={numeric}
+                    duration={1400}
+                    delay={i * 80}
+                    suffix={isCurrency ? " €" : isPercent ? "%" : ""}
+                  />
+                ) : (
+                  formatted
+                )}
               </p>
             </motion.div>
           );
