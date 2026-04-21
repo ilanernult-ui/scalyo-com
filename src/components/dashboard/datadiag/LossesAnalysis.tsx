@@ -75,41 +75,39 @@ const projection6m = totalMonthly * 6;
 const HISTORY_LABELS = ["M-5", "M-4", "M-3", "M-2", "M-1", "Mois actuel"];
 const HISTORY_DATA = [4800, 5100, 5400, 5900, 6450, totalMonthly];
 
-const barOptions = {
+import type { ChartOptions } from "chart.js";
+
+const barOptions: ChartOptions<"bar"> = {
   responsive: true,
   maintainAspectRatio: false,
-  indexAxis: "y" as const,
+  indexAxis: "y",
   plugins: {
     legend: { display: false },
     tooltip: {
       callbacks: {
-        label: (ctx: { parsed: { x: number } }) => `${ctx.parsed.x.toLocaleString("fr-FR")} €/mois`,
+        label: (ctx) => `${Number(ctx.parsed.x ?? 0).toLocaleString("fr-FR")} €/mois`,
       },
     },
   },
   scales: {
-    x: {
-      ticks: { callback: (v: number | string) => `${Number(v) / 1000}k€` },
-    },
+    x: { ticks: { callback: (v) => `${Number(v) / 1000}k€` } },
     y: { ticks: { color: "var(--color-text-secondary)" } },
   },
 };
 
-const trendOptions = {
+const trendOptions: ChartOptions<"bar"> = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: { display: false },
     tooltip: {
       callbacks: {
-        label: (ctx: { parsed: { y: number } }) => `${ctx.parsed.y.toLocaleString("fr-FR")} €`,
+        label: (ctx) => `${Number(ctx.parsed.y ?? 0).toLocaleString("fr-FR")} €`,
       },
     },
   },
   scales: {
-    y: {
-      ticks: { callback: (v: number | string) => `${Number(v) / 1000}k€` },
-    },
+    y: { ticks: { callback: (v) => `${Number(v) / 1000}k€` } },
   },
 };
 
