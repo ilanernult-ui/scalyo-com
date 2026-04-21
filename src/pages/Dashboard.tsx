@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Menu, LogOut, LayoutDashboard, Activity, Rocket, Heart,
-  Lock, Settings, ChevronRight, Building2, Plug2, Sparkles, FileText, KanbanSquare, LineChart, Bell
+  Lock, Settings, ChevronRight, Building2, Plug2, Sparkles, FileText, KanbanSquare, LineChart, Bell, BarChart3
 } from "lucide-react";
 import type { PlanType } from "@/contexts/AuthContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,6 +26,7 @@ import ReportsTab from "@/components/dashboard/ReportsTab";
 import ActionPlanTab from "@/components/dashboard/ActionPlanTab";
 import PerformanceTrackingTab from "@/components/dashboard/PerformanceTrackingTab";
 import SmartAlertsTab from "@/components/dashboard/SmartAlertsTab";
+import BenchmarksTab from "@/components/dashboard/BenchmarksTab";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useAiGeneration } from "@/hooks/useAiGeneration";
 import { useDashboardEnrichment } from "@/hooks/useDashboardEnrichment";
@@ -66,6 +67,7 @@ const navGroups: NavGroup[] = [
       { id: "actionplan", label: "Plan d'action IA", icon: KanbanSquare, minPlan: "datadiag" },
       { id: "performance", label: "Suivi de Performance", icon: LineChart, minPlan: "datadiag" },
       { id: "alerts", label: "Alertes Intelligentes", icon: Bell, minPlan: "datadiag" },
+      { id: "benchmarks", label: "Benchmarks Sectoriels", icon: BarChart3, minPlan: "datadiag" },
       { id: "recommendations", label: "Recommandations IA", icon: Sparkles, minPlan: "datadiag" },
     ],
   },
@@ -222,6 +224,14 @@ const Dashboard = () => {
       return (
         <ErrorBoundary name="alerts">
           <SmartAlertsTab />
+        </ErrorBoundary>
+      );
+    }
+
+    if (activeTab === "benchmarks") {
+      return (
+        <ErrorBoundary name="benchmarks">
+          <BenchmarksTab companyData={companyData} />
         </ErrorBoundary>
       );
     }
