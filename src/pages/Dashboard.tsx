@@ -369,6 +369,10 @@ const Dashboard = () => {
     );
   };
 
+  if (authLoading) {
+    return <ScalyoLoadingScreen message="Préparation de votre tableau de bord…" />;
+  }
+
   return (
     <div className="min-h-screen bg-background flex">
       {/* ── Sidebar ── */}
