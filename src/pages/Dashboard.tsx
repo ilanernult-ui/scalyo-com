@@ -537,7 +537,7 @@ const Dashboard = () => {
             <div className="flex-1 min-w-0">
               {renderTab()}
             </div>
-            {activeTab !== "settings" && (
+            {activeTab !== "settings" && !presentationMode && (
               <div
                 id={activeTab === "reports" ? "reports-chat" : undefined}
                 className={`w-full xl:w-auto ${activeTab === "reports" ? "xl:sticky xl:top-24 xl:self-start" : ""}`}
@@ -559,6 +559,8 @@ const Dashboard = () => {
           onComplete={handleWizardComplete}
         />
       )}
+      {/* Onboarding tour for new users */}
+      <OnboardingTour onNavigate={(tab) => setActiveTab(tab)} />
 
     </div>
   );
