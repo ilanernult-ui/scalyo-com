@@ -372,9 +372,9 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background flex">
       {/* ── Sidebar ── */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-card border-r border-border flex flex-col transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-card border-r border-border flex-col transition-transform duration-300 lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        } ${presentationMode ? "hidden" : "flex"}`}
       >
         {/* Logo */}
         <div className="p-5 border-b border-border">
@@ -467,31 +467,52 @@ const Dashboard = () => {
       )}
 
       {/* ── Main ── */}
-      <main id="main-content" ref={contentRef} className="flex-1 lg:ml-64 min-h-0 overflow-y-auto">
+      <main id="main-content" ref={contentRef} className={`flex-1 min-h-0 overflow-y-auto ${presentationMode ? "" : "lg:ml-64"}`}>
         {/* Header */}
-        <header className="sticky top-0 z-20 bg-background/85 backdrop-blur-xl border-b border-border px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button className="lg:hidden text-foreground" onClick={() => setSidebarOpen(true)}>
-              <Menu className="h-5 w-5" />
-            </button>
-            <h1 className="text-lg font-semibold text-foreground tracking-tight">
-              {navItems.find((t) => t.id === activeTab)?.label ?? "Dashboard"}
-            </h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground hidden sm:block">
-              Plan {planLabels[userPlan]}
-            </span>
-            <NotificationsBell
-              notifications={notifications}
-              unreadCount={unreadCount}
-              onMarkAllRead={markAllNotificationsRead}
-            />
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-xs font-bold text-primary-foreground">{initials}</span>
+        {!presentationMode && (
+          <header className="sticky top-0 z-20 bg-background/85 backdrop-blur-xl border-b border-border px-6 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button className="lg:hidden text-foreground" onClick={() => setSidebarOpen(true)}>
+                <Menu className="h-5 w-5" />
+              </button>
+              <h1 className="text-lg font-semibold text-foreground tracking-tight">
+                {navItems.find((t) => t.id === activeTab)?.label ?? "Dashboard"}
+              </h1>
             </div>
-          </div>
-        </header>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground hidden sm:block">
+                Plan {planLabels[userPlan]}
+              </span>
+              <button
+                onClick={() => setPresentationMode(true)}
+                className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                title="Mode présentation plein écran"
+              >
+                <Maximize2 className="h-3.5 w-3.5" />
+                Présentation
+              </button>
+              <NotificationsBell
+                notifications={notifications}
+                unreadCount={unreadCount}
+                onMarkAllRead={markAllNotificationsRead}
+              />
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                <span className="text-xs font-bold text-primary-foreground">{initials}</span>
+              </div>
+            </div>
+          </header>
+        )}
+
+        {/* Presentation mode floating exit button */}
+        {presentationMode && (
+          <button
+            onClick={() => setPresentationMode(false)}
+            className="fixed top-4 right-4 z-50 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-foreground text-background text-xs font-semibold shadow-lg hover:opacity-90 transition-opacity"
+          >
+            <Minimize2 className="h-3.5 w-3.5" />
+            Quitter la présentation
+          </button>
+        )}
 
         {/* Content */}
         <motion.div
