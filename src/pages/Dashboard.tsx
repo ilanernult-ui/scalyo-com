@@ -101,7 +101,13 @@ const Dashboard = () => {
 
   const { companyData, dataConnected, aiResults, loadAiResults, onWizardComplete } = useDashboardData(user?.id);
   const { generatingAnalysis, generate } = useAiGeneration();
-  const { problems, losses, savings, notifications, unreadCount, markAllNotificationsRead } = useDashboardEnrichment(user?.id);
+  const { problems, losses, savings, notifications, unreadCount, error: enrichmentError, reload: reloadEnrichment, markAllNotificationsRead } = useDashboardEnrichment(user?.id);
+
+  useEffect(() => {
+    if (enrichmentError) {
+      console.warn("[Dashboard] enrichment error:", enrichmentError);
+    }
+  }, [enrichmentError]);
 
   /* ── Scroll to top on tab change ── */
   useEffect(() => {
