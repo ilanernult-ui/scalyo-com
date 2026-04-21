@@ -13,6 +13,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { computeHealthScore } from "@/lib/healthScore";
 import type { Json } from "@/integrations/supabase/types";
+import TopProblemsCard from "@/components/dashboard/TopProblemsCard";
+import { useDashboardEnrichment } from "@/hooks/useDashboardEnrichment";
+import { useAuth } from "@/contexts/AuthContext";
 
 const ACCENT = "hsl(211, 100%, 45%)";
 
@@ -318,6 +321,8 @@ interface DataDiagTabProps {
 }
 
 const DataDiagTab = ({ onConnect, dataConnected, aiResults, companyData }: DataDiagTabProps) => {
+  const { user } = useAuth();
+  const { problems } = useDashboardEnrichment(user?.id);
   const aiData = (aiResults && typeof aiResults === "object" && !Array.isArray(aiResults))
     ? aiResults as Record<string, unknown>
     : null;
@@ -325,12 +330,12 @@ const DataDiagTab = ({ onConnect, dataConnected, aiResults, companyData }: DataD
   const content = (
     <div className="space-y-4">
       <ScoreCard companyData={companyData ?? null} />
+      <div className="rounded-2xl border-2 border-destructive/20 bg-card p-5">
+        <TopProblemsCard problems={problems} />
+      </div>
       <div className="grid lg:grid-cols-2 gap-4">
-        <ProblemsCard aiData={aiData} />
-        <div className="space-y-4">
-          <BenchmarkCard companyData={companyData ?? null} />
-          <RecommendationsCard aiData={aiData} />
-        </div>
+        <BenchmarkCard companyData={companyData ?? null} />
+        <RecommendationsCard aiData={aiData} />
       </div>
       <ReportCard aiData={aiData} />
 
