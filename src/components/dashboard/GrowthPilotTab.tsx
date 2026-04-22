@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import QuickWinsSection from "./growthpilot/QuickWinsSection";
+import AutomationsSection from "./growthpilot/AutomationsSection";
 import type { Json } from "@/integrations/supabase/types";
 
 const ACCENT = "hsl(142, 69%, 49%)";
