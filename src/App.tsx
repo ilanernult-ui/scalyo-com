@@ -21,6 +21,7 @@ import NotFound from "./pages/NotFound.tsx";
 import DataDiagPage from "./pages/DataDiagPage.tsx";
 import GrowthPilotPage from "./pages/GrowthPilotPage.tsx";
 import LoyaltyLoopPage from "./pages/LoyaltyLoopPage.tsx";
+import LoyaltyLoopApp from "./pages/LoyaltyLoopApp.tsx";
 import GoogleAuthCallback from "./pages/GoogleAuthCallback.tsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.tsx";
 import { usePageTracking } from "./hooks/usePageTracking.ts";
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/datadiag-demo" element={<DataDiagPage />} />
             <Route path="/growthpilot-demo" element={<GrowthPilotPage />} />
             <Route path="/loyaltyloop-demo" element={<LoyaltyLoopPage />} />
+            <Route path="/loyaltyloop-app" element={<LoyaltyLoopApp />} />
             <Route path="/services" element={<Services />} />
             <Route path="/services/:slug" element={<Services />} />
             <Route path="/pricing" element={<Pricing />} />
