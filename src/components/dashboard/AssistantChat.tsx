@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Send } from "lucide-react";
+import { Send, History, FileDown, Sparkles, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { saveAs } from "file-saver";
+import jsPDF from "jspdf";
 import { useToast } from "@/hooks/use-toast";
 import { useOpenAI, type OpenAIMessage } from "@/hooks/useOpenAI";
 import type { PlanType } from "@/contexts/AuthContext";
