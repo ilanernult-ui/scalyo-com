@@ -71,12 +71,13 @@ const growthPilotBarOptions = {
 };
 
 // ─── Sub-tab navigation ───────────────────────────────────────────
-type SubTab = "acquisition" | "revenue" | "produit";
+type SubTab = "acquisition" | "revenue" | "produit" | "automations";
 
 const SUB_TABS: { id: SubTab; label: string }[] = [
   { id: "acquisition", label: "Acquisition" },
   { id: "revenue", label: "Revenue" },
   { id: "produit", label: "Produit" },
+  { id: "automations", label: "Automatisations" },
 ];
 
 // ─── Acquisition Dashboard ────────────────────────────────────────
