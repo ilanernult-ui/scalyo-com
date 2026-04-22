@@ -1,6 +1,25 @@
 import { useState } from "react";
-import { Bell, TrendingDown, Users, AlertTriangle, ArrowUpRight } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from "recharts";
+import { Bell, TrendingDown, Users, AlertTriangle, ArrowUpRight, FileText, Download } from "lucide-react";
+import {
+  BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip,
+  PieChart, Pie, LineChart, Line, ReferenceLine, CartesianGrid,
+} from "recharts";
+
+const segmentData = [
+  { name: "Clients VIP fidèles", value: 773, color: "#F5C518" },
+  { name: "Clients réguliers", value: 299, color: "#7C3AED" },
+  { name: "Clients à risque", value: 125, color: "#F97316" },
+  { name: "Churn ce mois", value: 48, color: "#EF4444" },
+];
+
+const churn6m = [
+  { month: "Nov", value: 6.0 },
+  { month: "Déc", value: 5.5 },
+  { month: "Jan", value: 5.0 },
+  { month: "Fév", value: 4.8 },
+  { month: "Mar", value: 4.5 },
+  { month: "Avr", value: 4.3 },
+];
 
 const churnData = [
   { month: "Oct", value: 5.8, opacity: 0.35 },
@@ -194,6 +213,108 @@ const LoyaltyLoopApp = () => {
                     </span>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* CARTE 1 — Rapport LoyaltyLoop */}
+            <div className="bg-white border border-black/5 rounded-xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+              <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                    <FileText className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <h3 className="text-base font-semibold text-black">Rapport LoyaltyLoop</h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-black/60 bg-black/5 px-2.5 py-1 rounded-full">Ce mois</span>
+                  <button className="inline-flex items-center gap-1.5 text-xs font-medium border border-black/10 hover:bg-black/5 px-3 py-1.5 rounded-lg transition-colors">
+                    <Download className="w-3.5 h-3.5" /> PDF
+                  </button>
+                </div>
+              </div>
+              <p className="text-sm leading-relaxed text-black/70">
+                Votre taux de churn est en baisse constante (-28% sur 6 mois). 3 clients à risque immédiat
+                ont été identifiés et nécessitent une intervention CSM. Le potentiel upsell non exploité
+                représente ~7 500€/mois.
+              </p>
+            </div>
+
+            {/* CARTE 2 — Analyse clients */}
+            <div className="space-y-4">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-black/50">Analyse clients</h2>
+
+              {/* Segmentation clients */}
+              <div className="bg-white border border-black/5 rounded-xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+                <h3 className="text-base font-semibold text-black mb-4">Segmentation clients</h3>
+                <div style={{ width: "100%", height: 240 }}>
+                  <ResponsiveContainer>
+                    <PieChart>
+                      <Pie
+                        data={segmentData}
+                        dataKey="value"
+                        nameKey="name"
+                        innerRadius={55}
+                        outerRadius={90}
+                        paddingAngle={2}
+                        stroke="none"
+                      >
+                        {segmentData.map((d) => (
+                          <Cell key={d.name} fill={d.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{ borderRadius: 8, border: "1px solid rgba(0,0,0,0.08)", fontSize: 12 }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="mt-4 space-y-2">
+                  {segmentData.map((s) => (
+                    <div key={s.name} className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color }} />
+                        <span className="text-black/75">{s.name}</span>
+                      </div>
+                      <span className="font-semibold text-black tabular-nums">{s.value} clients</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Évolution du churn — 6 mois */}
+              <div
+                className="rounded-xl p-6 border border-black/5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
+                style={{ backgroundColor: "#FFFBEB" }}
+              >
+                <h3 className="text-xs font-bold uppercase tracking-wider text-black/50 mb-4">
+                  Évolution du churn — 6 mois
+                </h3>
+                <div style={{ width: "100%", height: 240 }}>
+                  <ResponsiveContainer>
+                    <LineChart data={churn6m} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
+                      <CartesianGrid stroke="rgba(0,0,0,0.05)" vertical={false} />
+                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#00000080", fontSize: 12 }} />
+                      <YAxis domain={[0, 7]} axisLine={false} tickLine={false} tick={{ fill: "#00000080", fontSize: 12 }} />
+                      <Tooltip
+                        contentStyle={{ borderRadius: 8, border: "1px solid rgba(0,0,0,0.08)", fontSize: 12 }}
+                      />
+                      <ReferenceLine
+                        y={3}
+                        stroke="#EF4444"
+                        strokeDasharray="5 5"
+                        label={{ value: "Objectif : <3%", position: "insideBottomRight", fill: "#EF4444", fontSize: 11 }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="value"
+                        stroke="#F5C518"
+                        strokeWidth={3}
+                        dot={{ r: 5, fill: "#F5C518", stroke: "#fff", strokeWidth: 2 }}
+                        activeDot={{ r: 7 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </div>
           </div>
