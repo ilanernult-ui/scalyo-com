@@ -318,6 +318,7 @@ const LoyaltyLoopApp = () => {
               </div>
             </div>
           </div>
+        ) : (
           <div className="text-center text-black/60 text-sm">Contenu Fidélisation</div>
         )}
       </div>
