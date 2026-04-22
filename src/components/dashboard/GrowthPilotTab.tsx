@@ -615,6 +615,9 @@ const GrowthPilotTab = ({ onConnect, dataConnected, aiResults }: GrowthPilotTabP
 
   const content = (
     <div className="space-y-4">
+      {/* Quick Wins — fort ROI, en haut de page */}
+      <QuickWinsSection />
+
       {/* Sub-tab pills */}
       <div className="flex gap-1.5 bg-secondary/50 rounded-xl p-1 w-fit">
         {SUB_TABS.map((t) => (
