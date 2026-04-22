@@ -724,6 +724,27 @@ Sois concret, chiffré, et oriente toutes les recommandations vers l'objectif +1
           <div ref={bottomRef} />
         </div>
 
+        {contextSuggestions && contextSuggestions.length > 0 && (
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+              <Sparkles className="h-3 w-3" /> Suggestions basées sur votre tableau de bord
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {contextSuggestions.map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  onClick={() => void handleSuggestion(q)}
+                  disabled={isLoading}
+                  className="text-left text-xs rounded-lg border border-border bg-white px-3 py-1.5 text-slate-700 hover:border-slate-400 hover:bg-slate-50 transition disabled:opacity-50"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {showQuickButtons && (
           <div className="flex flex-wrap gap-2">
             {quickButtons.map((button) => (
