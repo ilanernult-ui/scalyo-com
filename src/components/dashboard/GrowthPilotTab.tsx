@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import QuickWinsSection from "./growthpilot/QuickWinsSection";
+import AutomationsSection from "./growthpilot/AutomationsSection";
 import type { Json } from "@/integrations/supabase/types";
 
 const ACCENT = "hsl(142, 69%, 49%)";
@@ -70,12 +71,13 @@ const growthPilotBarOptions = {
 };
 
 // ─── Sub-tab navigation ───────────────────────────────────────────
-type SubTab = "acquisition" | "revenue" | "produit";
+type SubTab = "acquisition" | "revenue" | "produit" | "automations";
 
 const SUB_TABS: { id: SubTab; label: string }[] = [
   { id: "acquisition", label: "Acquisition" },
   { id: "revenue", label: "Revenue" },
   { id: "produit", label: "Produit" },
+  { id: "automations", label: "Automatisations" },
 ];
 
 // ─── Acquisition Dashboard ────────────────────────────────────────
@@ -783,6 +785,7 @@ const GrowthPilotTab = ({ onConnect, dataConnected, aiResults }: GrowthPilotTabP
       {subTab === "acquisition" && <AcquisitionDashboard aiData={aiData} />}
       {subTab === "revenue" && <RevenueDashboard aiData={aiData} />}
       {subTab === "produit" && <ProduitDashboard aiData={aiData} />}
+      {subTab === "automations" && <AutomationsSection />}
 
       <ReportCard aiData={aiData} />
 
