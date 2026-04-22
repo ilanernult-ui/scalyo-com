@@ -149,6 +149,9 @@ const AcquisitionDashboard = ({ aiData }: { aiData: Record<string, unknown> | nu
         </div>
       </div>
 
+      {/* Conversion funnel */}
+      <ConversionFunnelSection />
+
       {/* Recommendations */}
       <AcquisitionRecommendations />
     </div>
