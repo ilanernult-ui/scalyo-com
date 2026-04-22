@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import QuickWinsSection from "./growthpilot/QuickWinsSection";
 import type { Json } from "@/integrations/supabase/types";
 
 const ACCENT = "hsl(142, 69%, 49%)";
@@ -614,6 +615,9 @@ const GrowthPilotTab = ({ onConnect, dataConnected, aiResults }: GrowthPilotTabP
 
   const content = (
     <div className="space-y-4">
+      {/* Quick Wins — fort ROI, en haut de page */}
+      <QuickWinsSection />
+
       {/* Sub-tab pills */}
       <div className="flex gap-1.5 bg-secondary/50 rounded-xl p-1 w-fit">
         {SUB_TABS.map((t) => (
