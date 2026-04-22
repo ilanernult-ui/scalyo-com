@@ -4,6 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip,
   PieChart, Pie, LineChart, Line, ReferenceLine, CartesianGrid,
 } from "recharts";
+import ExpertChatWidget from "@/components/loyaltyloop/ExpertChatWidget";
 
 const segmentData = [
   { name: "Clients VIP fidèles", value: 773, color: "#F5C518" },
