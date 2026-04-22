@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, TrendingDown, Users } from "lucide-react";
+import { Bell, TrendingDown, Users, AlertTriangle, ArrowUpRight } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from "recharts";
 
 const churnData = [
