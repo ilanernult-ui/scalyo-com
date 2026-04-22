@@ -1,6 +1,25 @@
 import { useState } from "react";
-import { Bell, TrendingDown, Users, AlertTriangle, ArrowUpRight } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from "recharts";
+import { Bell, TrendingDown, Users, AlertTriangle, ArrowUpRight, FileText, Download } from "lucide-react";
+import {
+  BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip,
+  PieChart, Pie, LineChart, Line, ReferenceLine, CartesianGrid,
+} from "recharts";
+
+const segmentData = [
+  { name: "Clients VIP fidèles", value: 773, color: "#F5C518" },
+  { name: "Clients réguliers", value: 299, color: "#7C3AED" },
+  { name: "Clients à risque", value: 125, color: "#F97316" },
+  { name: "Churn ce mois", value: 48, color: "#EF4444" },
+];
+
+const churn6m = [
+  { month: "Nov", value: 6.0 },
+  { month: "Déc", value: 5.5 },
+  { month: "Jan", value: 5.0 },
+  { month: "Fév", value: 4.8 },
+  { month: "Mar", value: 4.5 },
+  { month: "Avr", value: 4.3 },
+];
 
 const churnData = [
   { month: "Oct", value: 5.8, opacity: 0.35 },
