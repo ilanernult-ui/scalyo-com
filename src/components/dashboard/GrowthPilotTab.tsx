@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import QuickWinsSection from "./growthpilot/QuickWinsSection";
 import type { Json } from "@/integrations/supabase/types";
 
 const ACCENT = "hsl(142, 69%, 49%)";
