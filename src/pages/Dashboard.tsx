@@ -355,14 +355,6 @@ const Dashboard = () => {
     const context = (activeTab === "datadiag" || activeTab === "growthpilot" || activeTab === "loyaltyloop") ? activeTab : "dashboard";
     const config = assistantConfig[context];
 
-    const growthpilotSuggestions = [
-      "Pourquoi mon LinkedIn Ads performe mal ?",
-      "Comment passer de +12% à +15% de croissance ce mois ?",
-      "Quels sont mes 3 leviers prioritaires pour augmenter le MRR ?",
-      "Quelle automatisation me ferait gagner le plus de temps ?",
-      "Comment optimiser mon CPA Google Ads ?",
-    ];
-
     return (
       <AssistantChat
         context={context as any}
@@ -373,8 +365,6 @@ const Dashboard = () => {
         quickButtons={config.quickButtons}
         userInitials={initials}
         plan={userPlan}
-        contextSuggestions={context === "growthpilot" ? growthpilotSuggestions : undefined}
-        enableGrowthPlanExport={context === "growthpilot"}
       />
     );
   };

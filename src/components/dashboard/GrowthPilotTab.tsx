@@ -15,9 +15,6 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import QuickWinsSection from "./growthpilot/QuickWinsSection";
-import AutomationsSection from "./growthpilot/AutomationsSection";
-import ConversionFunnelSection from "./growthpilot/ConversionFunnelSection";
 import type { Json } from "@/integrations/supabase/types";
 
 const ACCENT = "hsl(142, 69%, 49%)";
@@ -72,13 +69,12 @@ const growthPilotBarOptions = {
 };
 
 // ─── Sub-tab navigation ───────────────────────────────────────────
-type SubTab = "acquisition" | "revenue" | "produit" | "automations";
+type SubTab = "acquisition" | "revenue" | "produit";
 
 const SUB_TABS: { id: SubTab; label: string }[] = [
   { id: "acquisition", label: "Acquisition" },
   { id: "revenue", label: "Revenue" },
   { id: "produit", label: "Produit" },
-  { id: "automations", label: "Automatisations" },
 ];
 
 // ─── Acquisition Dashboard ────────────────────────────────────────
@@ -148,9 +144,6 @@ const AcquisitionDashboard = ({ aiData }: { aiData: Record<string, unknown> | nu
           </table>
         </div>
       </div>
-
-      {/* Conversion funnel */}
-      <ConversionFunnelSection />
 
       {/* Recommendations */}
       <AcquisitionRecommendations />
@@ -418,53 +411,6 @@ const RevenueDashboard = ({ aiData }: { aiData: Record<string, unknown> | null }
   const progressPct = Math.min(100, Math.round((latestMrr / objective) * 100));
   const maxMrr = Math.max(...months.map((m) => m.mrr));
 
-  // ─ AI Projection: average MoM growth over last 3 months ─
-  const last3 = months.slice(-4); // need 4 to compute 3 deltas
-  const deltas = last3.slice(1).map((m, i) => (m.mrr - last3[i].mrr) / last3[i].mrr);
-  const avgGrowth = deltas.length ? deltas.reduce((s, d) => s + d, 0) / deltas.length : 0.05;
-  const project = (months: number, factor: number) => Math.round(latestMrr * Math.pow(1 + avgGrowth * factor, months));
-  const proj3Real = project(3, 1);
-  const proj3Opt = project(3, 1.4);
-  const proj3Pess = project(3, 0.5);
-  const proj6Real = project(6, 1);
-  const proj6Opt = project(6, 1.4);
-  const proj6Pess = project(6, 0.5);
-
-  // ─ Growth target +15% ─
-  const growthTarget = Math.round(latestMrr * 1.15);
-  const growthGap = Math.max(0, growthTarget - latestMrr);
-  const growthProgress = Math.min(100, Math.round((latestMrr / growthTarget) * 100));
-  const growthActions = [
-    { label: "Activer la séquence email upsell sur les clients > 6 mois", gain: "+1 200 €/mois" },
-    { label: "Lancer une offre annuelle -15% (paiement en 1 fois)", gain: "+2 800 €/mois" },
-    { label: "Réactiver les 18 leads chauds non convertis du dernier trimestre", gain: "+1 950 €/mois" },
-  ];
-
-  // ─ Leviers de croissance (top 3) ─
-  const growthLevers = [
-    {
-      title: "Augmenter le panier moyen via bundle premium",
-      description:
-        "Packager 2-3 services complémentaires en offre groupée. Conversion observée sur la base : ~22% des nouveaux clients.",
-      impact: "+8% de MRR",
-      effort: "Moyen",
-    },
-    {
-      title: "Réduire le churn des clients < 3 mois (onboarding)",
-      description:
-        "Mettre en place 3 emails d'activation + appel J+7. Objectif : faire passer le churn 90j de 14% à 8%.",
-      impact: "+6% de MRR récurrent",
-      effort: "Moyen",
-    },
-    {
-      title: "Lancer un plan annuel avec 2 mois offerts",
-      description:
-        "Capter du cash en avance et sécuriser la rétention. ~30% des clients mensuels sont éligibles.",
-      impact: "+12% d'ARR sécurisé",
-      effort: "Facile",
-    },
-  ];
-
   return (
     <div className="space-y-4">
       {/* KPIs */}
@@ -509,121 +455,24 @@ const RevenueDashboard = ({ aiData }: { aiData: Record<string, unknown> | null }
         </div>
       </div>
 
-      {/* AI Projection 3 / 6 mois */}
-      <div className="rounded-2xl border border-border bg-card p-5">
-        <div className="flex items-center gap-2 mb-1">
-          <Sparkles className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-semibold text-foreground">Projection IA du MRR</h3>
-          <Badge variant="secondary" className="text-[10px] ml-auto">
-            Tendance MoM : +{(avgGrowth * 100).toFixed(1)}%
-          </Badge>
-        </div>
-        <p className="text-xs text-muted-foreground mb-4">
-          Estimation basée sur la croissance moyenne des 3 derniers mois, avec fourchette optimiste / pessimiste.
-        </p>
-        <div className="grid sm:grid-cols-2 gap-3">
-          {[
-            { label: "Dans 3 mois", real: proj3Real, opt: proj3Opt, pess: proj3Pess },
-            { label: "Dans 6 mois", real: proj6Real, opt: proj6Opt, pess: proj6Pess },
-          ].map((p) => {
-            const span = p.opt - p.pess;
-            const realPct = span > 0 ? ((p.real - p.pess) / span) * 100 : 50;
-            return (
-              <div key={p.label} className="rounded-xl border border-border bg-secondary/30 p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs uppercase tracking-wider text-muted-foreground">{p.label}</span>
-                  <span className="text-base font-bold text-foreground">{(p.real / 1000).toFixed(1)}k €</span>
-                </div>
-                <div className="relative h-2 rounded-full bg-gradient-to-r from-red-300/40 via-orange-300/40 to-emerald-400/60 overflow-hidden">
-                  <motion.div
-                    initial={{ left: "50%" }}
-                    animate={{ left: `${realPct}%` }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
-                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-foreground shadow ring-2 ring-card"
-                  />
-                </div>
-                <div className="flex items-center justify-between text-[10px] text-muted-foreground mt-1.5">
-                  <span className="text-red-600 font-medium">Pess. {(p.pess / 1000).toFixed(1)}k</span>
-                  <span className="text-emerald-700 font-medium">Opt. {(p.opt / 1000).toFixed(1)}k</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Objectif +15% de croissance */}
-      <div className="rounded-2xl border border-border bg-card p-5">
-        <div className="flex items-center gap-2 mb-1">
-          <Target className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-semibold text-foreground">Objectif +15% de croissance</h3>
-          <span className="text-xs text-muted-foreground ml-auto">{growthProgress}% atteint</span>
-        </div>
-        <p className="text-xs text-muted-foreground mb-3">
-          Cible : passer de {(latestMrr / 1000).toFixed(1)}k € à{" "}
-          <span className="font-semibold text-foreground">{(growthTarget / 1000).toFixed(1)}k €</span> de MRR · reste{" "}
-          <span className="font-semibold text-emerald-700">{growthGap.toLocaleString("fr-FR")} €</span> à générer.
-        </p>
-        <div className="h-3 rounded-full bg-secondary overflow-hidden mb-3">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${growthProgress}%` }}
-            transition={{ duration: 0.9 }}
-            className={`h-full rounded-full ${growthProgress >= 80 ? "bg-emerald-500" : growthProgress >= 50 ? "bg-orange-400" : "bg-primary"}`}
-          />
-        </div>
-
-        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">
-          Actions restantes pour atteindre la cible
-        </p>
-        <div className="space-y-2">
-          {growthActions.map((a, i) => (
-            <div key={i} className="flex items-start gap-3 rounded-xl bg-secondary/40 p-2.5">
-              <span className="w-5 h-5 rounded-full bg-primary/15 text-primary text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
-                {i + 1}
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-foreground leading-snug">{a.label}</p>
-                <p className="text-[11px] text-emerald-700 font-semibold mt-0.5">{a.gain}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Leviers de croissance */}
+      {/* Objectif mensuel */}
       <div className="rounded-2xl border border-border bg-card p-5">
         <div className="flex items-center gap-2 mb-3">
-          <Rocket className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-semibold text-foreground">Leviers de croissance prioritaires</h3>
-          <Badge variant="secondary" className="text-[10px] ml-auto">Top 3</Badge>
+          <Target className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-semibold text-foreground">Objectif mensuel</h3>
+          <span className="text-xs text-muted-foreground ml-auto">{progressPct}% atteint</span>
         </div>
-        <div className="grid gap-3 md:grid-cols-3">
-          {growthLevers.map((lever, i) => (
-            <motion.div
-              key={lever.title}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.3 }}
-              className="rounded-xl border border-border bg-secondary/30 p-3.5 flex flex-col gap-2"
-            >
-              <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-lg bg-primary text-primary-foreground text-[11px] font-bold flex items-center justify-center">
-                  {i + 1}
-                </span>
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Effort : {lever.effort}
-                </span>
-              </div>
-              <h4 className="text-sm font-semibold text-foreground leading-snug">{lever.title}</h4>
-              <p className="text-xs text-muted-foreground leading-relaxed">{lever.description}</p>
-              <div className="mt-auto pt-1">
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-bold text-emerald-700 ring-1 ring-emerald-500/30">
-                  <TrendingUp className="h-3 w-3" /> {lever.impact}
-                </span>
-              </div>
-            </motion.div>
-          ))}
+        <div className="h-3 rounded-full bg-secondary overflow-hidden mb-2">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${progressPct}%` }}
+            transition={{ duration: 0.9 }}
+            className={`h-full rounded-full ${progressPct >= 80 ? "bg-emerald-500" : progressPct >= 50 ? "bg-orange-400" : "bg-red-400"}`}
+          />
+        </div>
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span>{latestMrr.toLocaleString("fr-FR")} € réalisés</span>
+          <span>Objectif : {objective.toLocaleString("fr-FR")} €</span>
         </div>
       </div>
     </div>
@@ -765,9 +614,6 @@ const GrowthPilotTab = ({ onConnect, dataConnected, aiResults }: GrowthPilotTabP
 
   const content = (
     <div className="space-y-4">
-      {/* Quick Wins — fort ROI, en haut de page */}
-      <QuickWinsSection />
-
       {/* Sub-tab pills */}
       <div className="flex gap-1.5 bg-secondary/50 rounded-xl p-1 w-fit">
         {SUB_TABS.map((t) => (
@@ -789,7 +635,6 @@ const GrowthPilotTab = ({ onConnect, dataConnected, aiResults }: GrowthPilotTabP
       {subTab === "acquisition" && <AcquisitionDashboard aiData={aiData} />}
       {subTab === "revenue" && <RevenueDashboard aiData={aiData} />}
       {subTab === "produit" && <ProduitDashboard aiData={aiData} />}
-      {subTab === "automations" && <AutomationsSection />}
 
       <ReportCard aiData={aiData} />
 
