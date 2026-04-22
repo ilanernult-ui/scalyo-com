@@ -364,6 +364,158 @@ const AssistantChat = ({
     await sendMessage(action);
   };
 
+  const handleSuggestion = async (question: string) => {
+    if (isLoading) return;
+    setShowQuickButtons(false);
+    await sendMessage(question);
+  };
+
+  const generateGrowthPlanPDF = async () => {
+    if (generatingPlan || isLoading) return;
+    setGeneratingPlan(true);
+    toast({ title: "📄 Génération du plan de croissance…", description: "L'IA prépare votre document complet." });
+
+    const prompt = `Génère un PLAN DE CROISSANCE COMPLET et structuré pour mon entreprise.
+
+Structure obligatoire (utilise ces titres exacts en Markdown) :
+
+## 1. Synthèse exécutive
+3-4 lignes sur la situation actuelle et l'objectif +15% de croissance.
+
+## 2. Diagnostic des canaux d'acquisition
+Pour chaque canal majeur (SEO, Google Ads, LinkedIn Ads, Email, Bouche-à-oreille), indique : performance actuelle, problème détecté, action recommandée, gain attendu en €.
+
+## 3. Recommandations prioritaires (Top 5)
+Liste numérotée. Pour chaque recommandation : titre, description (2 lignes), impact en € et %, priorité (Urgent/Important/Optionnel), délai estimé.
+
+## 4. Quick Wins à exécuter cette semaine
+3 actions rapides à fort ROI avec gain en € et temps nécessaire.
+
+## 5. Automatisations recommandées
+3 workflows à mettre en place : nom, gain €/mois, heures économisées/semaine, complexité.
+
+## 6. Projections de revenu
+MRR actuel, projection 3 mois (optimiste/réaliste/pessimiste), projection 6 mois, jalons.
+
+## 7. Plan d'exécution sur 90 jours
+Mois 1, Mois 2, Mois 3 — actions clés et KPIs à suivre.
+
+## 8. KPIs de pilotage
+5 indicateurs à suivre chaque semaine avec valeur cible.
+
+Sois concret, chiffré, et oriente toutes les recommandations vers l'objectif +15% de croissance. Réponds intégralement en Markdown.`;
+
+    try {
+      const fullPlan = await sendChat(
+        [{ role: "user", content: prompt }],
+        context,
+        plan,
+      );
+      buildPDF(fullPlan);
+      toast({ title: "✅ Plan de croissance prêt", description: "Le PDF a été téléchargé." });
+    } catch (err) {
+      console.error("[GrowthPlan PDF] error:", err);
+      toast({ title: "Échec de la génération", description: "Réessayez dans un instant.", variant: "destructive" });
+    } finally {
+      setGeneratingPlan(false);
+    }
+  };
+
+  const buildPDF = (markdown: string) => {
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const marginX = 15;
+    const maxWidth = pageWidth - marginX * 2;
+    let y = 20;
+
+    // Header
+    doc.setFillColor(15, 23, 42);
+    doc.rect(0, 0, pageWidth, 14, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("Scalyo · Plan de croissance GrowthPilot", marginX, 9);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.text(new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }), pageWidth - marginX, 9, { align: "right" });
+
+    y = 24;
+    doc.setTextColor(15, 23, 42);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("Plan de croissance complet", marginX, y);
+    y += 6;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text("Recommandations IA générées par votre Co-pilote GrowthPilot", marginX, y);
+    y += 8;
+
+    doc.setTextColor(15, 23, 42);
+    const lines = markdown.split("\n");
+
+    const ensureSpace = (needed: number) => {
+      if (y + needed > pageHeight - 15) {
+        doc.addPage();
+        y = 20;
+      }
+    };
+
+    for (const rawLine of lines) {
+      const line = rawLine.replace(/\*\*/g, "").replace(/`/g, "");
+      if (!line.trim()) {
+        y += 3;
+        continue;
+      }
+
+      if (line.startsWith("## ")) {
+        ensureSpace(12);
+        y += 2;
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(13);
+        doc.setTextColor(16, 185, 129);
+        doc.text(line.replace(/^##\s+/, ""), marginX, y);
+        y += 6;
+        doc.setDrawColor(220, 220, 220);
+        doc.line(marginX, y - 2, pageWidth - marginX, y - 2);
+        doc.setTextColor(15, 23, 42);
+        continue;
+      }
+      if (line.startsWith("### ")) {
+        ensureSpace(10);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.text(line.replace(/^###\s+/, ""), marginX, y);
+        y += 5;
+        continue;
+      }
+
+      const isList = /^(\s*[-*•]\s+|\s*\d+\.\s+)/.test(line);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      const text = isList ? `• ${line.replace(/^(\s*[-*•]\s+|\s*\d+\.\s+)/, "")}` : line;
+      const wrapped = doc.splitTextToSize(text, maxWidth - (isList ? 4 : 0));
+      for (const w of wrapped) {
+        ensureSpace(6);
+        doc.text(w, marginX + (isList ? 4 : 0), y);
+        y += 5;
+      }
+    }
+
+    // Footer page numbers
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`Scalyo · Plan de croissance · ${i}/${pageCount}`, pageWidth / 2, pageHeight - 8, { align: "center" });
+    }
+
+    doc.save(`plan-de-croissance-${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
+
   const handleSubmit = async () => {
     const trimmed = input.trim();
     if (!trimmed) return;
