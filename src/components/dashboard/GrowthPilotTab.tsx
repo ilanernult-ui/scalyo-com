@@ -785,6 +785,7 @@ const GrowthPilotTab = ({ onConnect, dataConnected, aiResults }: GrowthPilotTabP
       {subTab === "acquisition" && <AcquisitionDashboard aiData={aiData} />}
       {subTab === "revenue" && <RevenueDashboard aiData={aiData} />}
       {subTab === "produit" && <ProduitDashboard aiData={aiData} />}
+      {subTab === "automations" && <AutomationsSection />}
 
       <ReportCard aiData={aiData} />
 
