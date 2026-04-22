@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, TrendingDown, Users, AlertTriangle, ArrowUpRight, FileText, Download } from "lucide-react";
+import { Bell, TrendingDown, Users, AlertTriangle, ArrowUpRight, FileText, Download, Gift, Star, Shield, Zap } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip,
   PieChart, Pie, LineChart, Line, ReferenceLine, CartesianGrid,
@@ -319,7 +319,112 @@ const LoyaltyLoopApp = () => {
             </div>
           </div>
         ) : (
-          <div className="text-center text-black/60 text-sm">Contenu Fidélisation</div>
+          <div className="space-y-6">
+            {/* CARTE 1 — Programmes de fidélité actifs */}
+            <div className="bg-white border border-black/5 rounded-xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+              <div className="flex items-center gap-2 mb-5">
+                <Gift className="w-5 h-5 text-black/70" />
+                <h3 className="text-base font-semibold text-black">Programmes de fidélité actifs</h3>
+              </div>
+              <div className="divide-y divide-black/5">
+                {[
+                  { name: "Programme Ambassadeur", members: 34, rate: "42%" },
+                  { name: "Early Access Beta", members: 87, rate: "28%" },
+                  { name: "Club Premium (>24 mois)", members: 19, rate: "61%" },
+                ].map((p) => (
+                  <div key={p.name} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Star className="w-4 h-4 fill-[#F5C518] text-[#F5C518] shrink-0" />
+                      <div>
+                        <div className="text-sm font-semibold text-black">{p.name}</div>
+                        <div className="text-xs text-black/55 mt-0.5">{p.members} membres</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold" style={{ color: "#F5C518" }}>{p.rate}</div>
+                      <div className="text-[11px] text-black/50">taux upsell</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* CARTE 2 — Opportunités upsell */}
+            <div className="bg-white border border-black/5 rounded-xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+              <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <ArrowUpRight className="w-5 h-5 text-black/70" />
+                  <h3 className="text-base font-semibold text-black">Opportunités upsell</h3>
+                </div>
+                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                  ~7.5k€/mois potentiels
+                </span>
+              </div>
+              <div className="divide-y divide-black/5">
+                {[
+                  { path: "DataDiag → GrowthPilot", clients: 28, revenue: "5 292 €/mois" },
+                  { path: "GrowthPilot → LoyaltyLoop", clients: 14, revenue: "2 240 €/mois" },
+                ].map((u) => (
+                  <div key={u.path} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-black">{u.path}</div>
+                      <div className="text-xs text-black/55 mt-0.5">{u.clients} clients éligibles identifiés</div>
+                    </div>
+                    <div className="text-sm font-bold text-emerald-600 shrink-0">{u.revenue}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* CARTE 3 — Cross-sell recommandé */}
+            <div className="bg-white border border-black/5 rounded-xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+              <div className="flex items-center gap-2 mb-5">
+                <Shield className="w-5 h-5 text-black/70" />
+                <h3 className="text-base font-semibold text-black">Cross-sell recommandé</h3>
+              </div>
+              <div className="divide-y divide-black/5">
+                {[
+                  { name: "Module Reporting PDF", sub: "45 clients cibles · 18% conv. estimée", badge: "+15 min par rapport" },
+                  { name: "Connecteur Shopify", sub: "23 clients cibles · 31% conv. estimée", badge: "+28% données e-comm" },
+                ].map((c) => (
+                  <div key={c.name} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4 flex-wrap">
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-black">{c.name}</div>
+                      <div className="text-xs text-black/55 mt-0.5">{c.sub}</div>
+                    </div>
+                    <span className="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full shrink-0">
+                      {c.badge}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* CARTE 4 — Actions fidélisation prioritaires */}
+            <div className="bg-white border border-black/5 rounded-xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+              <div className="flex items-center gap-2 mb-5">
+                <Zap className="w-5 h-5 text-[#F5C518] fill-[#F5C518]" />
+                <h3 className="text-base font-semibold text-black">Actions fidélisation prioritaires</h3>
+              </div>
+              <div className="space-y-3">
+                {[
+                  { text: "Contacter 28 clients DataDiag éligibles GrowthPilot (usage élevé)", gain: "+5 292€/mois" },
+                  { text: "Déployer programme ambassadeur sur segment 12–18 mois d'ancienneté", gain: "+42% upsell taux" },
+                  { text: "Proposer module Reporting PDF aux 45 clients sans export actif", gain: "+8 clients add-on" },
+                ].map((a, i) => (
+                  <div key={i} className="flex items-center justify-between gap-4 p-3 rounded-lg bg-black/[0.02] border border-black/5">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-7 h-7 rounded-full bg-black text-white text-xs font-bold flex items-center justify-center shrink-0">
+                        {i + 1}
+                      </div>
+                      <div className="text-sm text-black/80">{a.text}</div>
+                    </div>
+                    <div className="text-sm font-bold text-emerald-600 shrink-0">{a.gain}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
