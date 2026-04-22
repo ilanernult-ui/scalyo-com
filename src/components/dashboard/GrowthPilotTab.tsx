@@ -146,28 +146,251 @@ const AcquisitionDashboard = ({ aiData }: { aiData: Record<string, unknown> | nu
       </div>
 
       {/* Recommendations */}
+      <AcquisitionRecommendations />
+    </div>
+  );
+};
+
+// ─── Recommandations acquisition (premium) ────────────────────────
+type Priority = "urgent" | "important" | "optionnel";
+
+interface AcqRecommendation {
+  id: string;
+  title: string;
+  description: string;
+  impactEur: number;
+  impactPct: number;
+  priority: Priority;
+  delay: string;
+  category: string;
+}
+
+const ACQ_RECOMMENDATIONS: AcqRecommendation[] = [
+  {
+    id: "linkedin-cut",
+    title: "Réduire le budget LinkedIn Ads de 40%",
+    description:
+      "Le CPA LinkedIn est 3× supérieur à votre CPA SEO pour une conversion 2× plus faible. Réallouer ce budget vers les canaux à meilleur ROI libère immédiatement de la marge sans impact sur le pipe.",
+    impactEur: 3408,
+    impactPct: 12,
+    priority: "urgent",
+    delay: "Résultats sous 2 semaines",
+    category: "Budget paid",
+  },
+  {
+    id: "seo-double",
+    title: "Doubler l'investissement SEO (3 articles/sem)",
+    description:
+      "10 mots-clés à fort intent business sont identifiés mais non couverts. Une cadence de 3 articles/semaine avec maillage interne capte ~18% de trafic organique additionnel sur le trimestre.",
+    impactEur: 5200,
+    impactPct: 18,
+    priority: "important",
+    delay: "Résultats sous 6 à 8 semaines",
+    category: "Acquisition organique",
+  },
+  {
+    id: "referral",
+    title: "Lancer un programme de parrainage clients",
+    description:
+      "Le bouche-à-oreille convertit déjà à 8.2% (×2.2 vs payant). Un programme structuré avec récompense bilatérale active vos clients satisfaits et apporte des leads qualifiés à coût quasi nul.",
+    impactEur: 2240,
+    impactPct: 8,
+    priority: "important",
+    delay: "Résultats sous 3 à 4 semaines",
+    category: "Croissance virale",
+  },
+  {
+    id: "email-nurture",
+    title: "Activer une séquence d'email nurturing 5 étapes",
+    description:
+      "Vos leads email convertissent à 5.6% mais 62% ne reçoivent aucune relance. Une séquence automatisée sur 14 jours réactive ce stock dormant avec un effort one-shot.",
+    impactEur: 1180,
+    impactPct: 4,
+    priority: "optionnel",
+    delay: "Résultats sous 2 semaines",
+    category: "Email marketing",
+  },
+];
+
+const PRIORITY_STYLES: Record<Priority, { label: string; icon: typeof Flame; bg: string; text: string; ring: string }> = {
+  urgent: {
+    label: "Urgent",
+    icon: Flame,
+    bg: "bg-red-500/10",
+    text: "text-red-600",
+    ring: "ring-red-500/30",
+  },
+  important: {
+    label: "Important",
+    icon: AlertTriangle,
+    bg: "bg-orange-500/10",
+    text: "text-orange-600",
+    ring: "ring-orange-500/30",
+  },
+  optionnel: {
+    label: "Optionnel",
+    icon: CircleDot,
+    bg: "bg-sky-500/10",
+    text: "text-sky-600",
+    ring: "ring-sky-500/30",
+  },
+};
+
+const fallbackSteps = (reco: AcqRecommendation) => [
+  { title: "Cadrer l'objectif", description: `Définir KPI cible et baseline pour : ${reco.title}.` },
+  { title: "Identifier les ressources", description: "Lister budget, outils et personne responsable." },
+  { title: "Mettre en place le pilote", description: "Lancer une version test sur 2 semaines avec mesure quotidienne." },
+  { title: "Analyser & itérer", description: "Comparer aux objectifs, ajuster les leviers et industrialiser." },
+];
+
+const AcquisitionRecommendations = () => {
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState<AcqRecommendation | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [steps, setSteps] = useState<{ title: string; description: string }[] | null>(null);
+  const [applied, setApplied] = useState(false);
+
+  const handleApply = async (reco: AcqRecommendation) => {
+    setActive(reco);
+    setOpen(true);
+    setSteps(null);
+    setApplied(false);
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-action-plan", {
+        body: { focus: reco.title, context: reco.description },
+      });
+      if (error) throw error;
+      const actions = (data?.actions ?? []) as Array<{ title: string; description?: string }>;
+      const mapped = actions.slice(0, 6).map((a) => ({
+        title: a.title,
+        description: a.description ?? "",
+      }));
+      setSteps(mapped.length ? mapped : fallbackSteps(reco));
+      setApplied(true);
+      toast.success("Plan d'action IA généré et ajouté à votre Kanban");
+    } catch (e) {
+      console.error(e);
+      setSteps(fallbackSteps(reco));
+      toast.error("Génération IA indisponible — plan type affiché");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
       <div className="rounded-2xl border border-border bg-card p-5">
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-4">
           <Zap className="h-4 w-4 text-primary" />
           <h3 className="text-sm font-semibold text-foreground">Recommandations acquisition</h3>
+          <Badge variant="secondary" className="text-[10px] ml-auto">{ACQ_RECOMMENDATIONS.length} priorités</Badge>
         </div>
-        <div className="space-y-2">
-          {[
-            { text: "Réduire budget LinkedIn Ads de 40% (CPA x3 vs SEO)", gain: "−284€/mois économisés" },
-            { text: "Doubler investissement SEO : 3 articles/semaine cibles identifiées", gain: "+18% de trafic organique" },
-            { text: "Déployer programme de parrainage (conversion x2.2 vs payant)", gain: "+8 leads qualifiés/mois" },
-          ].map((r, i) => (
-            <div key={i} className="flex items-start gap-3 rounded-xl bg-secondary/50 p-3">
-              <span className="w-5 h-5 rounded-full bg-primary/15 text-primary text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
-              <div>
-                <p className="text-sm font-medium text-foreground">{r.text}</p>
-                <p className="text-xs text-emerald-600 font-medium mt-0.5">{r.gain}</p>
-              </div>
-            </div>
-          ))}
+
+        <div className="grid gap-3 md:grid-cols-2">
+          {ACQ_RECOMMENDATIONS.map((reco, i) => {
+            const p = PRIORITY_STYLES[reco.priority];
+            const PIcon = p.icon;
+            return (
+              <motion.div
+                key={reco.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05, duration: 0.3 }}
+                className="rounded-xl border border-border bg-secondary/30 p-4 flex flex-col gap-3 hover:border-primary/40 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">
+                    {reco.category}
+                  </span>
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ${p.bg} ${p.text} ${p.ring}`}>
+                    <PIcon className="h-2.5 w-2.5" /> {p.label}
+                  </span>
+                </div>
+
+                <h4 className="text-sm font-semibold text-foreground leading-snug">{reco.title}</h4>
+                <p className="text-xs text-muted-foreground leading-relaxed">{reco.description}</p>
+
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <div className="rounded-lg bg-emerald-500/10 px-2.5 py-1.5">
+                    <p className="text-[9px] uppercase text-emerald-700/70 font-medium">Impact €</p>
+                    <p className="text-sm font-bold text-emerald-700">+{reco.impactEur.toLocaleString("fr-FR")} €/mois</p>
+                  </div>
+                  <div className="rounded-lg bg-emerald-500/10 px-2.5 py-1.5">
+                    <p className="text-[9px] uppercase text-emerald-700/70 font-medium">Impact %</p>
+                    <p className="text-sm font-bold text-emerald-700">+{reco.impactPct}%</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <Clock className="h-3 w-3" /> {reco.delay}
+                </div>
+
+                <Button
+                  size="sm"
+                  className="w-full mt-1 gap-1.5 h-8 text-xs"
+                  onClick={() => handleApply(reco)}
+                >
+                  <Sparkles className="h-3.5 w-3.5" /> Appliquer cette recommandation
+                </Button>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
-    </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              Plan d'action IA — {active?.title}
+            </DialogTitle>
+            <DialogDescription>
+              Étapes opérationnelles générées par l'IA et ajoutées automatiquement à votre Kanban.
+            </DialogDescription>
+          </DialogHeader>
+
+          {loading && (
+            <div className="flex flex-col items-center justify-center py-10 gap-3">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">L'IA construit votre plan étape par étape…</p>
+            </div>
+          )}
+
+          {!loading && steps && (
+            <div className="space-y-3 mt-2">
+              {steps.map((s, i) => (
+                <div key={i} className="flex gap-3 rounded-xl border border-border bg-secondary/30 p-3">
+                  <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0">
+                    {i + 1}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground">{s.title}</p>
+                    {s.description && (
+                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{s.description}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {applied && (
+                <div className="flex items-center gap-2 rounded-xl bg-emerald-500/10 text-emerald-700 px-3 py-2 text-xs font-medium">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Étapes ajoutées à votre Plan d'action — onglet Kanban
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>Fermer</Button>
+            <Button onClick={() => setOpen(false)} className="gap-1.5">
+              Voir le Kanban <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
