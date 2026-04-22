@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, TrendingDown } from "lucide-react";
+import { Bell, TrendingDown, Users } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from "recharts";
 
 const churnData = [
@@ -116,6 +116,51 @@ const LoyaltyLoopApp = () => {
               <div className="flex items-center gap-2 mt-4 text-sm font-medium text-emerald-600">
                 <TrendingDown className="w-4 h-4" />
                 Churn en baisse de 28% sur 6 mois
+              </div>
+            </div>
+
+            {/* Risque churn par segment */}
+            <div className="bg-white border border-black/5 rounded-xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="w-8 h-8 rounded-lg bg-black/5 flex items-center justify-center">
+                  <Users className="w-4 h-4 text-black/70" />
+                </div>
+                <h3 className="text-base font-semibold text-black">Risque churn par segment</h3>
+              </div>
+
+              <div className="space-y-5">
+                {[
+                  { name: "Grands comptes", count: 45, score: 18, level: "Faible", color: "emerald" },
+                  { name: "PME Tech", count: 120, score: 42, level: "Moyen", color: "orange" },
+                  { name: "TPE / Indépendants", count: 89, score: 67, level: "Élevé", color: "rose" },
+                  { name: "Nouveaux clients (<3 mois)", count: 86, score: 54, level: "Moyen", color: "orange" },
+                ].map((s) => {
+                  const palette: Record<string, { bar: string; track: string; text: string }> = {
+                    emerald: { bar: "bg-emerald-500", track: "bg-emerald-100", text: "text-emerald-600" },
+                    orange: { bar: "bg-orange-500", track: "bg-orange-100", text: "text-orange-600" },
+                    rose: { bar: "bg-rose-500", track: "bg-rose-100", text: "text-rose-600" },
+                  };
+                  const c = palette[s.color];
+                  return (
+                    <div key={s.name}>
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <div className="text-sm font-medium text-black">{s.name}</div>
+                          <div className="text-xs text-black/45 mt-0.5">{s.count} clients</div>
+                        </div>
+                        <div className={`text-sm font-semibold ${c.text}`}>
+                          {s.level} {s.score}
+                        </div>
+                      </div>
+                      <div className={`h-2 w-full rounded-full ${c.track} overflow-hidden`}>
+                        <div
+                          className={`h-full ${c.bar} rounded-full transition-all`}
+                          style={{ width: `${s.score}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
