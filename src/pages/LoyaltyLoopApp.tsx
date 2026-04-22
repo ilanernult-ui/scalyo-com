@@ -318,6 +318,8 @@ const LoyaltyLoopApp = () => {
                 </div>
               </div>
             </div>
+
+            <ExpertChatWidget />
           </div>
         ) : (
           <div className="space-y-6">
