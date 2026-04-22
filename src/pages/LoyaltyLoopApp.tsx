@@ -242,7 +242,7 @@ const LoyaltyLoopApp = () => {
 
             {/* CARTE 2 — Analyse clients */}
             <div className="space-y-4">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-black/50">Analyse clients</h2>
+              <h2 className="text-sm font-bold uppercase tracking-widest text-black/50">Analyse clients</h2>
 
               {/* Segmentation clients */}
               <div className="bg-white border border-black/5 rounded-xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
@@ -287,7 +287,7 @@ const LoyaltyLoopApp = () => {
                 className="rounded-xl p-6 border border-black/5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
                 style={{ backgroundColor: "#FFFBEB" }}
               >
-                <h3 className="text-xs font-bold uppercase tracking-wider text-black/50 mb-4">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-black/50 mb-4">
                   Évolution du churn — 6 mois
                 </h3>
                 <div style={{ width: "100%", height: 240 }}>
