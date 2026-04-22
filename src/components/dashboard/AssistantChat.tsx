@@ -47,6 +47,7 @@ interface ConversationSnapshot {
 }
 
 const STORAGE_PREFIX = "scalyo-chat-";
+const HISTORY_PREFIX = "scalyo-chat-history-";
 
 const createMessageId = () =>
   typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
@@ -54,6 +55,7 @@ const createMessageId = () =>
     : `msg-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
 const getStorageKey = (context: AssistantContext) => `${STORAGE_PREFIX}${context}`;
+const getHistoryKey = (context: AssistantContext) => `${HISTORY_PREFIX}${context}`;
 
 const AssistantChat = ({
   context,
@@ -64,6 +66,8 @@ const AssistantChat = ({
   quickButtons,
   userInitials = "IA",
   plan,
+  contextSuggestions,
+  enableGrowthPlanExport,
 }: AssistantChatProps) => {
   const [messages, setMessages] = useState<Message[]>([
     { id: createMessageId(), role: "assistant", content: welcomeMessage },
