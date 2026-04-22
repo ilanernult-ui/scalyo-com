@@ -1,5 +1,22 @@
 import { useState } from "react";
-import { Bell } from "lucide-react";
+import { Bell, TrendingDown } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from "recharts";
+
+const churnData = [
+  { month: "Oct", value: 5.8, opacity: 0.35 },
+  { month: "Nov", value: 5.4, opacity: 0.5 },
+  { month: "Déc", value: 5.0, opacity: 0.65 },
+  { month: "Jan", value: 4.7, opacity: 0.78 },
+  { month: "Fév", value: 4.5, opacity: 0.9 },
+  { month: "Mar", value: 4.2, opacity: 1 },
+];
+
+const kpis = [
+  { label: "Score rétention", value: "58/100", sub: "Excellent si > 85" },
+  { label: "Taux de churn", value: "4.2%", sub: "Moy. SaaS B2B : 5%" },
+  { label: "Clients à risque", value: "3", sub: "Action requise" },
+];
+
 
 const LoyaltyLoopApp = () => {
   const [activeTab, setActiveTab] = useState<"retention" | "fidelisation">("retention");
