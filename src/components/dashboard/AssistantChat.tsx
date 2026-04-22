@@ -127,6 +127,43 @@ const AssistantChat = ({
     window.localStorage.setItem(getStorageKey(context), JSON.stringify({ messages, lastUpdated: Date.now() }));
   }, [messages, context, isReady]);
 
+  // Load conversation history snapshots
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem(getHistoryKey(context));
+      if (raw) setHistory(JSON.parse(raw) as ConversationSnapshot[]);
+      else setHistory([]);
+    } catch {
+      setHistory([]);
+    }
+  }, [context]);
+
+  const persistHistory = (next: ConversationSnapshot[]) => {
+    setHistory(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(getHistoryKey(context), JSON.stringify(next));
+    }
+  };
+
+  const archiveCurrentConversation = () => {
+    const current = latestMessagesRef.current;
+    // only archive if user actually interacted (more than welcome message)
+    if (!current || current.length <= 1) return;
+    const firstUser = current.find((m) => m.role === "user");
+    const title = firstUser
+      ? firstUser.content.slice(0, 60) + (firstUser.content.length > 60 ? "…" : "")
+      : `Conversation ${new Date().toLocaleString("fr-FR")}`;
+    const snapshot: ConversationSnapshot = {
+      id: createMessageId(),
+      title,
+      savedAt: Date.now(),
+      messages: current.map(({ isLoading: _l, ...rest }) => rest),
+    };
+    const next = [snapshot, ...history].slice(0, 20);
+    persistHistory(next);
+  };
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
