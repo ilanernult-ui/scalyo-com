@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Send } from "lucide-react";
+import { Send, History, FileDown, Sparkles, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { saveAs } from "file-saver";
+import jsPDF from "jspdf";
 import { useToast } from "@/hooks/use-toast";
 import { useOpenAI, type OpenAIMessage } from "@/hooks/useOpenAI";
 import type { PlanType } from "@/contexts/AuthContext";
@@ -22,6 +23,8 @@ interface AssistantChatProps {
   quickButtons: QuickButton[];
   userInitials?: string;
   plan: PlanType;
+  contextSuggestions?: string[];
+  enableGrowthPlanExport?: boolean;
 }
 
 interface Message {
@@ -36,7 +39,15 @@ interface StoredChat {
   lastUpdated: number;
 }
 
+interface ConversationSnapshot {
+  id: string;
+  title: string;
+  savedAt: number;
+  messages: Message[];
+}
+
 const STORAGE_PREFIX = "scalyo-chat-";
+const HISTORY_PREFIX = "scalyo-chat-history-";
 
 const createMessageId = () =>
   typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
@@ -44,6 +55,7 @@ const createMessageId = () =>
     : `msg-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
 const getStorageKey = (context: AssistantContext) => `${STORAGE_PREFIX}${context}`;
+const getHistoryKey = (context: AssistantContext) => `${HISTORY_PREFIX}${context}`;
 
 const AssistantChat = ({
   context,
@@ -54,6 +66,8 @@ const AssistantChat = ({
   quickButtons,
   userInitials = "IA",
   plan,
+  contextSuggestions,
+  enableGrowthPlanExport,
 }: AssistantChatProps) => {
   const [messages, setMessages] = useState<Message[]>([
     { id: createMessageId(), role: "assistant", content: welcomeMessage },
@@ -63,6 +77,9 @@ const AssistantChat = ({
   const [isReady, setIsReady] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [copiedIds, setCopiedIds] = useState<Record<string, boolean>>({});
+  const [history, setHistory] = useState<ConversationSnapshot[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [generatingPlan, setGeneratingPlan] = useState(false);
   const latestMessagesRef = useRef<Message[]>(messages);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const { toast } = useToast();
@@ -110,6 +127,43 @@ const AssistantChat = ({
     window.localStorage.setItem(getStorageKey(context), JSON.stringify({ messages, lastUpdated: Date.now() }));
   }, [messages, context, isReady]);
 
+  // Load conversation history snapshots
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem(getHistoryKey(context));
+      if (raw) setHistory(JSON.parse(raw) as ConversationSnapshot[]);
+      else setHistory([]);
+    } catch {
+      setHistory([]);
+    }
+  }, [context]);
+
+  const persistHistory = (next: ConversationSnapshot[]) => {
+    setHistory(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(getHistoryKey(context), JSON.stringify(next));
+    }
+  };
+
+  const archiveCurrentConversation = () => {
+    const current = latestMessagesRef.current;
+    // only archive if user actually interacted (more than welcome message)
+    if (!current || current.length <= 1) return;
+    const firstUser = current.find((m) => m.role === "user");
+    const title = firstUser
+      ? firstUser.content.slice(0, 60) + (firstUser.content.length > 60 ? "…" : "")
+      : `Conversation ${new Date().toLocaleString("fr-FR")}`;
+    const snapshot: ConversationSnapshot = {
+      id: createMessageId(),
+      title,
+      savedAt: Date.now(),
+      messages: current.map(({ isLoading: _l, ...rest }) => rest),
+    };
+    const next = [snapshot, ...history].slice(0, 20);
+    persistHistory(next);
+  };
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -130,6 +184,7 @@ const AssistantChat = ({
   };
 
   const resetConversation = () => {
+    archiveCurrentConversation();
     const nextMessages: Message[] = [{ id: createMessageId(), role: "assistant", content: welcomeMessage }];
     setMessages(nextMessages);
     setCopiedIds({});
@@ -138,6 +193,18 @@ const AssistantChat = ({
     if (typeof window !== "undefined") {
       window.localStorage.removeItem(getStorageKey(context));
     }
+  };
+
+  const restoreConversation = (snapshot: ConversationSnapshot) => {
+    archiveCurrentConversation();
+    setMessages(snapshot.messages.map((m) => ({ ...m, id: m.id ?? createMessageId(), isLoading: false })));
+    setShowQuickButtons(false);
+    setShowHistory(false);
+    toast({ title: "Conversation restaurée" });
+  };
+
+  const deleteSnapshot = (id: string) => {
+    persistHistory(history.filter((s) => s.id !== id));
   };
 
   const replaceLoadingMessage = (id: string, content: string) => {
@@ -297,6 +364,158 @@ const AssistantChat = ({
     await sendMessage(action);
   };
 
+  const handleSuggestion = async (question: string) => {
+    if (isLoading) return;
+    setShowQuickButtons(false);
+    await sendMessage(question);
+  };
+
+  const generateGrowthPlanPDF = async () => {
+    if (generatingPlan || isLoading) return;
+    setGeneratingPlan(true);
+    toast({ title: "📄 Génération du plan de croissance…", description: "L'IA prépare votre document complet." });
+
+    const prompt = `Génère un PLAN DE CROISSANCE COMPLET et structuré pour mon entreprise.
+
+Structure obligatoire (utilise ces titres exacts en Markdown) :
+
+## 1. Synthèse exécutive
+3-4 lignes sur la situation actuelle et l'objectif +15% de croissance.
+
+## 2. Diagnostic des canaux d'acquisition
+Pour chaque canal majeur (SEO, Google Ads, LinkedIn Ads, Email, Bouche-à-oreille), indique : performance actuelle, problème détecté, action recommandée, gain attendu en €.
+
+## 3. Recommandations prioritaires (Top 5)
+Liste numérotée. Pour chaque recommandation : titre, description (2 lignes), impact en € et %, priorité (Urgent/Important/Optionnel), délai estimé.
+
+## 4. Quick Wins à exécuter cette semaine
+3 actions rapides à fort ROI avec gain en € et temps nécessaire.
+
+## 5. Automatisations recommandées
+3 workflows à mettre en place : nom, gain €/mois, heures économisées/semaine, complexité.
+
+## 6. Projections de revenu
+MRR actuel, projection 3 mois (optimiste/réaliste/pessimiste), projection 6 mois, jalons.
+
+## 7. Plan d'exécution sur 90 jours
+Mois 1, Mois 2, Mois 3 — actions clés et KPIs à suivre.
+
+## 8. KPIs de pilotage
+5 indicateurs à suivre chaque semaine avec valeur cible.
+
+Sois concret, chiffré, et oriente toutes les recommandations vers l'objectif +15% de croissance. Réponds intégralement en Markdown.`;
+
+    try {
+      const fullPlan = await sendChat(
+        [{ role: "user", content: prompt }],
+        context,
+        plan,
+      );
+      buildPDF(fullPlan);
+      toast({ title: "✅ Plan de croissance prêt", description: "Le PDF a été téléchargé." });
+    } catch (err) {
+      console.error("[GrowthPlan PDF] error:", err);
+      toast({ title: "Échec de la génération", description: "Réessayez dans un instant.", variant: "destructive" });
+    } finally {
+      setGeneratingPlan(false);
+    }
+  };
+
+  const buildPDF = (markdown: string) => {
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const marginX = 15;
+    const maxWidth = pageWidth - marginX * 2;
+    let y = 20;
+
+    // Header
+    doc.setFillColor(15, 23, 42);
+    doc.rect(0, 0, pageWidth, 14, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("Scalyo · Plan de croissance GrowthPilot", marginX, 9);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.text(new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }), pageWidth - marginX, 9, { align: "right" });
+
+    y = 24;
+    doc.setTextColor(15, 23, 42);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("Plan de croissance complet", marginX, y);
+    y += 6;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text("Recommandations IA générées par votre Co-pilote GrowthPilot", marginX, y);
+    y += 8;
+
+    doc.setTextColor(15, 23, 42);
+    const lines = markdown.split("\n");
+
+    const ensureSpace = (needed: number) => {
+      if (y + needed > pageHeight - 15) {
+        doc.addPage();
+        y = 20;
+      }
+    };
+
+    for (const rawLine of lines) {
+      const line = rawLine.replace(/\*\*/g, "").replace(/`/g, "");
+      if (!line.trim()) {
+        y += 3;
+        continue;
+      }
+
+      if (line.startsWith("## ")) {
+        ensureSpace(12);
+        y += 2;
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(13);
+        doc.setTextColor(16, 185, 129);
+        doc.text(line.replace(/^##\s+/, ""), marginX, y);
+        y += 6;
+        doc.setDrawColor(220, 220, 220);
+        doc.line(marginX, y - 2, pageWidth - marginX, y - 2);
+        doc.setTextColor(15, 23, 42);
+        continue;
+      }
+      if (line.startsWith("### ")) {
+        ensureSpace(10);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.text(line.replace(/^###\s+/, ""), marginX, y);
+        y += 5;
+        continue;
+      }
+
+      const isList = /^(\s*[-*•]\s+|\s*\d+\.\s+)/.test(line);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      const text = isList ? `• ${line.replace(/^(\s*[-*•]\s+|\s*\d+\.\s+)/, "")}` : line;
+      const wrapped = doc.splitTextToSize(text, maxWidth - (isList ? 4 : 0));
+      for (const w of wrapped) {
+        ensureSpace(6);
+        doc.text(w, marginX + (isList ? 4 : 0), y);
+        y += 5;
+      }
+    }
+
+    // Footer page numbers
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`Scalyo · Plan de croissance · ${i}/${pageCount}`, pageWidth / 2, pageHeight - 8, { align: "center" });
+    }
+
+    doc.save(`plan-de-croissance-${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
+
   const handleSubmit = async () => {
     const trimmed = input.trim();
     if (!trimmed) return;
@@ -333,6 +552,14 @@ const AssistantChat = ({
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowHistory((s) => !s)}
+            className="rounded-full border border-border bg-white px-2 py-1 text-xs text-foreground inline-flex items-center gap-1"
+            title="Historique des conversations"
+          >
+            <History className="h-3 w-3" /> {history.length > 0 ? history.length : ""}
+          </button>
           {!isFullscreen ? (
             <button
               type="button"
@@ -359,6 +586,72 @@ const AssistantChat = ({
           </button>
         </div>
       </div>
+
+      {showHistory && (
+        <div className="border-b border-border bg-slate-50 px-4 py-3 max-h-56 overflow-y-auto">
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
+            Historique des conversations
+          </p>
+          {history.length === 0 ? (
+            <p className="text-xs text-muted-foreground italic">
+              Aucune conversation sauvegardée. Cliquez sur "Nouvelle conversation" pour archiver la discussion en cours.
+            </p>
+          ) : (
+            <ul className="space-y-1.5">
+              {history.map((snap) => (
+                <li
+                  key={snap.id}
+                  className="flex items-start justify-between gap-2 rounded-lg border border-border bg-white p-2 text-xs hover:border-slate-300"
+                >
+                  <button
+                    type="button"
+                    onClick={() => restoreConversation(snap)}
+                    className="flex-1 text-left"
+                  >
+                    <p className="font-medium text-slate-900 line-clamp-1">{snap.title}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {new Date(snap.savedAt).toLocaleString("fr-FR")} · {snap.messages.length} messages
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteSnapshot(snap.id)}
+                    className="text-slate-400 hover:text-rose-600 text-xs"
+                    title="Supprimer"
+                  >
+                    ✕
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {enableGrowthPlanExport && (
+        <div className="border-b border-border bg-gradient-to-r from-emerald-500/10 via-emerald-400/5 to-transparent px-4 py-3">
+          <button
+            type="button"
+            onClick={() => void generateGrowthPlanPDF()}
+            disabled={generatingPlan || isLoading}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold transition hover:opacity-90 disabled:opacity-60"
+            style={{ backgroundColor: accentColor, color: "#0f172a" }}
+          >
+            {generatingPlan ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Génération du plan…
+              </>
+            ) : (
+              <>
+                <FileDown className="h-3.5 w-3.5" /> Générer mon plan de croissance complet (PDF)
+              </>
+            )}
+          </button>
+          <p className="text-[10px] text-slate-600 mt-1.5 text-center">
+            Document IA structuré : diagnostic · recommandations · projections · plan 90j
+          </p>
+        </div>
+      )}
 
       <div className="px-5 py-4 flex flex-col flex-1 min-h-0 overflow-hidden gap-4">
         <div className="space-y-4 overflow-y-auto flex-1 min-h-0">
@@ -430,6 +723,27 @@ const AssistantChat = ({
           ))}
           <div ref={bottomRef} />
         </div>
+
+        {contextSuggestions && contextSuggestions.length > 0 && (
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+              <Sparkles className="h-3 w-3" /> Suggestions basées sur votre tableau de bord
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {contextSuggestions.map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  onClick={() => void handleSuggestion(q)}
+                  disabled={isLoading}
+                  className="text-left text-xs rounded-lg border border-border bg-white px-3 py-1.5 text-slate-700 hover:border-slate-400 hover:bg-slate-50 transition disabled:opacity-50"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {showQuickButtons && (
           <div className="flex flex-wrap gap-2">
