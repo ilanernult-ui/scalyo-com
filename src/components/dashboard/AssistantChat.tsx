@@ -184,6 +184,7 @@ const AssistantChat = ({
   };
 
   const resetConversation = () => {
+    archiveCurrentConversation();
     const nextMessages: Message[] = [{ id: createMessageId(), role: "assistant", content: welcomeMessage }];
     setMessages(nextMessages);
     setCopiedIds({});
@@ -192,6 +193,18 @@ const AssistantChat = ({
     if (typeof window !== "undefined") {
       window.localStorage.removeItem(getStorageKey(context));
     }
+  };
+
+  const restoreConversation = (snapshot: ConversationSnapshot) => {
+    archiveCurrentConversation();
+    setMessages(snapshot.messages.map((m) => ({ ...m, id: m.id ?? createMessageId(), isLoading: false })));
+    setShowQuickButtons(false);
+    setShowHistory(false);
+    toast({ title: "Conversation restaurée" });
+  };
+
+  const deleteSnapshot = (id: string) => {
+    persistHistory(history.filter((s) => s.id !== id));
   };
 
   const replaceLoadingMessage = (id: string, content: string) => {
