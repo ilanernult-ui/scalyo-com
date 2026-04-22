@@ -133,7 +133,7 @@ const LoyaltyLoopApp = () => {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex items-center gap-2 mt-4 text-sm font-medium text-emerald-600">
+              <div className="flex items-center gap-2 mt-4 text-sm font-medium text-[#16A34A]">
                 <TrendingDown className="w-4 h-4" />
                 Churn en baisse de 28% sur 6 mois
               </div>
@@ -157,8 +157,8 @@ const LoyaltyLoopApp = () => {
                 ].map((s) => {
                   const palette: Record<string, { bar: string; track: string; text: string }> = {
                     emerald: { bar: "bg-emerald-500", track: "bg-emerald-100", text: "text-emerald-600" },
-                    orange: { bar: "bg-orange-500", track: "bg-orange-100", text: "text-orange-600" },
-                    rose: { bar: "bg-rose-500", track: "bg-rose-100", text: "text-rose-600" },
+                    orange: { bar: "bg-orange-500", track: "bg-orange-100", text: "text-[#F97316]" },
+                    rose: { bar: "bg-[#EF4444]", track: "bg-red-100", text: "text-[#EF4444]" },
                   };
                   const c = palette[s.color];
                   return (
@@ -373,7 +373,7 @@ const LoyaltyLoopApp = () => {
                       <div className="text-sm font-semibold text-black">{u.path}</div>
                       <div className="text-xs text-black/55 mt-0.5">{u.clients} clients éligibles identifiés</div>
                     </div>
-                    <div className="text-sm font-bold text-emerald-600 shrink-0">{u.revenue}</div>
+                    <div className="text-sm font-bold text-[#16A34A] shrink-0">{u.revenue}</div>
                   </div>
                 ))}
               </div>
@@ -422,7 +422,7 @@ const LoyaltyLoopApp = () => {
                       </div>
                       <div className="text-sm text-black/80">{a.text}</div>
                     </div>
-                    <div className="text-sm font-bold text-emerald-600 shrink-0">{a.gain}</div>
+                    <div className="text-sm font-bold text-[#16A34A] shrink-0">{a.gain}</div>
                   </div>
                 ))}
               </div>
