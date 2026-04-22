@@ -44,7 +44,7 @@ const LoyaltyLoopApp = () => {
   return (
     <div className="min-h-screen bg-white text-black" style={{ fontFamily: "Inter, system-ui, -apple-system, sans-serif" }}>
       {/* Navbar */}
-      <nav className="flex items-center justify-between px-6 py-4 border-b border-black/5">
+      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md flex items-center justify-between px-6 py-4 border-b border-black/5">
         <div className="text-xl font-bold tracking-tight">LoyaltyLoop</div>
 
         <div className="flex items-center gap-8">
