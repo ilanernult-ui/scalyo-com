@@ -427,6 +427,8 @@ const LoyaltyLoopApp = () => {
                 ))}
               </div>
             </div>
+
+            <ExpertChatWidget />
           </div>
         )}
       </div>
