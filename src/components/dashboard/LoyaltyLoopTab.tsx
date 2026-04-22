@@ -201,26 +201,38 @@ const RetentionDashboard = ({ aiData }: { aiData: Record<string, unknown> | null
         </div>
 
         {/* Alertes prédictives */}
-        <div className="rounded-2xl border-2 border-destructive/20 bg-card p-5">
+        <div
+          className="rounded-2xl border border-l-4 p-5"
+          style={{ backgroundColor: "#FFF1F0", borderLeftColor: "#EF4444", borderColor: "rgba(239,68,68,0.15)" }}
+        >
           <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle className="h-4 w-4 text-destructive" />
+            <AlertTriangle className="h-4 w-4" style={{ color: "#EF4444" }} />
             <h3 className="text-sm font-semibold text-foreground">Alertes prédictives</h3>
           </div>
           <div className="space-y-2">
-            {alerts.map((a, i) => (
-              <div key={i} className="rounded-xl bg-destructive/5 border border-destructive/10 p-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{a.client}</p>
-                    <p className="text-[11px] text-muted-foreground">Inactif depuis {a.lastActivity}</p>
+            {alerts.map((a, i) => {
+              const isHigh = a.score >= 70;
+              const badgeColor = isHigh ? "#EF4444" : "#F97316";
+              return (
+                <div key={i} className="rounded-xl bg-white/70 border border-white p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{a.client}</p>
+                      <p className="text-[11px] text-muted-foreground">Inactif depuis {a.lastActivity}</p>
+                    </div>
+                    <span
+                      className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
+                      style={{ backgroundColor: badgeColor }}
+                    >
+                      {a.score}
+                    </span>
                   </div>
-                  <span className="text-[10px] font-bold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full">{a.score}</span>
+                  <p className="text-xs font-medium mt-1.5 flex items-center gap-1" style={{ color: badgeColor }}>
+                    <ArrowUpRight className="h-3 w-3" /> {a.action}
+                  </p>
                 </div>
-                <p className="text-xs text-primary font-medium mt-1.5 flex items-center gap-1">
-                  <ArrowUpRight className="h-3 w-3" /> {a.action}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
