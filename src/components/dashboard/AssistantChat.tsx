@@ -23,6 +23,8 @@ interface AssistantChatProps {
   quickButtons: QuickButton[];
   userInitials?: string;
   plan: PlanType;
+  contextSuggestions?: string[];
+  enableGrowthPlanExport?: boolean;
 }
 
 interface Message {
@@ -35,6 +37,13 @@ interface Message {
 interface StoredChat {
   messages: Message[];
   lastUpdated: number;
+}
+
+interface ConversationSnapshot {
+  id: string;
+  title: string;
+  savedAt: number;
+  messages: Message[];
 }
 
 const STORAGE_PREFIX = "scalyo-chat-";
