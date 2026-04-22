@@ -196,9 +196,9 @@ const LoyaltyLoopApp = () => {
 
               <div className="divide-y divide-black/5">
                 {[
-                  { name: "Dupont & Associés", days: 68, score: 74, scoreColor: "bg-red-500", action: "Appel CSM urgent" },
-                  { name: "TechStart SAS", days: 45, score: 61, scoreColor: "bg-orange-500", action: "Email de réactivation" },
-                  { name: "Innova Corp", days: 32, score: 52, scoreColor: "bg-orange-500", action: "Offre de renouvellement" },
+                  { name: "Dupont & Associés", days: 68, score: 74, scoreColor: "bg-[#EF4444]", action: "Appel CSM urgent" },
+                  { name: "TechStart SAS", days: 45, score: 61, scoreColor: "bg-[#F97316]", action: "Email de réactivation" },
+                  { name: "Innova Corp", days: 32, score: 52, scoreColor: "bg-[#F97316]", action: "Offre de renouvellement" },
                 ].map((a) => (
                   <div key={a.name} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
                     <div className="min-w-0">
