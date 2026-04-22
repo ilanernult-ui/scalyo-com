@@ -163,6 +163,39 @@ const LoyaltyLoopApp = () => {
                 })}
               </div>
             </div>
+
+            {/* Alertes prédictives */}
+            <div
+              className="rounded-xl p-6 border border-black/5 border-l-4 border-l-red-500 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
+              style={{ backgroundColor: "#FFF1F0" }}
+            >
+              <div className="flex items-center gap-2 mb-5">
+                <AlertTriangle className="w-5 h-5 text-orange-500" />
+                <h3 className="text-base font-semibold text-black">Alertes prédictives</h3>
+              </div>
+
+              <div className="divide-y divide-black/5">
+                {[
+                  { name: "Dupont & Associés", days: 68, score: 74, scoreColor: "bg-red-500", action: "Appel CSM urgent" },
+                  { name: "TechStart SAS", days: 45, score: 61, scoreColor: "bg-orange-500", action: "Email de réactivation" },
+                  { name: "Innova Corp", days: 32, score: 52, scoreColor: "bg-orange-500", action: "Offre de renouvellement" },
+                ].map((a) => (
+                  <div key={a.name} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-black">{a.name}</div>
+                      <div className="text-xs text-black/55 mt-0.5">Inactif depuis {a.days} jours</div>
+                      <a href="#" className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 mt-2">
+                        <ArrowUpRight className="w-3 h-3" />
+                        {a.action}
+                      </a>
+                    </div>
+                    <span className={`shrink-0 ${a.scoreColor} text-white text-xs font-bold px-2.5 py-1 rounded-full`}>
+                      {a.score}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         ) : (
           <div className="text-center text-black/60 text-sm">Contenu Fidélisation</div>
