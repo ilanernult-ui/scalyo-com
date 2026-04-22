@@ -3,7 +3,8 @@ import { motion } from "framer-motion";
 import {
   Rocket, TrendingUp, TrendingDown, DollarSign, Users, BarChart3,
   Target, MousePointerClick, ShoppingCart, Zap, FileText, Download,
-  Clock, Badge as BadgeIcon
+  Clock, Badge as BadgeIcon, AlertTriangle, Flame, CircleDot, Sparkles,
+  Loader2, CheckCircle2, ArrowRight
 } from "lucide-react";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, CategoryScale,
@@ -11,6 +12,9 @@ import { Chart as ChartJS, ArcElement, Tooltip, CategoryScale,
   BarController, LineController, PieController, Legend } from "chart.js";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import type { Json } from "@/integrations/supabase/types";
 
 const ACCENT = "hsl(142, 69%, 49%)";
