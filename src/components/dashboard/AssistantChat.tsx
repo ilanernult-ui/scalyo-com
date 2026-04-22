@@ -552,6 +552,14 @@ Sois concret, chiffré, et oriente toutes les recommandations vers l'objectif +1
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowHistory((s) => !s)}
+            className="rounded-full border border-border bg-white px-2 py-1 text-xs text-foreground inline-flex items-center gap-1"
+            title="Historique des conversations"
+          >
+            <History className="h-3 w-3" /> {history.length > 0 ? history.length : ""}
+          </button>
           {!isFullscreen ? (
             <button
               type="button"
@@ -578,6 +586,72 @@ Sois concret, chiffré, et oriente toutes les recommandations vers l'objectif +1
           </button>
         </div>
       </div>
+
+      {showHistory && (
+        <div className="border-b border-border bg-slate-50 px-4 py-3 max-h-56 overflow-y-auto">
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
+            Historique des conversations
+          </p>
+          {history.length === 0 ? (
+            <p className="text-xs text-muted-foreground italic">
+              Aucune conversation sauvegardée. Cliquez sur "Nouvelle conversation" pour archiver la discussion en cours.
+            </p>
+          ) : (
+            <ul className="space-y-1.5">
+              {history.map((snap) => (
+                <li
+                  key={snap.id}
+                  className="flex items-start justify-between gap-2 rounded-lg border border-border bg-white p-2 text-xs hover:border-slate-300"
+                >
+                  <button
+                    type="button"
+                    onClick={() => restoreConversation(snap)}
+                    className="flex-1 text-left"
+                  >
+                    <p className="font-medium text-slate-900 line-clamp-1">{snap.title}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {new Date(snap.savedAt).toLocaleString("fr-FR")} · {snap.messages.length} messages
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteSnapshot(snap.id)}
+                    className="text-slate-400 hover:text-rose-600 text-xs"
+                    title="Supprimer"
+                  >
+                    ✕
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {enableGrowthPlanExport && (
+        <div className="border-b border-border bg-gradient-to-r from-emerald-500/10 via-emerald-400/5 to-transparent px-4 py-3">
+          <button
+            type="button"
+            onClick={() => void generateGrowthPlanPDF()}
+            disabled={generatingPlan || isLoading}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold transition hover:opacity-90 disabled:opacity-60"
+            style={{ backgroundColor: accentColor, color: "#0f172a" }}
+          >
+            {generatingPlan ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Génération du plan…
+              </>
+            ) : (
+              <>
+                <FileDown className="h-3.5 w-3.5" /> Générer mon plan de croissance complet (PDF)
+              </>
+            )}
+          </button>
+          <p className="text-[10px] text-slate-600 mt-1.5 text-center">
+            Document IA structuré : diagnostic · recommandations · projections · plan 90j
+          </p>
+        </div>
+      )}
 
       <div className="px-5 py-4 flex flex-col flex-1 min-h-0 overflow-hidden gap-4">
         <div className="space-y-4 overflow-y-auto flex-1 min-h-0">
