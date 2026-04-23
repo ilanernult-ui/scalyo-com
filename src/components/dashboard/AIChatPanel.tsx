@@ -214,7 +214,7 @@ const AIChatPanel = ({ activeTab, userInitials, plan, onRegisterSendMessage }: A
   };
 
   const sendAiMessage = useCallback(async (content: string) => {
-    const trimmed = (content ?? "").trim();
+    const trimmed = (typeof content === "string" ? content : "").trim();
     if (!trimmed) return null;
 
     const userMessage: Message = { id: createMessageId(), role: "user", content: trimmed };
