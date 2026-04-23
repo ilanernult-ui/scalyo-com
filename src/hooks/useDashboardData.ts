@@ -62,5 +62,19 @@ export function useDashboardData(userId: string | undefined): UseDashboardDataRe
     loadAiResults();
   }, [userId, loadAiResults]);
 
-  return { companyData, dataConnected, aiResults, loadAiResults, onWizardComplete };
+  const resetUserData = useCallback(async () => {
+    if (!userId) return { error: "Utilisateur non identifié" };
+    const [companyRes, aiRes] = await Promise.all([
+      supabase.from("company_data").delete().eq("user_id", userId),
+      supabase.from("ai_results").delete().eq("user_id", userId),
+    ]);
+    if (companyRes.error || aiRes.error) {
+      return { error: companyRes.error?.message || aiRes.error?.message || "Erreur" };
+    }
+    setCompanyData(null);
+    setAiResults({});
+    return { error: null };
+  }, [userId]);
+
+  return { companyData, dataConnected, aiResults, loadAiResults, onWizardComplete, resetUserData };
 }
