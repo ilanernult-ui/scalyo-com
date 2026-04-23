@@ -362,6 +362,8 @@ const FidelisationDashboard = ({ aiData }: { aiData: Record<string, unknown> | n
           ))}
         </div>
       </div>
+
+      <ExpertLoyaltyAI />
     </div>
   );
 };
