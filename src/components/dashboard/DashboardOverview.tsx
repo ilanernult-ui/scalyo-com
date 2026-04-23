@@ -176,28 +176,7 @@ const DashboardOverview = ({
         <LossesSection losses={losses} onGeneratePlan={onGenerate} generating={generatingAnalysis} />
       )}
 
-      {/* Data prompt */}
-      {dataConnected && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="rounded-2xl border border-primary/20 bg-primary/5 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
-        >
-          <div>
-            <p className="text-sm font-medium text-foreground">
-              Vos données sont prêtes · Lancez votre analyse IA complète
-            </p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              L'assistant IA analysera vos données et générera des recommandations personnalisées.
-            </p>
-          </div>
-          <Button size="sm" onClick={onGenerate} disabled={generatingAnalysis} className="shrink-0 gap-2">
-            <Zap className="h-3.5 w-3.5" />
-            {generatingAnalysis ? "En cours…" : "Générer mon analyse"}
-          </Button>
-        </motion.div>
-      )}
+      {/* Data prompt removed (redundant with header) */}
 
       {!dataConnected && (
         <motion.div
