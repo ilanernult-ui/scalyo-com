@@ -448,7 +448,7 @@ const LoyaltyLoopTab = ({ onConnect, dataConnected, aiResults }: LoyaltyLoopTabP
                   datasets: [
                     {
                       data: LOYALTY_LOOP_SEGMENTS.map((item) => item.value),
-                      backgroundColor: ["#FFD700", "#9B59B6", "#f97316", "#ef4444"],
+                      backgroundColor: ["#F5C518", "#9B59B6", "#f97316", "#ef4444"],
                       borderWidth: 0,
                     },
                   ],
@@ -475,12 +475,12 @@ const LoyaltyLoopTab = ({ onConnect, dataConnected, aiResults }: LoyaltyLoopTabP
                     {
                       label: "Churn",
                       data: LOYALTY_LOOP_CHURN_HISTORY.map((item) => item.value),
-                      borderColor: "#FFD700",
-                      backgroundColor: "rgba(255,215,0,0.1)",
+                      borderColor: "#F5C518",
+                      backgroundColor: "rgba(245,197,24,0.12)",
                       fill: true,
                       tension: 0.35,
                       pointRadius: 3,
-                      pointBackgroundColor: "#FFD700",
+                      pointBackgroundColor: "#F5C518",
                     },
                   ],
                 }}
