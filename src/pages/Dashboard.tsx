@@ -112,7 +112,7 @@ const Dashboard = () => {
   const planConfig = STRIPE_PLANS[userPlan];
   const hasPaid = !!stripeSubscriptionId;
 
-  const { companyData, dataConnected, aiResults, loadAiResults, onWizardComplete } = useDashboardData(user?.id);
+  const { companyData, dataConnected, aiResults, loadAiResults, onWizardComplete, resetUserData } = useDashboardData(user?.id);
   const { generatingAnalysis, generate } = useAiGeneration();
   const { problems, losses, savings, notifications, unreadCount, error: enrichmentError, reload: reloadEnrichment, markAllNotificationsRead } = useDashboardEnrichment(user?.id);
 
@@ -195,6 +195,7 @@ const Dashboard = () => {
           problems={problems}
           losses={losses}
           savings={savings}
+          onResetData={resetUserData}
         />
       );
     }

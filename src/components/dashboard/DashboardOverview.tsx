@@ -2,10 +2,15 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   DollarSign, TrendingUp, Users, ShoppingCart, Activity,
-  Zap, Database, ChevronRight, BarChart3, Wallet, Pencil, Sparkles
+  Zap, Database, ChevronRight, BarChart3, Wallet, Pencil, Sparkles, Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AnimatedNumber from "@/components/ui/animated-number";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 import type { PlanType } from "@/contexts/AuthContext";
 import type { Json } from "@/integrations/supabase/types";
 import SavingsWidget from "./SavingsWidget";
@@ -23,6 +28,7 @@ interface DashboardOverviewProps {
   problems?: DetectedProblem[];
   losses?: LossPoint[];
   savings?: SavingsSummary;
+  onResetData?: () => Promise<{ error: string | null }>;
 }
 
 const planKpis: Record<PlanType, { label: string; key: string; icon: typeof DollarSign; format: (v: unknown) => string }[]> = {
@@ -84,10 +90,25 @@ const currentMonth = () => {
 const DashboardOverview = ({
   plan, dataConnected, companyData, onConnect, onGenerate, generatingAnalysis,
   problems = [], losses = [], savings = { thisMonth: 0, total: 0, recent: [] },
+  onResetData,
 }: DashboardOverviewProps) => {
   const [activeDataTab, setActiveDataTab] = useState(dataTabs[plan][0].id);
+  const [resetting, setResetting] = useState(false);
+  const { toast } = useToast();
   const kpis = planKpis[plan];
   const tabs = dataTabs[plan];
+
+  const handleReset = async () => {
+    if (!onResetData) return;
+    setResetting(true);
+    const { error } = await onResetData();
+    setResetting(false);
+    if (error) {
+      toast({ title: "Erreur", description: error, variant: "destructive" });
+    } else {
+      toast({ title: "Données supprimées", description: "Toutes vos données ont été effacées." });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -123,6 +144,38 @@ const DashboardOverview = ({
               <Sparkles className="h-4 w-4" />
               {generatingAnalysis ? "Analyse en cours…" : "Générer mon analyse"}
             </Button>
+          )}
+          {dataConnected && onResetData && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  disabled={resetting}
+                  className="gap-2 px-6 py-3 border-[1.5px] border-destructive text-destructive bg-transparent rounded-pill hover:bg-destructive/5"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {resetting ? "Suppression…" : "Supprimer mes données"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Supprimer toutes vos données ?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Cette action effacera définitivement vos données d'entreprise et toutes les analyses IA générées. Cette opération est irréversible.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annuler</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleReset}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Oui, tout supprimer
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
       </div>
