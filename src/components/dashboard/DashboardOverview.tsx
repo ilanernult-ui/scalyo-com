@@ -104,14 +104,23 @@ const DashboardOverview = ({
             <p className="text-sm text-muted-foreground mt-0.5">{String(companyData.company_name)}</p>
           ) : null}
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={onConnect} className="gap-2">
-            <Database className="h-3.5 w-3.5" />
-            {dataConnected ? "Mettre à jour" : "Connecter mes données"}
+        <div className="flex flex-wrap gap-3">
+          <Button
+            size="lg"
+            onClick={onConnect}
+            className="gap-2 px-6 py-3 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-pill"
+          >
+            <Pencil className="h-4 w-4" />
+            Mettre à jour mes données
           </Button>
           {dataConnected && (
-            <Button size="sm" onClick={onGenerate} disabled={generatingAnalysis} className="gap-2">
-              <Zap className="h-3.5 w-3.5" />
+            <Button
+              size="lg"
+              onClick={onGenerate}
+              disabled={generatingAnalysis}
+              className="gap-2 px-6 py-3 bg-[#1D4ED8] hover:bg-[#1E40AF] text-white rounded-pill"
+            >
+              <Sparkles className="h-4 w-4" />
               {generatingAnalysis ? "Analyse en cours…" : "Générer mon analyse"}
             </Button>
           )}
