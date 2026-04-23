@@ -90,10 +90,25 @@ const currentMonth = () => {
 const DashboardOverview = ({
   plan, dataConnected, companyData, onConnect, onGenerate, generatingAnalysis,
   problems = [], losses = [], savings = { thisMonth: 0, total: 0, recent: [] },
+  onResetData,
 }: DashboardOverviewProps) => {
   const [activeDataTab, setActiveDataTab] = useState(dataTabs[plan][0].id);
+  const [resetting, setResetting] = useState(false);
+  const { toast } = useToast();
   const kpis = planKpis[plan];
   const tabs = dataTabs[plan];
+
+  const handleReset = async () => {
+    if (!onResetData) return;
+    setResetting(true);
+    const { error } = await onResetData();
+    setResetting(false);
+    if (error) {
+      toast({ title: "Erreur", description: error, variant: "destructive" });
+    } else {
+      toast({ title: "Données supprimées", description: "Toutes vos données ont été effacées." });
+    }
+  };
 
   return (
     <div className="space-y-6">
