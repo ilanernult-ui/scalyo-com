@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   DollarSign, TrendingUp, Users, ShoppingCart, Activity,
-  Zap, Database, ChevronRight, BarChart3, Wallet
+  Zap, Database, ChevronRight, BarChart3, Wallet, Pencil, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AnimatedNumber from "@/components/ui/animated-number";
@@ -104,14 +104,23 @@ const DashboardOverview = ({
             <p className="text-sm text-muted-foreground mt-0.5">{String(companyData.company_name)}</p>
           ) : null}
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={onConnect} className="gap-2">
-            <Database className="h-3.5 w-3.5" />
-            {dataConnected ? "Mettre à jour" : "Connecter mes données"}
+        <div className="flex flex-wrap gap-3">
+          <Button
+            size="lg"
+            onClick={onConnect}
+            className="gap-2 px-6 py-3 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-pill"
+          >
+            <Pencil className="h-4 w-4" />
+            Mettre à jour mes données
           </Button>
           {dataConnected && (
-            <Button size="sm" onClick={onGenerate} disabled={generatingAnalysis} className="gap-2">
-              <Zap className="h-3.5 w-3.5" />
+            <Button
+              size="lg"
+              onClick={onGenerate}
+              disabled={generatingAnalysis}
+              className="gap-2 px-6 py-3 bg-[#1D4ED8] hover:bg-[#1E40AF] text-white rounded-pill"
+            >
+              <Sparkles className="h-4 w-4" />
               {generatingAnalysis ? "Analyse en cours…" : "Générer mon analyse"}
             </Button>
           )}
@@ -167,28 +176,7 @@ const DashboardOverview = ({
         <LossesSection losses={losses} onGeneratePlan={onGenerate} generating={generatingAnalysis} />
       )}
 
-      {/* Data prompt */}
-      {dataConnected && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="rounded-2xl border border-primary/20 bg-primary/5 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
-        >
-          <div>
-            <p className="text-sm font-medium text-foreground">
-              Vos données sont prêtes · Lancez votre analyse IA complète
-            </p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              L'assistant IA analysera vos données et générera des recommandations personnalisées.
-            </p>
-          </div>
-          <Button size="sm" onClick={onGenerate} disabled={generatingAnalysis} className="shrink-0 gap-2">
-            <Zap className="h-3.5 w-3.5" />
-            {generatingAnalysis ? "En cours…" : "Générer mon analyse"}
-          </Button>
-        </motion.div>
-      )}
+      {/* Data prompt removed (redundant with header) */}
 
       {!dataConnected && (
         <motion.div
@@ -219,8 +207,9 @@ const DashboardOverview = ({
         >
           <div className="px-5 pt-5 pb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">Mes données</h3>
-            <Button variant="outline" size="sm" onClick={onConnect} className="text-xs h-7">
-              + Ajouter des données
+            <Button size="sm" onClick={onConnect} className="gap-1.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-pill">
+              <Pencil className="h-3.5 w-3.5" />
+              Ajouter des données
             </Button>
           </div>
 
