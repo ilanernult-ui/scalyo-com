@@ -251,8 +251,9 @@ const ActionPlanTab = () => {
                 <div className="space-y-2 flex-1">
                   <AnimatePresence>
                     {items.length === 0 && (
-                      <p className="text-xs text-muted-foreground text-center py-8">
-                        Aucune action ici
+                      <p className="text-xs text-muted-foreground text-center py-8 px-2 leading-relaxed">
+                        Aucune action générée pour le moment.<br />
+                        Cliquez sur « Générer de nouvelles actions IA » pour commencer.
                       </p>
                     )}
                     {items.map((a) => (
