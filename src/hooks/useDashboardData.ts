@@ -8,6 +8,7 @@ interface UseDashboardDataReturn {
   aiResults: Record<string, Json>;
   loadAiResults: () => Promise<void>;
   onWizardComplete: () => void;
+  resetUserData: () => Promise<{ error: string | null }>;
 }
 
 export function useDashboardData(userId: string | undefined): UseDashboardDataReturn {
