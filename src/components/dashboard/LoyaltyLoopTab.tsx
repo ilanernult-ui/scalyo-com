@@ -236,6 +236,8 @@ const RetentionDashboard = ({ aiData }: { aiData: Record<string, unknown> | null
           </div>
         </div>
       </div>
+
+      <ExpertLoyaltyAI />
     </div>
   );
 };
