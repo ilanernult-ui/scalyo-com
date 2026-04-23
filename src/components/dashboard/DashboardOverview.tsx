@@ -207,8 +207,9 @@ const DashboardOverview = ({
         >
           <div className="px-5 pt-5 pb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">Mes données</h3>
-            <Button variant="outline" size="sm" onClick={onConnect} className="text-xs h-7">
-              + Ajouter des données
+            <Button size="sm" onClick={onConnect} className="gap-1.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-pill">
+              <Pencil className="h-3.5 w-3.5" />
+              Ajouter des données
             </Button>
           </div>
 
