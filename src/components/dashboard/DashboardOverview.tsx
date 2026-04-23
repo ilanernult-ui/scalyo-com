@@ -23,6 +23,7 @@ interface DashboardOverviewProps {
   problems?: DetectedProblem[];
   losses?: LossPoint[];
   savings?: SavingsSummary;
+  onResetData?: () => Promise<{ error: string | null }>;
 }
 
 const planKpis: Record<PlanType, { label: string; key: string; icon: typeof DollarSign; format: (v: unknown) => string }[]> = {
