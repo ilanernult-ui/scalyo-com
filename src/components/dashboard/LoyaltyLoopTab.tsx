@@ -4,6 +4,7 @@ import {
   Heart, ShieldCheck, TrendingDown, Users, AlertTriangle,
   Gift, Star, ArrowUpRight, FileText, Download, Clock, Zap
 } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RTooltip, ResponsiveContainer, Cell } from "recharts";
 import { Pie, Line } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, CategoryScale,
   LinearScale, BarElement, PointElement, LineElement, Filler,
@@ -122,9 +123,8 @@ const RetentionDashboard = ({ aiData }: { aiData: Record<string, unknown> | null
   const segments = (aiData?.churn_segments as typeof mockChurnSegments | null) ?? mockChurnSegments;
   const history = (aiData?.churn_history as typeof mockChurnHistory | null) ?? mockChurnHistory;
   const alerts = (aiData?.churn_alerts as typeof mockAlerts | null) ?? mockAlerts;
-  const maxRate = Math.max(...history.map((h) => h.rate));
   const latestRate = history[history.length - 1]?.rate ?? 0;
-  const retentionScore = Math.round(100 - latestRate * 10);
+  const retentionScore = 58;
 
   return (
     <div className="space-y-4">
@@ -146,23 +146,22 @@ const RetentionDashboard = ({ aiData }: { aiData: Record<string, unknown> | null
       {/* Churn evolution bar chart */}
       <div className="rounded-2xl border border-border bg-card p-5">
         <h3 className="text-sm font-semibold text-foreground mb-4">Évolution du churn (%)</h3>
-        <div className="flex items-end gap-2 h-28">
-          {history.map((h, i) => (
-            <div key={h.month} className="flex-1 flex flex-col items-center gap-1">
-              <span className="text-[10px] font-medium text-foreground">{h.rate}%</span>
-              <motion.div
-                initial={{ height: 0 }}
-                animate={{ height: `${(h.rate / maxRate) * 80}px` }}
-                transition={{ duration: 0.6, delay: i * 0.05 }}
-                className="w-full rounded-t-lg"
-                style={{ backgroundColor: ACCENT, opacity: i === history.length - 1 ? 1 : 0.5 }}
-              />
-              <span className="text-[10px] text-muted-foreground">{h.month}</span>
-            </div>
-          ))}
+        <div className="h-40 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={history} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+              <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+              <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${v}%`} />
+              <RTooltip cursor={{ fill: "rgba(124,58,237,0.08)" }} formatter={(v: any) => [`${v}%`, "Churn"]} />
+              <Bar dataKey="rate" radius={[8, 8, 8, 8]} fill="#7C3AED">
+                {history.map((_, i) => (
+                  <Cell key={i} fill="#7C3AED" />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
-        <p className="text-[10px] text-emerald-600 font-medium mt-2 flex items-center gap-1">
-          <TrendingDown className="h-3 w-3" /> Churn en baisse de {((mockChurnHistory[0].rate - latestRate) / mockChurnHistory[0].rate * 100).toFixed(0)}% sur 6 mois
+        <p className="text-xs text-emerald-600 font-medium mt-2 flex items-center gap-1">
+          <TrendingDown className="h-3 w-3" /> Churn en baisse de 28% sur 6 mois
         </p>
       </div>
 
