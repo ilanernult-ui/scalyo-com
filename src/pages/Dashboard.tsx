@@ -195,6 +195,7 @@ const Dashboard = () => {
           problems={problems}
           losses={losses}
           savings={savings}
+          onResetData={resetUserData}
         />
       );
     }
