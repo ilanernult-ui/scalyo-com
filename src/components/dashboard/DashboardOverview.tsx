@@ -145,6 +145,38 @@ const DashboardOverview = ({
               {generatingAnalysis ? "Analyse en cours…" : "Générer mon analyse"}
             </Button>
           )}
+          {dataConnected && onResetData && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  disabled={resetting}
+                  className="gap-2 px-6 py-3 border-[1.5px] border-destructive text-destructive bg-transparent rounded-pill hover:bg-destructive/5"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {resetting ? "Suppression…" : "Supprimer mes données"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Supprimer toutes vos données ?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Cette action effacera définitivement vos données d'entreprise et toutes les analyses IA générées. Cette opération est irréversible.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annuler</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleReset}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Oui, tout supprimer
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </div>
       </div>
 
