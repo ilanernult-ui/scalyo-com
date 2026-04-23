@@ -11,6 +11,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, CategoryScale,
   BarController, LineController, PieController, Legend } from "chart.js";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import ExpertLoyaltyAI from "./loyaltyloop/ExpertLoyaltyAI";
 import type { Json } from "@/integrations/supabase/types";
 
 const ACCENT = "hsl(262, 60%, 55%)";
@@ -235,6 +236,8 @@ const RetentionDashboard = ({ aiData }: { aiData: Record<string, unknown> | null
           </div>
         </div>
       </div>
+
+      <ExpertLoyaltyAI />
     </div>
   );
 };
@@ -359,6 +362,8 @@ const FidelisationDashboard = ({ aiData }: { aiData: Record<string, unknown> | n
           ))}
         </div>
       </div>
+
+      <ExpertLoyaltyAI />
     </div>
   );
 };
