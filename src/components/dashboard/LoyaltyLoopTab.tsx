@@ -151,7 +151,7 @@ const RetentionDashboard = ({ aiData }: { aiData: Record<string, unknown> | null
             <BarChart data={history} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
               <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
               <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${v}%`} />
-              <RTooltip cursor={{ fill: "rgba(124,58,237,0.08)" }} formatter={(v: number) => [`${v}%`, "Churn"]} />
+              <RTooltip cursor={{ fill: "rgba(124,58,237,0.08)" }} formatter={(v: any) => [`${v}%`, "Churn"]} />
               <Bar dataKey="rate" radius={[8, 8, 8, 8]} fill="#7C3AED">
                 {history.map((_, i) => (
                   <Cell key={i} fill="#7C3AED" />
