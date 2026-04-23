@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   DollarSign, TrendingUp, Users, ShoppingCart, Activity,
-  Zap, Database, ChevronRight, BarChart3, Wallet, Pencil, Sparkles
+  Zap, Database, ChevronRight, BarChart3, Wallet, Pencil, Sparkles, Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AnimatedNumber from "@/components/ui/animated-number";
