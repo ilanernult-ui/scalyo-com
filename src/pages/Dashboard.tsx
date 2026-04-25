@@ -3,8 +3,9 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Menu, LogOut, LayoutDashboard, Activity, Rocket, Heart,
-  Lock, Settings, ChevronRight, Building2, Plug2, Sparkles, FileText, KanbanSquare, LineChart, Bell, BarChart3, History, Maximize2, Minimize2
+  Lock, Settings, ChevronRight, Building2, Plug2, Sparkles, FileText, KanbanSquare, LineChart, Bell, BarChart3, History, Maximize2, Minimize2, LineChart as LineChartIcon
 } from "lucide-react";
+import GoogleAnalyticsTab from "@/pages/GoogleAnalyticsTab";
 import type { PlanType } from "@/contexts/AuthContext";
 import { useAuth } from "@/contexts/AuthContext";
 import scalyoLogo from "@/assets/scalyo-logo.png";
@@ -63,6 +64,7 @@ const navGroups: NavGroup[] = [
       { id: "loyaltyloop", label: "LoyaltyLoop", icon: Heart, minPlan: "loyaltyloop" },
       { id: "reports", label: "Rapports PDF", icon: FileText, minPlan: "datadiag" },
       { id: "reporthistory", label: "Historique des Rapports", icon: History, minPlan: "datadiag" },
+      { id: "googleanalytics", label: "Google Analytics", icon: LineChartIcon, minPlan: "datadiag" },
     ],
   },
   {
@@ -270,6 +272,14 @@ const Dashboard = () => {
       return (
         <ErrorBoundary name="connectors">
           <DataConnectorsTab />
+        </ErrorBoundary>
+      );
+    }
+
+    if (activeTab === "googleanalytics") {
+      return (
+        <ErrorBoundary name="googleanalytics">
+          <GoogleAnalyticsTab />
         </ErrorBoundary>
       );
     }
