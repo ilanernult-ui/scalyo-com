@@ -30,12 +30,10 @@ interface KPIs {
 const formatNum = (n: number | null) => (n === null || n === undefined || isNaN(n) ? "--" : n.toLocaleString("fr-FR"));
 const formatPct = (n: number | null) => (n === null || n === undefined || isNaN(n) ? "--" : `${(n * 100).toFixed(1)}%`);
 
+const GOOGLE_CLIENT_ID = "584640345239-hd1t9vdd55m0omt8iol4evonc85dcvp0.apps.googleusercontent.com";
+
 const initiateOAuth = () => {
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-  if (!clientId) {
-    alert("Google OAuth client ID non défini.");
-    return;
-  }
+  const clientId = GOOGLE_CLIENT_ID;
   const redirectUri = `${window.location.origin}/auth/google/callback`;
   const state = encodeURIComponent(JSON.stringify({ connectorId: "google_analytics" }));
   const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
