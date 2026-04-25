@@ -44,19 +44,20 @@ const ConnectDialog = ({ def, onConnect, onClose }: {
   const [connecting, setConnecting] = useState(false);
 
   const initiateGoogleOAuth = (connectorId: string) => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    if (!clientId) {
-      console.error('❌ VITE_GOOGLE_CLIENT_ID n’est pas défini');
-      alert('Google OAuth client ID non défini. Vérifiez votre configuration d’environnement.');
-      return;
-    }
+    const clientId =
+      (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) ||
+      '584640345239-hd1t9vdd55m0omt8iol4evonc85dcvp0.apps.googleusercontent.com';
+
+    const redirectUri = `${window.location.origin}/auth/google/callback`;
 
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     authUrl.searchParams.set('client_id', clientId);
-    authUrl.searchParams.set('redirect_uri', 'https://scalyo-com.vercel.app/auth/google/callback');
+    authUrl.searchParams.set('redirect_uri', redirectUri);
     authUrl.searchParams.set('response_type', 'code');
     authUrl.searchParams.set('scope', 'https://www.googleapis.com/auth/analytics.readonly');
     authUrl.searchParams.set('access_type', 'offline');
+    authUrl.searchParams.set('prompt', 'consent');
+    authUrl.searchParams.set('state', encodeURIComponent(JSON.stringify({ connectorId })));
 
     console.log('🔄 Début initiation OAuth Google pour:', connectorId);
     console.log('🔗 URL OAuth générée:', authUrl.toString());
