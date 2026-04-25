@@ -269,6 +269,39 @@ export type Database = {
         }
         Relationships: []
       }
+      data_connectors: {
+        Row: {
+          config: Json
+          connector_id: string
+          created_at: string
+          id: string
+          last_sync_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          config?: Json
+          connector_id: string
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          config?: Json
+          connector_id?: string
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       detected_problems: {
         Row: {
           category: string | null
