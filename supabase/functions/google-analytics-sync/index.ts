@@ -210,11 +210,12 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Erreur fonction google-analytics-sync:", error);
+    const message = error instanceof Error ? error.message : String(error);
 
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message,
+        error: message,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
