@@ -36,6 +36,10 @@ const initiateOAuth = () => {
   const clientId = GOOGLE_CLIENT_ID;
   const redirectUri = `${window.location.origin}/auth/google/callback`;
   console.log("[Google OAuth] redirect_uri envoyée à Google :", redirectUri);
+  const proceed = window.confirm(
+    `redirect_uri envoyée à Google :\n\n${redirectUri}\n\nCliquez sur OK pour continuer vers Google, ou Annuler pour interrompre.`
+  );
+  if (!proceed) return;
   const state = encodeURIComponent(JSON.stringify({ connectorId: "google_analytics" }));
   const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   authUrl.searchParams.set("client_id", clientId);
