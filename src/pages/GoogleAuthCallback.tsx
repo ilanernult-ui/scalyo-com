@@ -54,33 +54,20 @@ const GoogleAuthCallback = () => {
           }
         }
 
-        // Échanger le code contre des tokens
-        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-        const clientSecret = import.meta.env.VITE_GOOGLE_CLIENT_SECRET;
-        const redirectUri = `${window.location.origin}/auth/google/callback`;
+        // Échange du code via Edge Function sécurisée (client_secret côté serveur)
+        // ⚠️ redirect_uri DOIT être identique à celle envoyée à l'autorisation
+        const redirectUri = "https://03f96f19-c6fd-4c79-840b-ebd90724c077.lovableproject.com/auth/google/callback";
 
-        const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: new URLSearchParams({
-            client_id: clientId,
-            client_secret: clientSecret,
-            code: code,
-            grant_type: 'authorization_code',
-            redirect_uri: redirectUri,
-          }),
-        });
+        const { data: tokenData, error: fnError } = await supabase.functions.invoke(
+          'google-oauth-exchange',
+          { body: { code, redirect_uri: redirectUri } }
+        );
 
-        if (!tokenResponse.ok) {
-          throw new Error(`Erreur HTTP ${tokenResponse.status}: ${tokenResponse.statusText}`);
+        if (fnError) {
+          throw new Error(`Erreur d'échange : ${fnError.message}`);
         }
-
-        const tokenData = await tokenResponse.json();
-
-        if (tokenData.error) {
-          throw new Error(`Erreur OAuth: ${tokenData.error_description || tokenData.error}`);
+        if (!tokenData || (tokenData as any).error) {
+          throw new Error(`Erreur OAuth : ${(tokenData as any)?.error || 'inconnue'}`);
         }
 
         // Stocker les tokens dans la base de données
