@@ -56,7 +56,7 @@ const GoogleAuthCallback = () => {
 
         // Échange du code via Edge Function sécurisée (client_secret côté serveur)
         // ⚠️ redirect_uri DOIT être identique à celle envoyée à l'autorisation
-        const redirectUri = "https://03f96f19-c6fd-4c79-840b-ebd90724c077.lovableproject.com/auth/google/callback";
+        const redirectUri = `${window.location.origin}/auth/google/callback`;
 
         const { data: tokenData, error: fnError } = await supabase.functions.invoke(
           'google-oauth-exchange',
@@ -96,7 +96,7 @@ const GoogleAuthCallback = () => {
         setStatus('success');
         setMessage('Connexion Google Analytics réussie !');
 
-        // Rediriger vers la page des connecteurs après 2 secondes
+        // Rediriger vers les connecteurs après 2 secondes
         setTimeout(() => {
           navigate('/dashboard?tab=connectors');
         }, 2000);

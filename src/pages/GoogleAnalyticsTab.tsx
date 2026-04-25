@@ -34,9 +34,8 @@ const GOOGLE_CLIENT_ID = "584640345239-hd1t9vdd55m0omt8iol4evonc85dcvp0.apps.goo
 
 const initiateOAuth = () => {
   const clientId = GOOGLE_CLIENT_ID;
-  const redirectUri = "https://03f96f19-c6fd-4c79-840b-ebd90724c077.lovableproject.com/auth/google/callback";
+  const redirectUri = `${window.location.origin}/auth/google/callback`;
   console.log("[Google OAuth] redirect_uri envoyée à Google :", redirectUri);
-  console.log("[Google OAuth] window.location.origin :", window.location.origin);
   const state = encodeURIComponent(JSON.stringify({ connectorId: "google_analytics" }));
   const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   authUrl.searchParams.set("client_id", clientId);
