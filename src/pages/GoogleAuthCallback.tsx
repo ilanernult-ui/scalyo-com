@@ -96,9 +96,9 @@ const GoogleAuthCallback = () => {
         setStatus('success');
         setMessage('Connexion Google Analytics réussie !');
 
-        // Rediriger vers le dashboard Google Analytics après 2 secondes
+        // Rediriger vers les connecteurs après 2 secondes
         setTimeout(() => {
-          navigate('/dashboard/google-analytics');
+          navigate('/dashboard?tab=connectors');
         }, 2000);
 
       } catch (err) {
