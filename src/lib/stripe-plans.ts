@@ -52,11 +52,13 @@ export const STRIPE_PLANS: Record<PlanType, {
     ],
   },
   loyaltyloop: {
-    name: "LoyaltyLoop",
+    name: "Fidélisation & Rétention",
     priceId: "price_1TDCKfCJMZSEsUDpYtJ41vpE",
     productId: "prod_UBZTdDuYqxEXVq",
     monthly: 349,
-    tagline: "Transformation business complète · +25% de croissance",
+    tagline: "Gardez vos clients et augmentez leur valeur",
+    description: "Détectez vos clients sur le point de partir avant qu'il soit trop tard. Suivez leur satisfaction, automatisez vos actions de fidélisation et maximisez la valeur de chaque client sur le long terme.",
+    bottomTagline: "Pour les entreprises qui veulent fidéliser et rentabiliser leur clientèle",
     accent: "hsl(262, 60%, 55%)",
     features: [
       "Tout GrowthPilot inclus",
