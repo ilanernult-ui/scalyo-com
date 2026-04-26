@@ -248,7 +248,8 @@ const Tarifs = () => {
                   )}
 
                   <h3 className="text-xl font-semibold text-foreground tracking-tight">{plan.name}</h3>
-                  <p className="text-sm text-muted-foreground mt-1 mb-5">{plan.tagline}</p>
+                  <p className="text-sm text-muted-foreground mt-1 mb-3">{plan.tagline}</p>
+                  <p className="text-sm text-muted-foreground/90 mb-5 leading-relaxed">{plan.description}</p>
 
                   <div className="mb-6">
                     <span className="text-4xl font-bold text-foreground tracking-tight">{plan.monthly}€</span>
@@ -274,6 +275,10 @@ const Tarifs = () => {
                       </li>
                     ))}
                   </ul>
+
+                  <p className="text-xs text-muted-foreground/80 italic mt-6 pt-4 border-t border-border/60">
+                    {plan.bottomTagline}
+                  </p>
                 </motion.div>
               );
             })}
