@@ -6,15 +6,19 @@ export const STRIPE_PLANS: Record<PlanType, {
   productId: string;
   monthly: number;
   tagline: string;
+  description: string;
+  bottomTagline: string;
   features: string[];
   accent: string;
 }> = {
   datadiag: {
-    name: "DataDiag",
+    name: "Analyse & Diagnostic",
     priceId: "price_1TDCK5CJMZSEsUDpnZsWuZ8K",
     productId: "prod_UBZTlbbO4BaYmV",
     monthly: 79,
-    tagline: "Diagnostic business complet en 48h",
+    tagline: "Comprenez où vous perdez de l'argent",
+    description: "Obtenez une vue claire de votre rentabilité. Identifiez vos points faibles, suivez vos indicateurs clés et recevez chaque mois un rapport IA avec les actions prioritaires.",
+    bottomTagline: "Pour les entreprises qui veulent comprendre leurs chiffres",
     accent: "hsl(211, 100%, 45%)",
     features: [
       "Score Business 360° (Rentabilité · Efficacité · Croissance)",
