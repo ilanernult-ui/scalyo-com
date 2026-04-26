@@ -7,9 +7,9 @@ import scalyoLogo from "@/assets/scalyo-logo.png";
 
 export const navItems = [
   { icon: LayoutDashboard, label: "Vue d'ensemble", id: "overview" },
-  { icon: Activity, label: "DataDiag", id: "datadiag" },
-  { icon: Rocket, label: "GrowthPilot", id: "growthpilot" },
-  { icon: Heart, label: "LoyaltyLoop", id: "loyaltyloop" },
+  { icon: Activity, label: "Analyse & Diagnostic", id: "datadiag" },
+  { icon: Rocket, label: "Croissance & Performance", id: "growthpilot" },
+  { icon: Heart, label: "Fidélisation & Rétention", id: "loyaltyloop" },
   { icon: Settings, label: "Paramètres", id: "settings" },
 ];
 
