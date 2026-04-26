@@ -33,11 +33,13 @@ export const STRIPE_PLANS: Record<PlanType, {
     ],
   },
   growthpilot: {
-    name: "GrowthPilot",
+    name: "Croissance & Performance",
     priceId: "price_1TDCKNCJMZSEsUDpAaWZWQc1",
     productId: "prod_UBZT1MrAufTdsD",
     monthly: 189,
-    tagline: "Co-pilote IA · +15% de croissance · +10h/semaine",
+    tagline: "Développez votre chiffre d'affaires avec l'IA",
+    description: "Passez à l'action avec un plan de croissance personnalisé. Chaque semaine, l'IA identifie vos meilleures opportunités et vous dit exactement quoi faire pour augmenter vos revenus.",
+    bottomTagline: "Pour les entreprises qui veulent accélérer leur croissance",
     accent: "hsl(142, 69%, 49%)",
     features: [
       "Tout DataDiag inclus",
