@@ -376,6 +376,35 @@ const ReportCard = ({ aiData }: { aiData: Record<string, unknown> | null }) => {
         : null)
     : null;
 
+  const handleDownloadPdf = async () => {
+    const { default: jsPDF } = await import("jspdf");
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 48;
+    const maxWidth = pageWidth - margin * 2;
+    const today = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("Rapport LoyaltyLoop", margin, 64);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(120);
+    doc.text(`Généré le ${today} — Scalyo`, margin, 82);
+
+    doc.setDrawColor(220);
+    doc.line(margin, 96, pageWidth - margin, 96);
+
+    doc.setTextColor(30);
+    doc.setFontSize(11);
+    const body = rapport ?? "Aucune donnée disponible pour le moment. Générez votre analyse LoyaltyLoop pour produire un rapport personnalisé.";
+    const lines = doc.splitTextToSize(body, maxWidth);
+    doc.text(lines, margin, 122);
+
+    doc.save(`scalyo-rapport-loyaltyloop-${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
+
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
       <div className="flex items-center justify-between mb-3">
@@ -387,13 +416,13 @@ const ReportCard = ({ aiData }: { aiData: Record<string, unknown> | null }) => {
           <Badge variant="secondary" className="text-[10px]">
             <Clock className="h-2.5 w-2.5 mr-1" /> Ce mois
           </Badge>
-          <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5">
+          <Button variant="outline" size="sm" onClick={handleDownloadPdf} className="h-7 text-xs gap-1.5">
             <Download className="h-3 w-3" /> PDF
           </Button>
         </div>
       </div>
       <p className="text-sm text-muted-foreground leading-relaxed">
-        {rapport ?? "Votre taux de churn est en baisse constante (-28% sur 6 mois). 3 clients à risque immédiat ont été identifiés et nécessitent une intervention CSM. Le potentiel upsell non exploité représente ~7 500€/mois. Priorité : contacter les 28 clients DataDiag éligibles GrowthPilot."}
+        {rapport ?? "Aucune donnée disponible pour le moment. Générez votre analyse LoyaltyLoop pour produire un rapport personnalisé."}
       </p>
     </div>
   );
