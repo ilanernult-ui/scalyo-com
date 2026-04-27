@@ -212,7 +212,20 @@ const GoogleAnalyticsTab = () => {
         <>
           {error && (
             <Card className="border-destructive/40 bg-destructive/5">
-              <CardContent className="py-4 text-sm text-destructive">{error}</CardContent>
+              <CardContent className="py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <p className="text-sm text-destructive">{error}</p>
+                {error.toLowerCase().includes("token") && (
+                  <Button
+                    onClick={initiateOAuth}
+                    size="sm"
+                    className="gap-2 text-white hover:opacity-90 shrink-0"
+                    style={{ backgroundColor: GOOGLE_BLUE }}
+                  >
+                    <GoogleIcon className="h-4 w-4 bg-white rounded-sm p-0.5" />
+                    Se reconnecter à Google
+                  </Button>
+                )}
+              </CardContent>
             </Card>
           )}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
