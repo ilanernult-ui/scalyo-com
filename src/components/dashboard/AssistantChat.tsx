@@ -114,20 +114,8 @@ const AssistantChat = ({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const getFallbackResponse = (context: AssistantContext) => {
-    switch (context) {
-      case "dashboard":
-        return "Je suis en train d'analyser vos données. Voici ce que je vois : votre CA de 72 000€ est solide. Souhaitez-vous un focus sur un indicateur spécifique ?";
-      case "datadiag":
-        return "D'après vos données, j'identifie 3 axes d'amélioration prioritaires. Voulez-vous que je détaille les pertes détectées ?";
-      case "growthpilot":
-        return "Vos métriques de croissance montrent une progression de +12%. Voici mes recommandations pour atteindre +15%...";
-      case "loyaltyloop":
-        return "Je détecte 3 clients à risque de churn ce mois. Voulez-vous voir les détails et les actions recommandées ?";
-      default:
-        return "Je n'ai pas pu accéder à l'IA pour le moment. Voulez-vous réessayer ?";
-    }
-  };
+  const getFallbackResponse = (_context: AssistantContext) =>
+    "L'assistant IA est temporairement indisponible. Veuillez réessayer dans quelques instants.";
 
   const resetConversation = () => {
     const nextMessages: Message[] = [{ id: createMessageId(), role: "assistant", content: welcomeMessage }];
