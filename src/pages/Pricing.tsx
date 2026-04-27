@@ -250,7 +250,7 @@ const Pricing = () => {
                   ))}
                 </ul>
 
-                <p className="text-xs text-muted-foreground italic mt-6">{plan.target}</p>
+                <p className="text-xs text-muted-foreground/80 italic mt-6 pt-4 border-t border-border/60">{plan.bottomTagline}</p>
               </motion.div>
             ))}
           </div>
