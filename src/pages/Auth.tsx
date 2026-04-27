@@ -337,8 +337,8 @@ const Auth = () => {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       En créant un compte, vous acceptez nos{" "}
-                      <a href="#" className="underline">CGU</a> et notre{" "}
-                      <a href="#" className="underline">politique de confidentialité</a>.
+                      <Link to="/contact" className="underline">CGU</Link> et notre{" "}
+                      <Link to="/contact" className="underline">politique de confidentialité</Link>.
                     </p>
                   </>
                 )}

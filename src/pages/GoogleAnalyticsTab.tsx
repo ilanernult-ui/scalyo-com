@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, forwardRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,11 +35,6 @@ const GOOGLE_CLIENT_ID = "584640345239-hd1t9vdd55m0omt8iol4evonc85dcvp0.apps.goo
 const initiateOAuth = () => {
   const clientId = GOOGLE_CLIENT_ID;
   const redirectUri = `${window.location.origin}/auth/google/callback`;
-  console.log("[Google OAuth] redirect_uri envoyée à Google :", redirectUri);
-  const proceed = window.confirm(
-    `redirect_uri envoyée à Google :\n\n${redirectUri}\n\nCliquez sur OK pour continuer vers Google, ou Annuler pour interrompre.`
-  );
-  if (!proceed) return;
   const state = encodeURIComponent(JSON.stringify({ connectorId: "google_analytics" }));
   const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   authUrl.searchParams.set("client_id", clientId);
@@ -52,19 +47,22 @@ const initiateOAuth = () => {
   window.location.href = authUrl.toString();
 };
 
-const KPICard = ({ icon: Icon, label, value }: { icon: any; label: string; value: string }) => (
-  <Card>
-    <CardHeader className="pb-2">
-      <div className="flex items-center justify-between">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </div>
-    </CardHeader>
-    <CardContent>
-      <p className="text-3xl font-semibold tracking-tight">{value}</p>
-    </CardContent>
-  </Card>
+const KPICard = forwardRef<HTMLDivElement, { icon: any; label: string; value: string }>(
+  ({ icon: Icon, label, value }, ref) => (
+    <Card ref={ref}>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
+          <Icon className="h-4 w-4 text-muted-foreground" />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <p className="text-3xl font-semibold tracking-tight">{value}</p>
+      </CardContent>
+    </Card>
+  )
 );
+KPICard.displayName = "KPICard";
 
 const GoogleAnalyticsTab = () => {
   const { user } = useAuth();
