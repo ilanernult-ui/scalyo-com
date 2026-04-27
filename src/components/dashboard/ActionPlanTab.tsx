@@ -219,6 +219,14 @@ const ActionPlanTab = () => {
           <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2" />
           Chargement de votre plan d'action…
         </div>
+      ) : actions.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
+          <Sparkles className="h-6 w-6 text-muted-foreground mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Aucune action générée pour le moment.<br />
+            Cliquez sur « Générer de nouvelles actions IA » pour commencer.
+          </p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {COLUMNS.map((col) => {
@@ -275,15 +283,6 @@ const ActionPlanTab = () => {
         </div>
       )}
 
-      {!loading && actions.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center">
-          <Sparkles className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
-          <p className="text-sm font-medium text-foreground mb-1">Aucune action pour le moment</p>
-          <p className="text-xs text-muted-foreground mb-4">
-            Cliquez sur « Générer de nouvelles actions IA » pour démarrer.
-          </p>
-        </div>
-      )}
     </div>
   );
 };
