@@ -16,9 +16,12 @@ import {
 
 const plans = [
   {
-    name: "DataDiag",
+    id: "datadiag" as PlanType,
+    name: STRIPE_PLANS.datadiag.name,
     monthly: 79,
-    tagline: "Analysez votre rentabilité en profondeur",
+    tagline: STRIPE_PLANS.datadiag.tagline,
+    description: STRIPE_PLANS.datadiag.description,
+    bottomTagline: STRIPE_PLANS.datadiag.bottomTagline,
     features: [
       { name: "Score Business 360°", included: true },
       { name: "Identification des pertes financières cachées", included: true },
@@ -38,9 +41,12 @@ const plans = [
     target: "Pour comprendre votre rentabilité réelle",
   },
   {
-    name: "GrowthPilot",
+    id: "growthpilot" as PlanType,
+    name: STRIPE_PLANS.growthpilot.name,
     monthly: 189,
-    tagline: "Pilotez votre croissance avec l'IA",
+    tagline: STRIPE_PLANS.growthpilot.tagline,
+    description: STRIPE_PLANS.growthpilot.description,
+    bottomTagline: STRIPE_PLANS.growthpilot.bottomTagline,
     features: [
       { name: "Tout DataDiag inclus", included: true },
       { name: "Plan d'action priorisé par ROI", included: true },
@@ -60,9 +66,12 @@ const plans = [
     target: "Pour accélérer votre croissance",
   },
   {
-    name: "LoyaltyLoop",
+    id: "loyaltyloop" as PlanType,
+    name: STRIPE_PLANS.loyaltyloop.name,
     monthly: 349,
-    tagline: "Optimisation complète de votre performance",
+    tagline: STRIPE_PLANS.loyaltyloop.tagline,
+    description: STRIPE_PLANS.loyaltyloop.description,
+    bottomTagline: STRIPE_PLANS.loyaltyloop.bottomTagline,
     features: [
       { name: "Tout GrowthPilot inclus", included: true },
       { name: "Radar Churn & rétention client", included: true },
