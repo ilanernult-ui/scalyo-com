@@ -38,9 +38,9 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold text-foreground text-sm mb-4">Légal</h4>
             <div className="space-y-3">
-              <a href="#" className="block text-sm text-muted-foreground hover:text-foreground apple-easing">Mentions légales</a>
-              <a href="#" className="block text-sm text-muted-foreground hover:text-foreground apple-easing">CGU</a>
-              <a href="#" className="block text-sm text-muted-foreground hover:text-foreground apple-easing">Politique de confidentialité</a>
+              <Link to="/contact" className="block text-sm text-muted-foreground hover:text-foreground apple-easing">Mentions légales</Link>
+              <Link to="/contact" className="block text-sm text-muted-foreground hover:text-foreground apple-easing">CGU</Link>
+              <Link to="/contact" className="block text-sm text-muted-foreground hover:text-foreground apple-easing">Politique de confidentialité</Link>
             </div>
           </div>
         </div>
@@ -48,8 +48,8 @@ const Footer = () => {
         <div className="border-t border-border pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Scalyo. Tous droits réservés.</p>
           <div className="flex gap-6">
-            <a href="#" className="text-xs text-muted-foreground hover:text-foreground apple-easing">LinkedIn</a>
-            <a href="#" className="text-xs text-muted-foreground hover:text-foreground apple-easing">Twitter</a>
+            <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground apple-easing">LinkedIn</a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground apple-easing">Twitter</a>
           </div>
         </div>
       </div>

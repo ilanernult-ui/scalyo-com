@@ -135,23 +135,6 @@ const ConnectDialog = ({ def, onConnect, onClose }: {
             </Button>
           </div>
 
-          {/* Debug button - temporaire */}
-          {def.id === "google_analytics" && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full mt-2 text-xs"
-              onClick={() => {
-                console.log('🧪 Test OAuth variables:');
-                console.log('- Client ID:', import.meta.env.VITE_GOOGLE_CLIENT_ID);
-                console.log('- Client Secret:', import.meta.env.VITE_GOOGLE_CLIENT_SECRET);
-                console.log('- Origin:', window.location.origin);
-                alert('Vérifiez la console pour les variables OAuth');
-              }}
-            >
-              🔍 Debug OAuth
-            </Button>
-          )}
         </div>
       </DialogContent>
     </Dialog>

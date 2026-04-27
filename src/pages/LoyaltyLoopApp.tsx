@@ -204,10 +204,10 @@ const LoyaltyLoopApp = () => {
                     <div className="min-w-0">
                       <div className="text-sm font-semibold text-black">{a.name}</div>
                       <div className="text-xs text-black/55 mt-0.5">Inactif depuis {a.days} jours</div>
-                      <a href="#" className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 mt-2">
+                      <button type="button" className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 mt-2">
                         <ArrowUpRight className="w-3 h-3" />
                         {a.action}
-                      </a>
+                      </button>
                     </div>
                     <span className={`shrink-0 ${a.scoreColor} text-white text-xs font-bold px-2.5 py-1 rounded-full`}>
                       {a.score}
