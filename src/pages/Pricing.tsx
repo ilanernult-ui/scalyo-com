@@ -5,7 +5,8 @@ import { Check, Minus, Shield, CreditCard, Gift, Headphones, ChevronDown, ArrowR
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, type PlanType } from "@/contexts/AuthContext";
+import { STRIPE_PLANS } from "@/lib/stripe-plans";
 import {
   Accordion,
   AccordionContent,
@@ -15,9 +16,12 @@ import {
 
 const plans = [
   {
-    name: "DataDiag",
+    id: "datadiag" as PlanType,
+    name: STRIPE_PLANS.datadiag.name,
     monthly: 79,
-    tagline: "Analysez votre rentabilité en profondeur",
+    tagline: STRIPE_PLANS.datadiag.tagline,
+    description: STRIPE_PLANS.datadiag.description,
+    bottomTagline: STRIPE_PLANS.datadiag.bottomTagline,
     features: [
       { name: "Score Business 360°", included: true },
       { name: "Identification des pertes financières cachées", included: true },
@@ -37,9 +41,12 @@ const plans = [
     target: "Pour comprendre votre rentabilité réelle",
   },
   {
-    name: "GrowthPilot",
+    id: "growthpilot" as PlanType,
+    name: STRIPE_PLANS.growthpilot.name,
     monthly: 189,
-    tagline: "Pilotez votre croissance avec l'IA",
+    tagline: STRIPE_PLANS.growthpilot.tagline,
+    description: STRIPE_PLANS.growthpilot.description,
+    bottomTagline: STRIPE_PLANS.growthpilot.bottomTagline,
     features: [
       { name: "Tout DataDiag inclus", included: true },
       { name: "Plan d'action priorisé par ROI", included: true },
@@ -59,9 +66,12 @@ const plans = [
     target: "Pour accélérer votre croissance",
   },
   {
-    name: "LoyaltyLoop",
+    id: "loyaltyloop" as PlanType,
+    name: STRIPE_PLANS.loyaltyloop.name,
     monthly: 349,
-    tagline: "Optimisation complète de votre performance",
+    tagline: STRIPE_PLANS.loyaltyloop.tagline,
+    description: STRIPE_PLANS.loyaltyloop.description,
+    bottomTagline: STRIPE_PLANS.loyaltyloop.bottomTagline,
     features: [
       { name: "Tout GrowthPilot inclus", included: true },
       { name: "Radar Churn & rétention client", included: true },
@@ -204,7 +214,8 @@ const Pricing = () => {
                 )}
 
                 <h3 className="text-xl font-semibold text-foreground tracking-tight">{plan.name}</h3>
-                <p className="text-sm text-muted-foreground mt-1 mb-5">{plan.tagline}</p>
+                <p className="text-sm text-muted-foreground mt-1 mb-3">{plan.tagline}</p>
+                <p className="text-sm text-muted-foreground/90 mb-5 leading-relaxed">{plan.description}</p>
 
                 <div className="mb-6">
                   <span className="text-4xl font-bold text-foreground tracking-tight">
@@ -239,7 +250,7 @@ const Pricing = () => {
                   ))}
                 </ul>
 
-                <p className="text-xs text-muted-foreground italic mt-6">{plan.target}</p>
+                <p className="text-xs text-muted-foreground/80 italic mt-6 pt-4 border-t border-border/60">{plan.bottomTagline}</p>
               </motion.div>
             ))}
           </div>
