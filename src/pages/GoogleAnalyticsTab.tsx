@@ -212,7 +212,7 @@ const GoogleAnalyticsTab = () => {
             <Card className="border-destructive/40 bg-destructive/5">
               <CardContent className="py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <p className="text-sm text-destructive">{error}</p>
-                {error.toLowerCase().includes("token") && (
+                {(error.toLowerCase().includes("token") || error.toLowerCase().includes("reconnect")) && (
                   <Button
                     onClick={initiateOAuth}
                     size="sm"
