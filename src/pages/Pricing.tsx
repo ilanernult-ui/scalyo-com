@@ -19,7 +19,7 @@ const plans = [
     id: "datadiag" as PlanType,
     name: STRIPE_PLANS.datadiag.name,
     monthly: 79,
-    tagline: STRIPE_PLANS.datadiag.tagline,
+    tagline: "Reprenez le contrôle de votre rentabilité",
     description: STRIPE_PLANS.datadiag.description,
     bottomTagline: STRIPE_PLANS.datadiag.bottomTagline,
     features: [
@@ -44,7 +44,7 @@ const plans = [
     id: "growthpilot" as PlanType,
     name: STRIPE_PLANS.growthpilot.name,
     monthly: 189,
-    tagline: STRIPE_PLANS.growthpilot.tagline,
+    tagline: "Passez à l'offensive sur votre chiffre d'affaires",
     description: STRIPE_PLANS.growthpilot.description,
     bottomTagline: STRIPE_PLANS.growthpilot.bottomTagline,
     features: [
@@ -69,7 +69,7 @@ const plans = [
     id: "loyaltyloop" as PlanType,
     name: STRIPE_PLANS.loyaltyloop.name,
     monthly: 349,
-    tagline: STRIPE_PLANS.loyaltyloop.tagline,
+    tagline: "Transformez vos clients en actifs long terme",
     description: STRIPE_PLANS.loyaltyloop.description,
     bottomTagline: STRIPE_PLANS.loyaltyloop.bottomTagline,
     features: [
@@ -235,6 +235,9 @@ const Pricing = () => {
                 >
                   Choisir ce plan{plan.popular && " →"}
                 </Button>
+                <p className="text-center text-muted-foreground mb-5" style={{ fontSize: 12 }}>
+                  Sans engagement · Satisfait ou remboursé 30 jours
+                </p>
                 <ul className="space-y-2.5">
                   {plan.features.map((f) => (
                     <li key={f.name} className="flex items-start gap-2.5 text-sm">
