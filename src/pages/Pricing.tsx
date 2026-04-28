@@ -139,6 +139,7 @@ const Pricing = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [annual, setAnnual] = useState(false);
+  const [openPlans, setOpenPlans] = useState<Record<string, boolean>>({});
 
   const getPrice = (monthly: number) => annual ? Math.round(monthly * 0.83) : monthly;
 
