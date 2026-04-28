@@ -244,20 +244,33 @@ const Pricing = () => {
                 <p className="text-center text-muted-foreground mb-5" style={{ fontSize: 12 }}>
                   Sans engagement · Satisfait ou remboursé 30 jours
                 </p>
-                <ul className="space-y-2.5">
-                  {plan.features.map((f) => (
-                    <li key={f.name} className="flex items-start gap-2.5 text-sm">
-                      <Check className="h-4 w-4 shrink-0 mt-0.5 text-success" />
-                      <span className="text-muted-foreground">{f.name}</span>
-                    </li>
-                  ))}
-                  {plan.excluded.map((name) => (
-                    <li key={name} className="flex items-start gap-2.5 text-sm">
-                      <Minus className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground/30" />
-                      <span className="text-muted-foreground/40 line-through">{name}</span>
-                    </li>
-                  ))}
-                </ul>
+                <Collapsible
+                  open={!!openPlans[plan.id]}
+                  onOpenChange={(o) => setOpenPlans((prev) => ({ ...prev, [plan.id]: o }))}
+                >
+                  <CollapsibleTrigger
+                    className="w-full text-center text-muted-foreground hover:text-foreground transition-colors mb-2"
+                    style={{ fontSize: 13, background: "none", border: "none", padding: 0, cursor: "pointer" }}
+                  >
+                    {openPlans[plan.id] ? "Masquer les détails ▲" : "Voir les détails ▼"}
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+                    <ul className="space-y-2.5 pt-3">
+                      {plan.features.map((f) => (
+                        <li key={f.name} className="flex items-start gap-2.5 text-sm">
+                          <Check className="h-4 w-4 shrink-0 mt-0.5 text-success" />
+                          <span className="text-muted-foreground">{f.name}</span>
+                        </li>
+                      ))}
+                      {plan.excluded.map((name) => (
+                        <li key={name} className="flex items-start gap-2.5 text-sm">
+                          <Minus className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground/30" />
+                          <span className="text-muted-foreground/40 line-through">{name}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CollapsibleContent>
+                </Collapsible>
 
                 <p className="text-xs text-muted-foreground/80 italic mt-6 pt-4 border-t border-border/60">{plan.bottomTagline}</p>
               </motion.div>
