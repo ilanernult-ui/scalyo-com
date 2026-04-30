@@ -29,16 +29,8 @@ interface UseRecommendationsReturn {
   generating: boolean;
 }
 
-const GENERATED_RECOS: Omit<Recommendation, "id" | "user_id" | "created_at" | "updated_at">[] = [
-  { title: "Relancer 3 factures impayées > 60 jours", description: "3 factures totalisant 4 200€ sont en retard de plus de 60 jours.", priority: "P0", status: "pending", impact_label: "~4 200€ récupérés", impact_type: "revenue", source: "ai", week_of: new Date().toISOString().slice(0, 10), completed_at: null },
-  { title: "Supprimer 2 abonnements SaaS inutilisés", description: "Notion Pro et Loom Business affichent 0 connexion depuis 45 jours.", priority: "P0", status: "pending", impact_label: "89€/mois économisés", impact_type: "savings", source: "ai", week_of: new Date().toISOString().slice(0, 10), completed_at: null },
-  { title: "Automatiser les relances clients", description: "6h/semaine sont consacrées à des relances manuelles.", priority: "P1", status: "pending", impact_label: "6h/semaine gagnées", impact_type: "time", source: "ai", week_of: new Date().toISOString().slice(0, 10), completed_at: null },
-  { title: "Lancer un programme de parrainage", description: "Vos clients bouche-à-oreille convertissent 2.2x mieux.", priority: "P1", status: "pending", impact_label: "+8 leads qualifiés/mois", impact_type: "revenue", source: "ai", week_of: new Date().toISOString().slice(0, 10), completed_at: null },
-  { title: "Réduire budget LinkedIn Ads de 40%", description: "Le CPA LinkedIn est 3x supérieur au SEO organique.", priority: "P1", status: "pending", impact_label: "−284€/mois économisés", impact_type: "savings", source: "ai", week_of: new Date().toISOString().slice(0, 10), completed_at: null },
-  { title: "Déployer tutoriel in-app connecteurs données", description: "Le taux d'adoption des connecteurs est de 48%.", priority: "P2", status: "pending", impact_label: "+23% activation", impact_type: "other", source: "ai", week_of: new Date().toISOString().slice(0, 10), completed_at: null },
-  { title: "Enquête NPS sur segment PME Tech", description: "Ce segment affiche un score churn de 42/100.", priority: "P2", status: "pending", impact_label: "Identifier friction onboarding", impact_type: "other", source: "ai", week_of: new Date().toISOString().slice(0, 10), completed_at: null },
-  { title: "Automatiser le reporting hebdomadaire", description: "3h/semaine sont consacrées à la compilation manuelle de métriques.", priority: "P3", status: "pending", impact_label: "3h/semaine gagnées", impact_type: "time", source: "ai", week_of: new Date().toISOString().slice(0, 10), completed_at: null },
-];
+// No fake data: AI recommendations are only created from a real generation source.
+const GENERATED_RECOS: Omit<Recommendation, "id" | "user_id" | "created_at" | "updated_at">[] = [];
 
 const db = supabase as any;
 
