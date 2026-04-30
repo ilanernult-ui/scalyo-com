@@ -165,37 +165,9 @@ const DataDiagDashboard = () => {
             <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
             KPIs Temps Réel
           </h2>
-          {kpis.length === 0 ? (
-            <div className={card}>
-              <EmptyHint>En attente de données</EmptyHint>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-              {kpis.map((kpi, i) => (
-                <motion.div key={kpi.label} {...fadeUp(6 + i * 0.1)} className={`${card} group`}>
-                  <p className="text-[11px] uppercase tracking-wider mb-2" style={{ color: "rgba(255,255,255,0.35)" }}>
-                    {kpi.label}
-                  </p>
-                  <p className="font-mono text-2xl font-bold text-white tracking-tight">
-                    {kpi.value}
-                  </p>
-                  <div className="flex items-center gap-1.5 mt-1">
-                    {kpi.up ? (
-                      <TrendingUp className="w-3 h-3 text-green-400" />
-                    ) : (
-                      <TrendingDown className="w-3 h-3 text-red-400" />
-                    )}
-                    <span className={`text-xs font-medium ${kpi.up ? "text-green-400" : "text-red-400"}`}>
-                      {kpi.change}
-                    </span>
-                  </div>
-                  <div className="mt-3 opacity-50 group-hover:opacity-100 transition-opacity">
-                    <SparkLine data={kpi.spark} color={kpi.up ? "#22c55e" : "#ef4444"} />
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          )}
+          <div className={card}>
+            <EmptyHint>En attente de données</EmptyHint>
+          </div>
         </div>
 
         {/* ── 6. RAPPORT IA MENSUEL ── */}
