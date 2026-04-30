@@ -154,60 +154,7 @@ export default function ConnectDataWizard({ open, onOpenChange, plan, userId, on
 
   const currentStepId = steps[step]?.id;
 
-  const fillTestData = () => {
-    // Step 1 - General
-    setCompanyName("TechShop Paris");
-    setSector("E-commerce");
-    setCompanySize("PME (11-250)");
-    setEmployees(25);
-    setAnnualRevenue(850000);
-    setCompetitors("ShopDigital, WebStore Pro");
-    // Step 2 - Financial
-    setCurrentRevenue(72000);
-    setRevenueHistory([58000, 62000, 65000, 71000, 68000, 72000]);
-    setFixedCosts(35000);
-    setVariableCosts(18000);
-    setCashAvailable(95000);
-    setGrossMargin(42);
-    setNetMargin(12);
-    setNetIncome(102000);
-    setUnpaidInvoices(8);
-    setUnpaidAmount(15200);
-    setAvgClientDays(38);
-    setAvgSupplierDays(30);
-    // Step 3 - Commercial
-    setActiveClients(340);
-    setNewClientsHistory([28, 32, 25, 35, 30, 27]);
-    setConversionRates([3.2, 2.8, 3.5]);
-    setAvgBasket(85);
-    setMonthlyTransactions(420);
-    setMainChannel("Site web");
-    setMarketingBudget(5000);
-    setCac(45);
-    setLtv(520);
-    setUpsellRate(12);
-    setGrowthTarget6m(15);
-    setGrowthTarget12m(30);
-    // Step 4 - Clients
-    setTotalClients(1200);
-    setActiveClients30d(340);
-    setInactive60d(85);
-    setInactive90d(42);
-    setChurnHistory([4.2, 3.8, 5.1, 4.5, 3.9, 4.0]);
-    setAvgRelMonths(14);
-    setNpsScore(38);
-    setComplaintsCurrent(12);
-    setComplaintsPrevious(18);
-    setRenewalRate(72);
-    setRetentionRate(62);
-    setClientLtv(520);
-    setVipClients(45);
-    setVipRevenue(185000);
-    setMainChurnReason("Prix");
-    // Jump to recap
-    setStep(steps.length - 1);
-    toast({ title: "🧪 Données de test remplies", description: "Vérifiez le récapitulatif puis lancez l'analyse." });
-  };
+  // No fake data: test-data injection has been removed.
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, type: "files" | "images") => {
     const selected = Array.from(e.target.files || []);
@@ -558,9 +505,6 @@ export default function ConnectDataWizard({ open, onOpenChange, plan, userId, on
           </div>
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-foreground">{steps[step]?.label}</p>
-            <Button variant="outline" size="sm" onClick={fillTestData} className="text-xs gap-1.5 h-7 px-3">
-              🧪 Données test
-            </Button>
           </div>
         </div>
 
