@@ -1,8 +1,6 @@
 import { motion } from "framer-motion";
 import {
-  DollarSign, TrendingUp, Users, Headphones,
-  ThumbsUp, Clock, Zap, FileText, Download, ChevronRight,
-  AlertTriangle
+  DollarSign, Clock, Zap, FileText, Download,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 import ScoreGauge from "./ScoreGauge";
@@ -11,8 +9,6 @@ import { Button } from "@/components/ui/button";
 
 /* ── No fake data: empty by default ── */
 const lossBarData: { name: string; value: number; color: string }[] = [];
-const actions: { title: string; roi: string; effort: string; progress: number }[] = [];
-const kpis: { label: string; value: string; change: string; up: boolean; spark: number[] }[] = [];
 
 const card = "rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-5 sm:p-6 hover:border-white/[0.12] transition-colors duration-300";
 const fadeUp = (i: number) => ({
