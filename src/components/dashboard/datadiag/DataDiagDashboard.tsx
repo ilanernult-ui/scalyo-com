@@ -156,37 +156,7 @@ const DataDiagDashboard = () => {
               Top 5 Actions Rapides
             </h2>
           </div>
-          {actions.length === 0 ? (
-            <EmptyHint>Aucun élément à afficher pour le moment</EmptyHint>
-          ) : (
-            <div className="space-y-3">
-              {actions.map((a, i) => (
-                <motion.div
-                  key={i}
-                  {...fadeUp(4.5 + i * 0.15)}
-                  className="group flex items-center gap-4 rounded-xl border border-white/[0.04] bg-white/[0.02] p-4 hover:bg-white/[0.05] hover:border-white/[0.1] transition-all duration-300 cursor-pointer"
-                >
-                  <span className="font-mono text-2xl font-bold text-[#00d4ff]/30 w-10 text-center shrink-0">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white/90">{a.title}</p>
-                    <div className="flex items-center gap-3 mt-1.5">
-                      <span className="text-xs font-semibold text-green-400">💰 {a.roi}</span>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${effortColor[a.effort]}`}>
-                        {a.effort}
-                      </span>
-                    </div>
-                    {/* Progress bar */}
-                    <div className="mt-2 h-1 w-full rounded-full bg-white/[0.04]">
-                      <div className="h-full rounded-full bg-[#00d4ff]/30" style={{ width: `${a.progress}%` }} />
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/50 transition-colors shrink-0" />
-                </motion.div>
-              ))}
-            </div>
-          )}
+          <EmptyHint>Aucun élément à afficher pour le moment</EmptyHint>
         </motion.div>
 
         {/* ── 5. KPIs TEMPS RÉEL ── */}
